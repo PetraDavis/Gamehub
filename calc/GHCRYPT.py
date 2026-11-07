@@ -358,7 +358,7 @@ def _build_ys():
     hair = [(-18, -6), (-27, 30), (-24, 96), (-6, 70), (8, 100), (20, 60), (17, -6), (10, -24), (-10, -24)]
     _poly_slabs([(140 + lx * ca - ly * sa, 50 + lx * sa + ly * ca) for lx, ly in hair], 0, 4)
     _oval(0, 0, 17, 25, 0, 4)
-    for ex, ey in ((136.5, 57.0), (147.3, 63.0)):
+    for ex, ey in ((137.2, 41.2), (149.1, 48.55)):
         YS.append(((ex - 2) / 256, (ex + 2) / 256, 1 - (ey + 2) / 640, 1 - (ey - 2) / 640, 4))
 
 
@@ -396,23 +396,23 @@ def ys_column(x, left, wid, top, h):
                 g = random.randint(28, 62)
                 c = (g, g, g + 8)
             rect(a, y0, b - a, y1 - y0, c)
-    # eyes like the game's: a soft dark socket, a faint wide blue halo,
-    # a tight blue bloom and a pin-point cold core
+    # eyes like Ivy's video: a wide soft blue glow, a bright blue bloom
+    # and a near-white core, high up in her tilted head
     pts = []
     for pa, pb, v0, v1 in eyes:
         cy = int(top + h * (1 - (v0 + v1) / 2))
         if 2 <= cy <= VH - 4:
             pts.append(((pa + pb) // 2, cy))
-    # eyes like the game's: small and dim, a cold blue glow round a pin-point core
-    r = max(1, int(wid * .01))
-    for cx, cy in pts:
-        for bx0, bx1, by0, by1, c in ((cx - r, cx + r + 1, cy, cy + 1, (60, 150, 230)),
-                                      (cx, cx + 1, cy - r, cy + r + 1, (60, 150, 230)),
-                                      (cx, cx + 1, cy, cy + 1, (225, 248, 255))):
-            ea = max(x, bx0)
-            eb = min(x1, bx1)
-            if eb - ea >= 1:
-                rect(ea, by0, eb - ea, by1 - by0, c)
+    for f, c in ((.03, (35, 80, 150)), (.016, (80, 175, 245)), (.006, (230, 250, 255))):
+        r = max(1 if f > .01 else 0, int(wid * f))
+        for cx, cy in pts:
+            ea = max(x, cx - r)
+            eb = min(x1, cx + r + 1)
+            if eb - ea < 1:
+                continue
+            for dx in range(ea - cx, eb - cx):
+                hh = int((r * r - dx * dx) ** .5)
+                rect(cx + dx, max(0, cy - hh), 1, 2 * hh + 1, c)
 
 
 # ---------- text screens ----------

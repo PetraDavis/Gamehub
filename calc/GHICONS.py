@@ -369,14 +369,20 @@ def crypt(x, y, c):
             if b - a > 2:
                 g = random.randint(28, 62)
                 hline(a + 1, b - 2, row, (g, g, g + 8))
-    # small cold blue eyes
-    for ex, ey in ((136.5, 57.0), (147.3, 63.0)):
+    # glowing blue eyes high in the head, like Ivy's video
+    pts = []
+    for ex, ey in ((137.2, 41.2), (149.1, 48.55)):
         a, b = m(ex, ey)
-        a = int(a)
-        b = int(b)
-        hline(a - 1, a + 1, b, (60, 150, 230))
-        line(a, b - 1, a, b + 1, (60, 150, 230))
-        hline(a, a, b, (225, 248, 255))
+        pts.append((int(a), int(b)))
+    for a, b in pts:
+        hline(a - 1, a + 1, b - 1, (35, 80, 150))
+        hline(a - 2, a + 2, b, (35, 80, 150))
+        hline(a - 1, a + 1, b + 1, (35, 80, 150))
+    for a, b in pts:
+        hline(a - 1, a + 1, b, (80, 175, 245))
+        line(a, b - 1, a, b + 1, (80, 175, 245))
+    for a, b in pts:
+        hline(a, a, b, (230, 250, 255))
     random.seed()
 
 
