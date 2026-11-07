@@ -18,6 +18,14 @@ GOLD = (230, 180, 40)
 GREY = (110, 110, 110)
 RED = (220, 50, 50)
 H = 210
+def shuffle(a):
+ for i in range(len(a) - 1, 0, -1):
+  j = random.randint(0, i)
+  a[i], a[j] = (a[j], a[i])
+def sample(seq, k):
+ a = list(seq)
+ shuffle(a)
+ return a[:k]
 def wkey():
  return wait_key()
 def col(c):
@@ -203,12 +211,12 @@ sudoku_PEN = (40, 90, 200)
 def sudoku_make(holes):
  base = 3
  r = list(range(3))
- rows = [g * 3 + i for g in random.sample(r, 3) for i in random.sample(r, 3)]
- cols = [g * 3 + i for g in random.sample(r, 3) for i in random.sample(r, 3)]
- nums = random.sample(range(1, 10), 9)
+ rows = [g * 3 + i for g in sample(r, 3) for i in sample(r, 3)]
+ cols = [g * 3 + i for g in sample(r, 3) for i in sample(r, 3)]
+ nums = sample(range(1, 10), 9)
  sol = [nums[(base * (rr % base) + rr // base + cc) % 9] for rr in rows for cc in cols]
  puz = sol[:]
- for i in random.sample(range(81), holes):
+ for i in sample(range(81), holes):
   puz[i] = 0
  return puz
 def sudoku_valid(b):

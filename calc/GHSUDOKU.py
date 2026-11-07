@@ -13,12 +13,12 @@ PEN = (40, 90, 200)
 def make(holes):
     base = 3
     r = list(range(3))
-    rows = [g * 3 + i for g in random.sample(r, 3) for i in random.sample(r, 3)]
-    cols = [g * 3 + i for g in random.sample(r, 3) for i in random.sample(r, 3)]
-    nums = random.sample(range(1, 10), 9)
+    rows = [g * 3 + i for g in sample(r, 3) for i in sample(r, 3)]
+    cols = [g * 3 + i for g in sample(r, 3) for i in sample(r, 3)]
+    nums = sample(range(1, 10), 9)
     sol = [nums[(base * (rr % base) + rr // base + cc) % 9] for rr in rows for cc in cols]
     puz = sol[:]
-    for i in random.sample(range(81), holes):
+    for i in sample(range(81), holes):
         puz[i] = 0
     return puz
 

@@ -1,7 +1,6 @@
 # App icons for the GAMEHUB menu and home screens.
 # Each icon sits on its own background disc (radius 25) and fits inside it.
 from ti_draw import *
-import random
 import math
 
 BLACK = (0, 0, 0)
@@ -308,7 +307,12 @@ def crypt(x, y, c):
     # Ysolde as she looks in the full game: a thin dark shape full of faint
     # static, outlined in bright static, with two small cold blue eyes.
     # Same shape as her character sheet (256 x 640), head and shoulders only.
-    random.seed(7)
+    # a fixed pattern of static, so the icon looks the same every time
+    rs = [7]
+
+    def rnd(a, b):
+        rs[0] = (rs[0] * 1103515245 + 12345) % 2147483648
+        return a + rs[0] % (b - a + 1)
     k = 0.21
     ox = x + 3
     oy = y - 17
@@ -327,7 +331,7 @@ def crypt(x, y, c):
         right = []
         for i in range(len(pts) - 1):
             (x1, y1), (x2, y2) = pts[i], pts[i + 1]
-            d = math.hypot(x2 - x1, y2 - y1) or 1
+            d = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) or 1
             nx = -(y2 - y1) / d * w / 2
             ny = (x2 - x1) / d * w / 2
             left += [(x1 + nx, y1 + ny), (x2 + nx, y2 + ny)]
@@ -362,12 +366,12 @@ def crypt(x, y, c):
     # bright static outline: everything bright first, then the dark inside
     for sp in all_spans:
         for row, a, b in sp:
-            g = random.randint(190, 255)
+            g = rnd(190, 255)
             hline(a, max(a, b - 1), row, (g, g * 19 // 20, g * 9 // 10))
     for sp in all_spans:
         for row, a, b in sp[1:-1]:
             if b - a > 2:
-                g = random.randint(28, 62)
+                g = rnd(28, 62)
                 hline(a + 1, b - 2, row, (g, g, g + 8))
     # glowing blue eyes high in the head, like Ivy's video
     pts = []
@@ -383,7 +387,6 @@ def crypt(x, y, c):
         line(a, b - 1, a, b + 1, (80, 175, 245))
     for a, b in pts:
         hline(a, a, b, (230, 250, 255))
-    random.seed()
 
 
 def keys(x, y, c):

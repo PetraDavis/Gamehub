@@ -17,6 +17,10 @@ GOLD = (230, 180, 40)
 GREY = (110, 110, 110)
 RED = (220, 50, 50)
 H = 210
+def shuffle(a):
+ for i in range(len(a) - 1, 0, -1):
+  j = random.randint(0, i)
+  a[i], a[j] = (a[j], a[i])
 def wkey():
  return wait_key()
 def col(c):
@@ -240,7 +244,7 @@ class soli_G:
 def soli_new():
  g = soli_G()
  deck = [[r, s, False] for s in range(4) for r in range(1, 14)]
- random.shuffle(deck)
+ shuffle(deck)
  g.tab = []
  for c in range(7):
   pile = [deck.pop() for i in range(c + 1)]

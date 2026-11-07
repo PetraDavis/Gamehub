@@ -175,7 +175,11 @@ def icons_hline(x1, x2, y, c, t=1):
  for o in range(t):
   draw_line(int(x1), int(y) + o, int(x2), int(y) + o)
 def icons_crypt(x, y, c):
- random.seed(7)
+ rs = [7]
+
+ def rnd(a, b):
+  rs[0] = (rs[0] * 1103515245 + 12345) % 2147483648
+  return a + rs[0] % (b - a + 1)
  k = 0.21
  ox = x + 3
  oy = y - 17
@@ -193,7 +197,7 @@ def icons_crypt(x, y, c):
   right = []
   for i in range(len(pts) - 1):
    (x1, y1), (x2, y2) = (pts[i], pts[i + 1])
-   d = math.hypot(x2 - x1, y2 - y1) or 1
+   d = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) or 1
    nx = -(y2 - y1) / d * w / 2
    ny = (x2 - x1) / d * w / 2
    left += [(x1 + nx, y1 + ny), (x2 + nx, y2 + ny)]
@@ -218,12 +222,12 @@ def icons_crypt(x, y, c):
  all_spans = [spans(sh) for sh in shapes]
  for sp in all_spans:
   for row, a, b in sp:
-   g = random.randint(190, 255)
+   g = rnd(190, 255)
    icons_hline(a, max(a, b - 1), row, (g, g * 19 // 20, g * 9 // 10))
  for sp in all_spans:
   for row, a, b in sp[1:-1]:
    if b - a > 2:
-    g = random.randint(28, 62)
+    g = rnd(28, 62)
     icons_hline(a + 1, b - 2, row, (g, g, g + 8))
  pts = []
  for ex, ey in ((137.2, 41.2), (149.1, 48.55)):
@@ -238,7 +242,6 @@ def icons_crypt(x, y, c):
   icons_line(a, b - 1, a, b + 1, (80, 175, 245))
  for a, b in pts:
   icons_hline(a, a, b, (230, 250, 255))
- random.seed()
 icons_ICONS = {'GHCRYPT': icons_crypt}
 def icons_bg(mod):
  return icons_BG.get(mod, icons_BLACK)
