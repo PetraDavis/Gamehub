@@ -239,10 +239,17 @@ def drag(x, y, s, t, c, head=0, body=0, out=None, f=0, sp=0):
     # (with out, the shapes go into that list for the map instead of being drawn; sp: shiny scheme)
     P = PAL + [lt(c, 0.45), dk(c, 0.6), c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
     if sp:
-        # shiny: every colour but black and white turns into the scheme's light, main or dark tone
-        # by how bright it is, so each kind keeps its own markings in the new colours
-        n, c, l, k = SCH[sp]
-        P = [dk(k, 0.5), P[1]] + [l if v > 165 else c if v > 85 else k for v in [(q[0] * 3 + q[1] * 6 + q[2]) // 10 for q in P[2:]]]
+        # shiny: every marking turns into a scheme colour that stands out from the body:
+        # very bright -> light; colourful bits (flames, glows, gems) -> accent; whitish -> light;
+        # near black -> very dark; the rest light or dark by whether it was lighter or darker
+        # than the dragon's own colour. So each kind keeps its own pattern in the new colours.
+        bl = (c[0] * 3 + c[1] * 6 + c[2]) // 10
+        n, c, l, k, a = SCH[sp]
+        Q = [dk(k, 0.5), P[1]]
+        for q in P[2:]:
+            v = (q[0] * 3 + q[1] * 6 + q[2]) // 10
+            Q.append(l if v > 200 else a if max(q) - min(q) > 110 else l if v > 165 else dk(k, 0.5) if v < 40 else l if v > bl else k)
+        P = Q
         # the body itself is always the main colour, light on top and dark underneath
         P[15], P[16], P[17], P[24], P[25] = l, k, c, l, k
     w, b = ARTW[2 * t], ARTW[2 * t + 1]
@@ -372,12 +379,12 @@ def shapes(m, x, y, ch, out):
 
 
 EGGS = {}  # (land, x, y): the egg lying there (see egg_roll)
-# Shiny colour schemes: (name, main, light, dark). An egg number is kind + 32 * scheme;
+# Shiny colour schemes: (name, main, light, dark, accent). An egg number is kind + 32 * scheme;
 # kind 31 is a small egg, which hatches a baby of a kind you have discovered.
-SCH = (None, ("Silver", (190, 195, 205), (240, 242, 248), (105, 110, 125)),
-       ("Gold", (235, 185, 40), (255, 235, 130), (150, 100, 20)),
-       ("Neon", (40, 255, 140), (240, 255, 60), (255, 40, 220)),
-       ("Purple-blue", (130, 60, 210), (70, 150, 255), (40, 30, 120)))
+SCH = (None, ("Silver", (190, 195, 205), (240, 242, 248), (105, 110, 125), (80, 170, 255)),
+       ("Gold", (235, 185, 40), (255, 235, 130), (150, 100, 20), (255, 110, 30)),
+       ("Neon", (40, 255, 140), (240, 255, 60), (255, 40, 220), (40, 230, 255)),
+       ("Purple-blue", (130, 60, 210), (70, 150, 255), (40, 30, 120), (160, 235, 255)))
 SMALL = 31
 
 

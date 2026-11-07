@@ -12,6 +12,7 @@ CLR=45
 SECOND=21
 BLACK=(0,0,0)
 WHITE=(255,255,255)
+GOLD=(230,180,40)
 YELLOW=(240,220,60)
 H=210
 _C=[None]
@@ -47,6 +48,15 @@ def dk(c,k=0.65):
  return(int(c[0]*k),int(c[1]*k),int(c[2]*k))
 def _corners(x,y,w,h,r,t):
  return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
+def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
+ edge(x,y,w,h,r,c,t)
+ if fill:
+  rect(x+t,y+t,w-2*t,h-2*t,inner)
+def edge(x,y,w,h,r,c,t=2,inner=BLACK):
+ col(c)
+ for bx,by,bw,bh in _corners(x,y,w,h,r,t):
+  if bw>0 and bh>0:
+   fr(bx,by,bw,bh)
 MSG=[0,0]
 G_TEST=True
 G_EVIL=0.12 if G_TEST else 0.004
@@ -65,7 +75,6 @@ G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum')
 def G_cl(b):
  return[tuple(b[i:i+3])for i in range(0,len(b),3)]
 G_RCOL=G_cl(b'\xff\xff\xffx\xdcxZ\xa0\xff\xc8n\xf0\xe6\xb4(<\xe6\xe6')
-G_DT=list(zip(('Pyrrak','Smoldedrake','Aquawyrm','Gillwing','Fernling','Lichenwing','Stonewyrm','Volcanox','Ashveil','Glacius','Tempestra','Thornwyrm','Dawnwing','Pearlhorn','Jadewyrm','Petalwyrm','Blazequill','Abyssar','Rootwyrm','Lumora','Quantum'),b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03',b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05',G_cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
 G_ABC='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
 G_PAL=G_cl(b'\x00\x00\x00\xff\xff\xff\xfa\xdc<\xf5\x8c\x1e\xdc(\x1exx}\xc8\xc8\xd2\x1eZ(Z\xbeP\xfa\x96\xc8nK(<\xe6\xe6\xe6<\xdc\xe6\xb4(\xaa\xd2\xfa')
