@@ -99,10 +99,6 @@ def I_flap(x,y,c):
  I_circ(x+4,y-5,2,I_BLACK)
  I_poly([x+7,x+17,x+7],[y-2,y+1,y+2],(245,140,30))
  I_poly([x+7,x+15,x+7],[y+2,y+3,y+5],(200,100,20))
-def I_g2048(x,y,c):
- I_rr(x-20,y-12,41,28,4,(200,160,30))
- I_rr(x-20,y-14,41,28,4,(237,194,46))
- I_digits(x-14,y-5,'2048',I_WHITE)
 def I_breakout(x,y,c):
  cols=((220,60,60),(235,140,50),(230,210,60),(70,190,90))
  for r in range(3):
@@ -184,16 +180,15 @@ def I_star(x,y,c):
  I_box(x-10,y+7,20,10,(90,200,255))
  I_box(x-10,y+7,7,4,(8,10,32))
  I_box(x+3,y+7,7,4,(8,10,32))
-def I_match(x,y,c):
- I_box(x-19,y-12,17,24,(200,70,90))
- I_box(x-15,y-8,9,16,(225,120,135))
- I_box(x+2,y-12,17,24,(250,245,230))
- I_circ(x+8,y-2,3,I_RED)
- I_circ(x+13,y-2,3,I_RED)
- I_poly([x+4,x+17,x+10],[y-1,y-1,y+6],I_RED)
-I_ICONS={'GHSOLI':I_solitaire,'GHBLOCKS':I_blocks,'GHSUDOKU':I_sudoku,'GHANIM':I_anim,'GHFLAP':I_flap,'GHTTT':I_ttt,'GHMERGE':I_g2048,'GHPONG':I_pong,'GHBREAK':I_breakout,'GHRPG':I_rpg,'GHSIMON':I_simon,'GHHANG':I_hangman,'GHSPACE':I_space,'GHFORTUN':I_fortune,'GHNAMES':I_names,'GHSTAR':I_star,'GHMATCH':I_match,'*keys':I_keys,'*wipe':I_wipe,'*about':I_about}
-def I_bg(mod):
- return I_BG.get(mod,I_BLACK)
+def I_dragon(x,y,c):
+ I_poly([x-2,x+10,x+4],[y-2,y-17,y+2],(240,190,40))
+ I_box(x-10,y-2,20,11,(220,70,40))
+ I_box(x-18,y-9,11,9,(220,70,40))
+ I_box(x+9,y+3,9,3,(220,70,40))
+ I_box(x-7,y+9,4,5,(220,70,40))
+ I_box(x+4,y+9,4,5,(220,70,40))
+ I_box(x-15,y-7,3,3,I_BLACK)
+I_ICONS={'GHSOLI':I_solitaire,'GHBLOCKS':I_blocks,'GHSUDOKU':I_sudoku,'GHANIM':I_anim,'GHFLAP':I_flap,'GHTTT':I_ttt,'GHMERGE':I_g2048,'GHPONG':I_pong,'GHBREAK':I_breakout,'GHRPG':I_rpg,'GHSIMON':I_simon,'GHHANG':I_hangman,'GHSPACE':I_space,'GHFORTUN':I_fortune,'GHNAMES':I_names,'GHSTAR':I_star,'GHMATCH':I_match,'GHDRAGON':I_dragon,'GHDETECT':I_detect,'*keys':I_keys,'*wipe':I_wipe,'*about':I_about}
 def I_draw(mod,x,y,c):
  f=I_ICONS.get(mod)
  if f:
@@ -218,7 +213,7 @@ def S_wipe():
   store_list(S_hname(s),[0])
   n+=1
  return n
-H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK'),('Star Patrol','GHSTAR')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG'),('Memory Match','GHMATCH')]),('Adventure',[('Tiny Quest','GHRPG'),('Lost Orbit','GHSPACE')]),('Create',[('Animation Studio','GHANIM'),('Fortune Cards','GHFORTUN'),('Name Generator','GHNAMES')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
+H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK'),('Star Patrol','GHSTAR')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG'),('Memory Match','GHMATCH')]),('Adventure',[('Tiny Quest','GHRPG'),('Dragon Tamer','GHDRAGON'),('Detective Case','GHDETECT'),('Lost Orbit','GHSPACE')]),('Create',[('Animation Studio','GHANIM'),('Fortune Cards','GHFORTUN'),('Name Generator','GHNAMES')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
 def H_draw_bar(i,on,first=False):
  y=H_BAR_Y+i*H_BAR_GAP
  c=GOLD if on else WHITE
@@ -255,6 +250,10 @@ def H_draw_app(app,i,on,first=False):
   except Exception:
    ctext(y+7,app[0][0],WHITE,x)
  halo(x,y,27,c,3)
+def H_show_title(name,old=None):
+ if old:
+  ctext(203,old,BLACK)
+ ctext(203,name,GOLD)
 def H_app_screen(ci,sel=0):
  cname,apps=H_CATS[ci]
  cls()
