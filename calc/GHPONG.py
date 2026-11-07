@@ -80,9 +80,13 @@ def game():
     message(["You " + str(me) + " - " + str(cpu) + " Calculator"], "You win!" if me > cpu else "Calculator wins")
 
 
+RULES = "Bounce the ball past the calculator's paddle. First to 7 points wins."
+KEYS = ['Up/Down: move paddle', 'CLEAR: quit']
+
+
 def main():
     while True:
-        c = choose("PONG", ["Play", "Back"])
-        if c != 0:
+        c = home("GHPONG", 'PONG', RULES, KEYS, ("Play", "Back"))
+        if c < 0:
             return
         game()

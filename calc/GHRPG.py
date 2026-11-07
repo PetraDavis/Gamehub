@@ -218,19 +218,6 @@ def battle(g, f):
             return False
 
 
-def main():
-    while True:
-        c = choose("TINY QUEST", ["New adventure", "How to play", "Back"])
-        if c < 0 or c == 2:
-            return
-        if c == 1:
-            cls()
-            message(["Arrows walk. Rest at", "the cottage. Open", "chests for potions.",
-                     "Defeat the Hollow King", "deep in the cave."], "TINY QUEST")
-            continue
-        play()
-
-
 def play():
     g = Game()
     g.maps = [[list(r) for r in mp] for mp in MAPS]
@@ -296,3 +283,15 @@ def play():
             if not battle(g, random.choice(FOES[g.m])):
                 return
             draw_map(g)
+
+
+RULES = 'Walk the meadow, woods and cave. Rest at the cottage, open chests for potions, and defeat the Hollow King.'
+KEYS = ['Arrows: walk', 'Fights: Left/Right + ENTER', 'CLEAR: quit']
+
+
+def main():
+    while True:
+        c = home("GHRPG", 'TINY QUEST', RULES, KEYS, ("Play", "Back"))
+        if c < 0:
+            return
+        play()

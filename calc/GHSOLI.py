@@ -270,9 +270,13 @@ def game():
             redraw.append(cur - 7)
 
 
+RULES = 'Build four piles from Ace to King, one per suit. In the columns, stack cards down in alternating colors.'
+KEYS = ['Arrows: move   ENTER: pick/put', 'Up/Down in a column: more cards', 'ENTER on the deck: draw', '2nd: send card to top piles', 'CLEAR: quit']
+
+
 def main():
     while True:
-        c = choose("SOLITAIRE", ["New game", "Back"])
-        if c != 0:
+        c = home("GHSOLI", 'SOLITAIRE', RULES, KEYS, ("Play", "Back"))
+        if c < 0:
             return
         game()

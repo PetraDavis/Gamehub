@@ -104,9 +104,13 @@ def game():
             return
 
 
+RULES = 'Slide the tiles. Two tiles with the same number join into one. Try to make 2048!'
+KEYS = ['Arrows: slide all tiles', 'CLEAR: quit']
+
+
 def main():
     while True:
-        c = choose("2048", ["Play", "Back"])
-        if c != 0:
+        c = home("GHMERGE", '2048', RULES, KEYS, ("Play", "Back"))
+        if c < 0:
             return
         game()

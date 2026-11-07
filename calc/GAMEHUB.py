@@ -5,7 +5,7 @@ import gc
 
 CATS = [
     ("Arcade", [("Wing It", "GHFLAP"), ("Pong", "GHPONG"), ("Breakout", "GHBREAK")]),
-    ("Puzzle", [("Stack Drop", "GHBLOCKS"), ("2048", "GH2048"), ("Sudoku", "GHSUDOKU"), ("Simon", "GHSIMON")]),
+    ("Puzzle", [("Stack Drop", "GHBLOCKS"), ("2048", "GHMERGE"), ("Sudoku", "GHSUDOKU"), ("Simon", "GHSIMON")]),
     ("Classics", [("Solitaire", "GHSOLI"), ("Tic-Tac-Toe", "GHTTT"), ("Hangman", "GHHANG")]),
     ("Adventure", [("Tiny Quest", "GHRPG"), ("Encrypted Demo", "GHCRYPT")]),
     ("Create", [("Animation Studio", "GHANIM")]),
@@ -53,20 +53,15 @@ def app_pos(i):
     return 50 + (i % 4) * 73, 82 + (i // 4) * 70
 
 
-def icon(name, x, y, c):
-    # Placeholder icons until the final designs are chosen.
-    s = name[0]
-    if name[0].isdigit():
-        s = name[:2]
-    col(c)
-    draw_text(x - len(s) * 5, y + 7, s)
-
-
-def draw_app(name, i, on):
+def draw_app(app, i, on):
     x, y = app_pos(i)
     c = GOLD if on else WHITE
     ring(x, y, 27, c)
-    icon(name, x, y, c)
+    try:
+        import GHICONS
+        GHICONS.draw(app[1], x, y, WHITE)
+    except Exception:
+        ctext(y + 7, app[0][0], c, x)
 
 
 def show_title(name):
@@ -80,7 +75,7 @@ def app_screen(ci, sel=0):
     rbox(90, 8, 140, 24, 9, WHITE)
     ctext(26, cname, WHITE)
     for i in range(len(apps)):
-        draw_app(apps[i][0], i, i == sel)
+        draw_app(apps[i], i, i == sel)
     show_title(apps[sel][0])
     n = len(apps)
     while True:
@@ -99,8 +94,8 @@ def app_screen(ci, sel=0):
         elif k == CLR:
             return -1
         if sel != old:
-            draw_app(apps[old][0], old, False)
-            draw_app(apps[sel][0], sel, True)
+            draw_app(apps[old], old, False)
+            draw_app(apps[sel], sel, True)
             show_title(apps[sel][0])
 
 

@@ -118,9 +118,13 @@ def game(holes):
         cell(b, fixed, cur, cur)
 
 
+RULES = 'Fill the grid so every row, column and 3x3 box has the numbers 1 to 9 once. Red numbers clash.'
+KEYS = ['Arrows: move', '0-9: type a number', 'ENTER: count up  DEL: erase', 'CLEAR: quit']
+
+
 def main():
     while True:
-        c = choose("SUDOKU", ["Easy", "Medium", "Hard", "Back"])
-        if c < 0 or c == 3:
+        c = home("GHSUDOKU", 'SUDOKU', RULES, KEYS, ("Easy", "Medium", "Hard", "Back"))
+        if c < 0:
             return
         game((36, 46, 54)[c])

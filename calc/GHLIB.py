@@ -138,3 +138,73 @@ def choose(title, opts, sel=0):
             return sel
         elif k == CLR:
             return -1
+
+
+def _wrap(s, n=30):
+    out = []
+    line = ""
+    for w in s.split(" "):
+        if len(line) + len(w) + 1 > n:
+            out.append(line)
+            line = w
+        else:
+            line = (line + " " + w).strip()
+    if line:
+        out.append(line)
+    return out
+
+
+def how_to(title, rules, buttons):
+    cls()
+    ctext(20, "HOW TO PLAY", GOLD)
+    ctext(38, title, GREY)
+    y = 60
+    for ln in _wrap(rules):
+        text(8, y, ln)
+        y += 16
+    y += 6
+    text(8, y, "BUTTONS", GOLD)
+    y += 17
+    for b in buttons:
+        text(8, y, b)
+        y += 16
+    text(8, 206, "ENTER: back", GREY)
+    while wkey() not in (OK, CLR, UP, DOWN):
+        pass
+
+
+def home(mod, title, rules, buttons, opts=("Play", "Back"), sel=0):
+    # Game start screen. Returns the chosen option, or -1 for Back/CLEAR.
+    n = len(opts)
+    while True:
+        cls()
+        ring(160, 58, 36, GOLD, 3)
+        try:
+            import GHICONS
+            GHICONS.draw(mod, 160, 58, WHITE)
+        except Exception:
+            pass
+        ctext(122, title, GOLD)
+        ctext(146, "Up/Down: how to play", GREY)
+        bw = (300 - (n - 1) * 8) // n
+        while True:
+            for i in range(n):
+                x = 10 + i * (bw + 8)
+                c = GOLD if i == sel else WHITE
+                rect(x, 166, bw, 28, BLACK)
+                rbox(x, 166, bw, 28, 10, c)
+                text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+            k = wkey()
+            if k == LEFT:
+                sel = (sel - 1) % n
+            elif k == RIGHT:
+                sel = (sel + 1) % n
+            elif k in (UP, DOWN):
+                how_to(title, rules, buttons)
+                break
+            elif k == CLR:
+                return -1
+            elif k == OK:
+                if opts[sel] == "Back":
+                    return -1
+                return sel

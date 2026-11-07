@@ -93,9 +93,13 @@ def game():
         letter_box(sel, used, sel)
 
 
+RULES = 'Guess the hidden word one letter at a time. Six wrong guesses and the game is over.'
+KEYS = ['Arrows: pick a letter', 'ENTER: guess it', 'CLEAR: quit']
+
+
 def main():
     while True:
-        c = choose("HANGMAN", ["Play", "Back"])
-        if c != 0:
+        c = home("GHHANG", 'HANGMAN', RULES, KEYS, ("Play", "Back"))
+        if c < 0:
             return
         game()

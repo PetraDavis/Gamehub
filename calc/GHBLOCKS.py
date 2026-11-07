@@ -168,9 +168,13 @@ def game():
         pause(0.02)
 
 
+RULES = "Shapes fall from the top. Fit them together to fill whole rows, which then clear. Don't let the stack reach the top."
+KEYS = ['Left/Right: move', 'Up: turn', 'Down: drop faster', '2nd: drop all the way', 'CLEAR: quit']
+
+
 def main():
     while True:
-        c = choose("STACK DROP", ["Play", "Back"])
-        if c != 0:
+        c = home("GHBLOCKS", 'STACK DROP', RULES, KEYS, ("Play", "Back"))
+        if c < 0:
             return
         game()

@@ -16,6 +16,11 @@ for a in sys.argv[3:]:
 import ti_system
 import time as _t
 _t.sleep = lambda s: None
+_clk = [0.0]
+def _mono():
+    _clk[0] += 0.25
+    return _clk[0]
+_t.monotonic = _mono
 from ti_system import SimDone
 try:
     m = __import__(mod)

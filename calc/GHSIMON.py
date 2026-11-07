@@ -62,9 +62,13 @@ def game():
                 return
 
 
+RULES = 'Watch the colors light up, then repeat them in the same order. Each round adds one more.'
+KEYS = ['Up: green   Right: red', 'Down: blue  Left: yellow', 'CLEAR: quit']
+
+
 def main():
     while True:
-        c = choose("SIMON", ["Play", "Back"])
-        if c != 0:
+        c = home("GHSIMON", 'SIMON', RULES, KEYS, ("Play", "Back"))
+        if c < 0:
             return
         game()

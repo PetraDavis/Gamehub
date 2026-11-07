@@ -82,9 +82,13 @@ def game():
             return
 
 
+RULES = "Flap to fly through the gaps between the trees. Don't hit the trees or the ground."
+KEYS = ['Up, 2nd or ENTER: flap', 'CLEAR: quit']
+
+
 def main():
     while True:
-        c = choose("WING IT", ["Play", "Back"])
-        if c != 0:
+        c = home("GHFLAP", 'WING IT', RULES, KEYS, ("Play", "Back"))
+        if c < 0:
             return
         game()

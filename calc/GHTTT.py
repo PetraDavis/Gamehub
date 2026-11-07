@@ -102,9 +102,13 @@ def game(vs_cpu):
         cell(b, cur, cur)
 
 
+RULES = 'Get three in a row (across, down or diagonal) before the other player. Play the calculator or pass to a friend.'
+KEYS = ['Arrows: move', 'ENTER: place your mark', 'CLEAR: quit']
+
+
 def main():
     while True:
-        c = choose("TIC-TAC-TOE", ["vs Calculator", "2 Players", "Back"])
-        if c < 0 or c == 2:
+        c = home("GHTTT", 'TIC-TAC-TOE', RULES, KEYS, ("vs Calc", "2 Players", "Back"))
+        if c < 0:
             return
         game(c == 0)

@@ -89,9 +89,13 @@ def game():
         message(["Score " + str(score)], "Game over")
 
 
+RULES = 'Bounce the ball off your paddle to break every brick. You have 3 balls.'
+KEYS = ['Left/Right: move paddle', 'CLEAR: quit']
+
+
 def main():
     while True:
-        c = choose("BREAKOUT", ["Play", "Back"])
-        if c != 0:
+        c = home("GHBREAK", 'BREAKOUT', RULES, KEYS, ("Play", "Back"))
+        if c < 0:
             return
         game()

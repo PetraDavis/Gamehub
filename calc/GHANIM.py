@@ -505,7 +505,7 @@ def reset(s, F, fps):
     s.slot = 0
 
 
-def main():
+def studio():
     s = Studio()
     reset(s, [enc_key(bytearray(N))], 6)
     s.cx = 16
@@ -613,3 +613,14 @@ def main():
                     return
             if c != 0:
                 full(s)
+
+RULES = 'Draw a picture, add frames, and play them back. Saves stay on the calculator.'
+KEYS = ['Arrows: move  ENTER: pen', 'DEL: eraser  2nd: menu', 'Menu: colors, frames, play,', 'speed, save and load']
+
+
+def main():
+    while True:
+        c = home("GHANIM", 'ANIMATION STUDIO', RULES, KEYS, ("Play", "Back"))
+        if c < 0:
+            return
+        studio()
