@@ -164,7 +164,7 @@ def I_draw(mod,x,y,c):
  f=I_ICONS.get(mod)
  if f:
   f(x,y,c)
-G_RULES='Find eggs (new ones keep turning up), walk to hatch them and name your dragons. 20 kinds, Common to Legendary. Ride over water, lava and mountains. Save any time from the ENTER menu. The nest has your pen, quests for coins and a shop. If you lose all your HP, you die!'
+G_RULES='Find eggs (new ones keep turning up), walk to hatch them and name your dragons. 20 kinds, Common to Legendary. Ride over water, lava and mountains. Save any time from the ENTER menu. The nest has your dragon pen. Walk left from Green Valley to the village for quests and the shop. If you lose all your HP, you die!'
 G_KEYS=['Arrows: walk or fly','ENTER: ride, backpack, save','Fights: Left/Right + ENTER','CLEAR: save and quit']
 def G_front():
  return home('GHDRAGON','DRAGON TAMER',G_RULES,G_KEYS,('Play','Back'))

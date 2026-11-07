@@ -22,7 +22,7 @@ MAPS = (
      'T.....""".....~~',
      'T.H...""""...~~~',
      'T.....""".T...~~',
-     "T..........E.~~~",
+     "...........E.~~~",
      "T....TT.......~~",
      'T.""".TT......~~',
      'T.""".........~~',
@@ -45,10 +45,20 @@ MAPS = (
      '.."""...........',
      '..""".....^^....',
      "^^^^^^^^^^^^^^^^"],
+    # the village, left of Green Valley: Q quest hall, S shop, W well, = path
+    ["TTTTTTTTTTTTTTTT",
+     "T..............T",
+     "T..Q.......S...T",
+     "T..=.......=...T",
+     "T..=============",
+     "T.......W......T",
+     "T..............T",
+     "T..............T",
+     "TTTTTTTTTTTTTTTT"],
 )
-LANDS = ("Green Valley", "Fire Mountain", "Frost Peaks")
-GROUND = ((50, 130, 60), (85, 65, 55), (215, 225, 240))
-TALL = ((35, 100, 45), (120, 90, 60), (170, 190, 220))
+LANDS = ("Green Valley", "Fire Mountain", "Frost Peaks", "Village")
+GROUND = ((50, 130, 60), (85, 65, 55), (215, 225, 240), (75, 150, 70))
+TALL = ((35, 100, 45), (120, 90, 60), (170, 190, 220), (75, 150, 70))
 WATER = (40, 90, 190)
 LAVA = (230, 90, 20)
 ROCK = (110, 105, 115)
@@ -188,11 +198,25 @@ def egg_type(m):
 
 
 # ---------- pictures ----------
-def art(b, x, y, s, P):
+def art(b, x, y, s, P, out=None):
     for i in range(0, len(b), 8):
         c = P[b[i + 1]]
         a1, a2, a3, a4, a5, a6 = b[i + 2], b[i + 3], b[i + 4], b[i + 5], b[i + 6], b[i + 7]
-        if b[i] == 0:
+        if out is not None:
+            # small map picture: keep the shapes in order, round them, skip specks
+            k = b[i]
+            if k == 0:
+                if a3 * s < 0.8 or a4 * s < 0.8:
+                    continue
+                a = (int(x + a1 * s + 0.5), int(y + a2 * s + 0.5), int(a3 * s + 0.5), int(a4 * s + 0.5))
+            elif k == 1:
+                if a3 * s < 0.8:
+                    continue
+                a = (int(x + a1 * s + 0.5), int(y + a2 * s + 0.5), int(a3 * s + 0.5))
+            else:
+                a = ([int(x + v * s + 0.5) for v in (a1, a3, a5)], [int(y + v * s + 0.5) for v in (a2, a4, a6)])
+            out.append((10 + len(out), c, min(k, 2), a))
+        elif b[i] == 0:
             rect(x + a1 * s, y + a2 * s, a3 * s, a4 * s, c)
         elif b[i] == 1:
             circ(x + a1 * s, y + a2 * s, a3 * s, c)
@@ -201,20 +225,15 @@ def art(b, x, y, s, P):
             fill_poly([x + a1 * s, x + a3 * s, x + a5 * s], [y + a2 * s, y + a4 * s, y + a6 * s])
 
 
-def drag(x, y, s, t, c, head=0, body=0):
+def drag(x, y, s, t, c, head=0, body=0, out=None):
     # a dragon facing left, about 58 x 50 times s pixels, top left at x, y
+    # (with out, the shapes go into that list for the map instead of being drawn)
     P = PAL + [lt(c, 0.45), dk(c, 0.6), c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
-    art(ARTB, x, y, s, P)
-    art(ARTF[t], x, y, s, P)
     w, b = ARTW[2 * t], ARTW[2 * t + 1]
-    art(bytes((2, w, 24, 26, 40, 10, 37, 28, 2, b, 40, 10, 28, 27, 30, 27, 2, b, 40, 10, 33, 28, 35, 28,
-               2, 17, 23, 26, 40, 9, 26, 26, 1, 17, 26, 27, 3, 0, 0, 0, 2, 1, 40, 9, 42, 7, 41, 11)), x, y, s, P)
-    art(ARTL, x, y, s, P)
-    art(ARTO[t], x, y, s, P)
-    if body:
-        art(ARTG[body], x, y, s, P)
-    if head:
-        art(ARTG[head], x, y, s, P)
+    for a in (ARTB, ARTF[t], bytes((2, w, 24, 26, 40, 10, 37, 28, 2, b, 40, 10, 28, 27, 30, 27, 2, b, 40, 10, 33, 28, 35, 28,
+              2, 17, 23, 26, 40, 9, 26, 26, 1, 17, 26, 27, 3, 0, 0, 0, 2, 1, 40, 9, 42, 7, 41, 11)), ARTL, ARTO[t],
+              ARTG[body] if body else b"", ARTG[head] if head else b""):
+        art(a, x, y, s, P, out)
 
 
 def oval(x, y, s, c, k=0):
@@ -268,6 +287,8 @@ def base(m, ch):
         return LAVA
     if ch == '"':
         return TALL[m]
+    if ch == "=":
+        return (190, 160, 110)
     return GROUND[m]
 
 
@@ -288,6 +309,19 @@ def shapes(m, x, y, ch, out):
     elif ch == "^":
         out.append((0, ROCK, 2, ([px, px + 10, px + 20], [py + 20, py + 1, py + 20])))
         out.append((1, WHITE, 2, ([px + 6, px + 10, px + 14], [py + 8, py + 1, py + 8])))
+    elif ch in "QS":
+        # a little house: walls, roof, door and a sign (! for quests, a coin for the shop)
+        out.append((0, (235, 215, 170), 0, (px + 3, py + 9, 14, 11)))
+        out.append((1, (200, 50, 40) if ch == "Q" else (50, 90, 200), 2, ([px, px + 10, px + 20], [py + 10, py, py + 10])))
+        out.append((2, BARK, 0, (px + 8, py + 13, 4, 7)))
+        if ch == "Q":
+            out.append((3, YELLOW, 0, (px + 9, py + 3, 2, 4)))
+            out.append((3, YELLOW, 0, (px + 9, py + 8, 2, 1)))
+        else:
+            out.append((3, YELLOW, 1, (px + 10, py + 5, 2)))
+    elif ch == "W":
+        out.append((0, ROCK, 1, (px + 10, py + 11, 8)))
+        out.append((1, WATER, 1, (px + 10, py + 11, 5)))
     elif ch == "H":
         out.append((0, BARK, 1, (px + 10, py + 12, 9)))
         out.append((1, (60, 40, 20), 1, (px + 10, py + 12, 6)))
@@ -321,29 +355,10 @@ def hero(g, out):
     py = 20 + g.y * T
     d = g.ride
     if d is not None:
-        # a small copy of the dragon's big picture: its colour, wing, horns and eyes
-        c, t = d[6], d[1]
-        P = PAL + [lt(c, 0.45), dk(c, 0.6), c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
-        dc = dk(c, 0.6)
-        out.append((5, dc, 2, ([px, px + 5, px + 5], [py + 17, py + 13, py + 16])))
-        out.append((5, P[ARTW[2 * t]], 2, ([px, px + 5, px + 12], [py, py + 12, py + 11])))
-        out.append((5, P[ARTW[2 * t + 1]], 2, ([px, px + 7, px + 9], [py, py + 11, py + 11])))
-        out.append((6, c, 0, (px + 4, py + 11, 11, 6)))
-        out.append((6, c, 0, (px + 13, py + 6, 6, 6)))
-        out.append((6, c, 0, (px + 18, py + 8, 2, 3)))
-        out.append((7, lt(c, 0.45), 0, (px + 6, py + 15, 8, 2)))
-        out.append((7, dc, 0, (px + 5, py + 17, 3, 3)))
-        out.append((7, dc, 0, (px + 11, py + 17, 3, 3)))
-        out.append((7, dc, 2, ([px + 13, px + 15, px + 13], [py + 6, py + 6, py + 2])))
-        out.append((7, YELLOW if t == 19 else P[22] if t == 20 else BLACK, 0, (px + 16, py + 7, 2, 2)))
-        if t == 19:
-            out.append((8, YELLOW, 0, (px + 3, py + 5, 2, 2)))
-        if d[8]:
-            out.append((8, GEARC[d[8]], 0, (px + 6, py + 11, 5, 3)))
-        if d[7]:
-            out.append((8, GEARC[d[7]], 0, (px + 14, py + 3, 5, 3)))
-        out.append((8, (240, 200, 160), 1, (px + 10, py + 5, 2)))
-        out.append((8, (60, 120, 230), 0, (px + 8, py + 7, 4, 4)))
+        # the dragon's own detailed picture, small, with you on its back
+        out.append((8, (60, 120, 230), 0, (px + 8, py + 5, 3, 5)))
+        out.append((9, (240, 200, 160), 1, (px + 9, py + 3, 2)))
+        drag(px, py + 2, 0.34, d[1], d[6], d[7], d[8], out)
         return
     out.append((5, (240, 200, 160), 1, (px + 10, py + 5, 4)))
     out.append((6, BARK, 0, (px + 6, py + 1, 8, 3)))
@@ -788,17 +803,10 @@ def nest(g):
     rest(g)
     save(g)
     while True:
-        c = choose("The Nest (saved)", ["Dragon pen", "Quest board", "Shop", "Backpack and book", "Leave the nest"])
+        c = choose("The Nest (saved)", ["Dragon pen", "Backpack and book", "Leave the nest"])
         if c == 0:
             pen(g)
         elif c == 1:
-            board(g)
-        elif c == 2:
-            if g.pick is None:
-                message(["Hatch a dragon first!"])
-            else:
-                shop(g)
-        elif c == 3:
             # play() shows these, so the nest's code can leave memory first
             k = choose("Look at your", ["Backpack", "Dragon book"])
             if k >= 0:
@@ -1092,12 +1100,16 @@ def play():
             continue
         nx, ny = g.x + dx, g.y + dy
         if nx < 0 or nx > 15:
-            m = g.m + (1 if nx > 15 else -1)
-            if 0 <= m < 3:
+            # the village (land 3) sits left of Green Valley
+            m = (0 if nx > 15 else -1) if g.m == 3 else g.m + (1 if nx > 15 else -1)
+            if m < 0 and g.m == 0:
+                m = 3
+            if 0 <= m <= 3:
                 ch = g.maps[m][ny][15 - g.x]
                 if ch != "T" and (ch not in "~L^" or g.ride is not None):
                     g.m = m
-                    g.seen = max(g.seen, m)
+                    if m < 3:
+                        g.seen = max(g.seen, m)
                     g.x = 15 - g.x
                     draw_map(g)
             continue
@@ -1105,7 +1117,7 @@ def play():
             continue
         mp = g.maps[g.m]
         ch = mp[ny][nx]
-        if ch == "T" or (ch in "~L^" and g.ride is None):
+        if ch in "TW" or (ch in "~L^" and g.ride is None):
             continue
         if ch == "B":
             if battle(g, BOSS):
@@ -1133,6 +1145,19 @@ def play():
             message(["You found an egg with", RARE[DT[e][2]] + " spots! It's in", "your backpack."], "An egg!")
             draw_map(g, True)
             continue
+        if ch == "Q":
+            board(g)
+            draw_map(g)
+            continue
+        if ch == "S":
+            draw_map(g)
+            if g.pick is None:
+                message(["Hatch a dragon first!"], "Shop")
+                draw_map(g, True)
+            else:
+                shop(g)
+                draw_map(g)
+            continue
         if ch == "H":
             while True:
                 c = nest(g)
@@ -1150,14 +1175,14 @@ def play():
         g.spawn -= 1
         if g.spawn <= 0:
             g.spawn = random.randint(100, 200)
-            if not any(q[0] == g.m for q in EGGS):
+            if g.m < 3 and not any(q[0] == g.m for q in EGGS):
                 put_egg(g, egg_type(g.m), False)
         hud(g)
         steps += 1
         # the evil dragon only hunts tamers who own an Epic (or rarer) dragon
         if g.dread > 0:
             g.dread -= 1
-        if (g.dread == 1 or not g.dread and steps > 3 and random.random() < EVIL) and not g.book >> 25 & 1 and \
+        if g.m < 3 and (g.dread == 1 or not g.dread and steps > 3 and random.random() < EVIL) and not g.book >> 25 & 1 and \
                 any(DT[d[1]][2] >= 3 for d in g.pen):
             steps = 0
             if not evil(g):
@@ -1170,7 +1195,7 @@ def play():
             draw_map(g)
 
 
-RULES = "Find eggs (new ones keep turning up), walk to hatch them and name your dragons. 20 kinds, Common to Legendary. Ride over water, lava and mountains. Save any time from the ENTER menu. The nest has your pen, quests for coins and a shop. If you lose all your HP, you die!"
+RULES = "Find eggs (new ones keep turning up), walk to hatch them and name your dragons. 20 kinds, Common to Legendary. Ride over water, lava and mountains. Save any time from the ENTER menu. The nest has your dragon pen. Walk left from Green Valley to the village for quests and the shop. If you lose all your HP, you die!"
 KEYS = ["Arrows: walk or fly", "ENTER: ride, backpack, save", "Fights: Left/Right + ENTER", "CLEAR: save and quit"]
 
 
