@@ -700,7 +700,8 @@ def rest(g):
 # DRG: [4, coins, accessories owned, species in the book, steps until the Dread Drake returns,
 #  eggs in the bag (up to 5, -1 = none), then 5 numbers a dragon: name (letters 1-26 in base 27),
 #  kind, level, xp, shiny*4000+paint*200+head*20+body]
-# DRB: [2, things from the merchant (Glimmer Stones + 100 * Lucky Charm + 200 * Golden Coin),
+# DRB: [2, things from the merchant (Glimmer Stones + 100 * Lucky Charm + 200 * Golden Coin
+#  + 400 * things bought from him, up to 10),
 #  then 2 numbers a baby: name, kind + 32 * shiny]  (version 1 had no second number)
 def pack(nm):
     n = 0
@@ -719,7 +720,7 @@ def unpack(n):
 
 def save(g):
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
-    b = [2, g.glim + 100 * g.luck + 200 * g.curse]
+    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys)]
     for d in g.pen:
         if d[9] & 8:
             b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
@@ -765,7 +766,7 @@ def load(g):
     try:
         b = [int(v) for v in recall_list("DRB")]
         if b[0] > 1:
-            g.glim, g.luck, g.curse = b[1] % 100, b[1] // 100 % 2, b[1] // 200
+            g.glim, g.luck, g.curse, g.buys = b[1] % 100, b[1] // 100 % 2, b[1] // 200 % 2, b[1] // 400
             b = b[1:]
         for i in range(1, len(b) - 1, 2):
             t = b[i + 1] % 32
@@ -1009,19 +1010,23 @@ def shen(g):
     rect(214, 150, 16, 4, (110, 75, 40))
     ctext(24, "SHADY SHEN", GOLD)
     ctext(196, random.choice(("Psst... over here.", "Rare goods. Very real.", "Don't ask where I got these.",
-                              "Best prices in all the lands.", "You look like a smart tamer.")))
+                              "Best prices in all the lands.", "You look like a smart tamer.",
+                              "Nice dragon. Shame if it got sparkly.")))
     while wkey() not in (OK, CLR):
         pass
     while True:
-        c = lst("Shady Shen   " + str(g.coins) + " coins", [n + " " + str(p) + "c" for n, p in SHOP] +
+        # his best customers (10 things bought) see one more item
+        S = SHOP + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
+        z = len(S)
+        c = lst("Shady Shen   " + str(g.coins) + " coins", [n + " " + str(p) + "c" for n, p in S] +
                 (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
-        if c == 8 and g.glim:
+        if c == z and g.glim:
             glim(g)
             continue
-        if c < 0 or c >= 8:
+        if c < 0 or c >= z:
             message([random.choice(("No refunds. Ever.", "You didn't see me.", "Come back soon, friend."))], "Shady Shen")
             return
-        n, p = SHOP[c]
+        n, p = S[c]
         if g.coins < p:
             message(["That's " + str(p) + " coins, friend.", "Come back richer."], "Shady Shen")
             continue
@@ -1049,6 +1054,12 @@ def shen(g):
                                     "It melted in your hand."))], "Huh?")
             continue
         g.book |= 1 << 28
+        g.buys += 1
+        if g.buys == 10:
+            message(["Psst... you're my best", "customer. Next time I'll", "have something special."], "Shady Shen")
+        if c == 8:
+            c = 0
+            g.glim += 4
         if c == 5:
             # the Mystery Box: something from his bag, or nothing at all
             c = random.choice((0, 1, 3, 4, 9, 9, 10))
@@ -1057,7 +1068,7 @@ def shen(g):
                 c = 9
         if c == 0:
             g.glim += 1
-            m = ["A Glimmer Stone! Use 1 for", "a random shiny, or 5 to", "pick the shiny colour."]
+            m = ["Glimmer Stones: " + str(g.glim), "Use 1 for a random shiny,", "or 5 to pick the colour."]
         elif c == 1:
             d[2] += 1
             d[4] += 6
@@ -1418,7 +1429,7 @@ def play():
     g.face = 0
     g.spawn = 100
     g.dread = 0
-    g.glim = g.luck = g.curse = 0
+    g.glim = g.luck = g.curse = g.buys = 0
     g.shen = None
     g.shn = random.randint(250, 350)
     load(g)

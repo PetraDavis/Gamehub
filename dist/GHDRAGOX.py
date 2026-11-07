@@ -49,7 +49,7 @@ def G_load(g):
  try:
   b=[int(v)for v in recall_list('DRB')]
   if b[0]>1:
-   g.glim,g.luck,g.curse=(b[1]%100,b[1]//100%2,b[1]//200)
+   g.glim,g.luck,g.curse,g.buys=(b[1]%100,b[1]//100%2,b[1]//200%2,b[1]//400)
    b=b[1:]
   for i in range(1,len(b)-1,2):
    t=b[i+1]%32
@@ -245,18 +245,20 @@ def G_shen(g):
  circ(222,170,20,(150,105,55))
  rect(214,150,16,4,(110,75,40))
  ctext(24,'SHADY SHEN',GOLD)
- ctext(196,random.choice(('Psst... over here.','Rare goods. Very real.',"Don't ask where I got these.",'Best prices in all the lands.','You look like a smart tamer.')))
+ ctext(196,random.choice(('Psst... over here.','Rare goods. Very real.',"Don't ask where I got these.",'Best prices in all the lands.','You look like a smart tamer.','Nice dragon. Shame if it got sparkly.')))
  while wkey()not in(OK,CLR):
   pass
  while True:
-  c=G_lst('Shady Shen   '+str(g.coins)+' coins',[n+' '+str(p)+'c'for n,p in G_SHOP]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
-  if c==8 and g.glim:
+  S=G_SHOP+((('Glimmer Pack x5',250),)if g.buys>=10 else())
+  z=len(S)
+  c=G_lst('Shady Shen   '+str(g.coins)+' coins',[n+' '+str(p)+'c'for n,p in S]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
+  if c==z and g.glim:
    G_glim(g)
    continue
-  if c<0 or c>=8:
+  if c<0 or c>=z:
    message([random.choice(('No refunds. Ever.',"You didn't see me.",'Come back soon, friend.'))],'Shady Shen')
    return
-  n,p=G_SHOP[c]
+  n,p=S[c]
   if g.coins<p:
    message(["That's "+str(p)+' coins, friend.','Come back richer.'],'Shady Shen')
    continue
@@ -283,6 +285,12 @@ def G_shen(g):
    message([random.choice(('It was just a painted rock!','The box was empty...','It crumbled into dust.','It melted in your hand.'))],'Huh?')
    continue
   g.book|=1<<28
+  g.buys+=1
+  if g.buys==10:
+   message(["Psst... you're my best","customer. Next time I'll",'have something special.'],'Shady Shen')
+  if c==8:
+   c=0
+   g.glim+=4
   if c==5:
    c=random.choice((0,1,3,4,9,9,10))
    d=G_grown(g)if c==1 else None
@@ -290,7 +298,7 @@ def G_shen(g):
     c=9
   if c==0:
    g.glim+=1
-   m=['A Glimmer Stone! Use 1 for','a random shiny, or 5 to','pick the shiny colour.']
+   m=['Glimmer Stones: '+str(g.glim),'Use 1 for a random shiny,','or 5 to pick the colour.']
   elif c==1:
    d[2]+=1
    d[4]+=6

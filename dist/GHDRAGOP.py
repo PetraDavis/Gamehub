@@ -1,6 +1,5 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
-GOLD=(230,180,40)
 GREY=(110,110,110)
 def pause(s):
  time.sleep(s)
@@ -49,6 +48,7 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
+G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^C....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
@@ -83,7 +83,7 @@ def G_hud(g):
  G_HUD[0]=t
 def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
- b=[2,g.glim+100*g.luck+200*g.curse]
+ b=[2,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)]
  for d in g.pen:
   if d[9]&8:
    b+=[G_pack(d[0]),d[1]+32*(d[9]&7)]
@@ -105,15 +105,6 @@ def G_quest_step(g,kind,what):
   g.coins+=q[4]
   g.quest=None
   message(['You finished:',q[5],'+'+str(q[4])+' coins!'],'Quest done!')
-def G_shen_off(g):
- if g.shen:
-  m,x,y=g.shen
-  if g.maps[m][y][x]=='M':
-   g.maps[m][y][x]='.'
-   if m==g.m:
-    G_cells(g,[(x,y)],False)
-  g.shen=None
-  g.shn=random.randint(250,350)
 def G_put_egg(g,t,near,ch='E'):
  mp=g.maps[g.m]
  for n in range(30):
@@ -156,7 +147,7 @@ def G_play():
  g.face=0
  g.spawn=100
  g.dread=0
- g.glim=g.luck=g.curse=0
+ g.glim=g.luck=g.curse=g.buys=0
  g.shen=None
  g.shn=random.randint(250,350)
  G_load(g)
