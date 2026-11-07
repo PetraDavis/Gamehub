@@ -1154,11 +1154,11 @@ def play():
                 put_egg(g, egg_type(g.m), False)
         hud(g)
         steps += 1
-        # the evil dragon only hunts tamers who own a Rare (or rarer) dragon
+        # the evil dragon only hunts tamers who own an Epic (or rarer) dragon
         if g.dread > 0:
             g.dread -= 1
         if (g.dread == 1 or not g.dread and steps > 3 and random.random() < EVIL) and not g.book >> 25 & 1 and \
-                any(DT[d[1]][2] >= 2 for d in g.pen):
+                any(DT[d[1]][2] >= 3 for d in g.pen):
             steps = 0
             if not evil(g):
                 return

@@ -253,7 +253,7 @@ def G_play():
   steps+=1
   if g.dread>0:
    g.dread-=1
-  if(g.dread==1 or(not g.dread and steps>3 and(random.random()<G_EVIL)))and(not g.book>>25&1)and any((G_DT[d[1]][2]>=2 for d in g.pen)):
+  if(g.dread==1 or(not g.dread and steps>3 and(random.random()<G_EVIL)))and(not g.book>>25&1)and any((G_DT[d[1]][2]>=3 for d in g.pen)):
    steps=0
    if not G_evil(g):
     return
