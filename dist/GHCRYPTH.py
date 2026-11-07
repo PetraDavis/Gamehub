@@ -4,6 +4,7 @@ from ti_system import*
 import time
 import random
 import math
+import gc
 UP=25
 DOWN=34
 LEFT=24
