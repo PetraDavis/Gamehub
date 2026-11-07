@@ -843,7 +843,8 @@ def book(g):
             return
 
 
-def frame(x, y, w, h, c):
+def frame(b, c):
+    x, y, w, h = b
     rect(x, y, w, 2, c)
     rect(x, y + h - 2, w, 2, c)
     rect(x, y, 2, h, c)
@@ -861,7 +862,7 @@ def typed(kind):
     # type a name (up to 8 letters) with the arrows and ENTER
     cls()
     ctext(24, "Name your " + kind, GOLD)
-    frame(60, 38, 200, 30, WHITE)
+    frame((60, 38, 200, 30), WHITE)
     for r in range(2):
         text(30, 110 + r * 30, " ".join(ABC[r * 13:r * 13 + 13]), WHITE)
     text(62, 179, "Delete", WHITE)
@@ -869,7 +870,7 @@ def typed(kind):
     text(6, 204, "ENTER: pick  DEL: erase", GREY)
     nm = ""
     sel = old = 0
-    frame(*kbox(0), GOLD)
+    frame(kbox(0), GOLD)
     while True:
         k = wkey()
         old = sel
@@ -894,8 +895,8 @@ def typed(kind):
             rect(64, 42, 192, 22, BLACK)
             text(70, 62, nm + ("_" if len(nm) < 8 else ""), WHITE)
         if sel != old:
-            frame(*kbox(old), BLACK)
-            frame(*kbox(sel), GOLD)
+            frame(kbox(old), BLACK)
+            frame(kbox(sel), GOLD)
 
 
 def hatch(g):

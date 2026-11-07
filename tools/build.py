@@ -25,3 +25,16 @@ with zipfile.ZipFile(os.path.join(ROOT, 'gamehub.zip'), 'w', zipfile.ZIP_DEFLATE
     for f in sorted(os.listdir(D)):
         if f.endswith('.py'):
             z.write(os.path.join(D, f), 'GAMEHUB/' + f)
+
+
+# The calculator's Python rejects f(*a, x): no plain argument may follow *a.
+import ast as _ast, glob as _glob
+for _f in sorted(_glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dist', '*.py'))):
+    for _n in _ast.walk(_ast.parse(open(_f).read())):
+        if isinstance(_n, _ast.Call):
+            _star = False
+            for _a in _n.args:
+                if isinstance(_a, _ast.Starred):
+                    _star = True
+                elif _star:
+                    sys.exit('%s line %d: plain argument after *args (calculator SyntaxError)' % (_f, _n.lineno))
