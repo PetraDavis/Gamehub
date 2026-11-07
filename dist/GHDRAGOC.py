@@ -14,20 +14,29 @@ WHITE=(255,255,255)
 GOLD=(230,180,40)
 YELLOW=(240,220,60)
 H=210
-def wkey():
- return wait_key()
 _C=[None]
 def col(c):
  if c!=_C[0]:
   _C[0]=c
   set_color(c[0],c[1],c[2])
+def fr(x,y,w,h):
+ fill_rect(x-1,y-1,w+1,h+1)
 COVER=[0]
+def cls(c=BLACK):
+ COVER[0]+=1
+ col(c)
+ fill_rect(-1,-1,321,211)
 TY=6
+def text(x,y,s,c=WHITE):
+ col(c)
+ draw_text(x,y+TY,s)
 MSG=[0,0]
 G_TEST=True
 G_EVIL=0.12 if G_TEST else 0.004
 G_T=20
-G_LANDS=('Green Valley','Fire Mountain','Frost Peaks')
+G_LANDS=('Green Valley','Fire Mountain','Frost Peaks','Village')
+G_GROUND=((50,130,60),(85,65,55),(215,225,240),(75,150,70))
+G_TALL=((35,100,45),(120,90,60),(170,190,220),(75,150,70))
 G_WATER=(40,90,190)
 G_LAVA=(230,90,20)
 G_ROCK=(110,105,115)
@@ -41,7 +50,6 @@ def G_cl(b):
 G_RCOL=G_cl(b'\xff\xff\xffx\xdcxZ\xa0\xff\xc8n\xf0\xe6\xb4(<\xe6\xe6')
 G_ABC='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
-G_GEARC=[None]+G_cl(b'\xfa\x96\xc8(((\x82<\xbe\xe6\xb4(<\xe6\xe6\x00\x00\x00\xfa\x96\xc8\xbe\xc3\xcd\xdc(\x1eZ<\x1e(P\xc8\xbe\xc3\xcd(P\xc8Z\xbeP\xdc(\x1e\xe6\xb4(')
 G_PAL=G_cl(b'\x00\x00\x00\xff\xff\xff\xfa\xdc<\xf5\x8c\x1e\xdc(\x1exx}\xc8\xc8\xd2\x1eZ(Z\xbeP\xfa\x96\xc8nK(<\xe6\xe6\xe6<\xdc\xe6\xb4(\xaa\xd2\xfa')
 G_PAL2=G_cl(b'\x82<\xbe\xbe\xc3\xcd(P\xc8\x1e\x1eF\xc8\x82\xff\xaa\x14\x1e')
 G_PAL3=G_cl(b'F-\x14\xb4\x82\x14dix\xc8P\x96\x14\x8c\xa0\x14(x\xa0n<')
@@ -53,6 +61,12 @@ G_EGGS={}
 G_HUD=[None]
 class G_Game:
  pass
+def G_battle(*a):
+ import GHDRAGOW
+ r=GHDRAGOW.G_battle(*a)
+ GHDRAGOW=None
+ G__drop('GHDRAGOW')
+ return r
 def G_evil(*a):
  import GHDRAGOW
  r=GHDRAGOW.G_evil(*a)
@@ -68,6 +82,18 @@ def G_rest(*a):
 def G_load(*a):
  import GHDRAGOX
  r=GHDRAGOX.G_load(*a)
+ GHDRAGOX=None
+ G__drop('GHDRAGOX')
+ return r
+def G_board(*a):
+ import GHDRAGOX
+ r=GHDRAGOX.G_board(*a)
+ GHDRAGOX=None
+ G__drop('GHDRAGOX')
+ return r
+def G_shop(*a):
+ import GHDRAGOX
+ r=GHDRAGOX.G_shop(*a)
  GHDRAGOX=None
  G__drop('GHDRAGOX')
  return r

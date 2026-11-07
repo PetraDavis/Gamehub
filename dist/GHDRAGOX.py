@@ -166,17 +166,10 @@ def G_nest(g):
  G_rest(g)
  G_save(g)
  while True:
-  c=choose('The Nest (saved)',['Dragon pen','Quest board','Shop','Backpack and book','Leave the nest'])
+  c=choose('The Nest (saved)',['Dragon pen','Backpack and book','Leave the nest'])
   if c==0:
    G_pen(g)
   elif c==1:
-   G_board(g)
-  elif c==2:
-   if g.pick is None:
-    message(['Hatch a dragon first!'])
-   else:
-    G_shop(g)
-  elif c==3:
    k=choose('Look at your',['Backpack','Dragon book'])
    if k>=0:
     return k+1
