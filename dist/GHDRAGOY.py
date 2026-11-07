@@ -83,7 +83,8 @@ def G_book(g):
    i=(i+(1 if k==RIGHT else-1))%n
   elif k in(OK,CLR):
    return
-def G_frame(x,y,w,h,c):
+def G_frame(b,c):
+ x,y,w,h=b
  rect(x,y,w,2,c)
  rect(x,y+h-2,w,2,c)
  rect(x,y,2,h,c)
@@ -95,7 +96,7 @@ def G_kbox(i):
 def G_typed(kind):
  cls()
  ctext(24,'Name your '+kind,GOLD)
- G_frame(60,38,200,30,WHITE)
+ G_frame((60,38,200,30),WHITE)
  for r in range(2):
   text(30,110+r*30,' '.join(G_ABC[r*13:r*13+13]),WHITE)
  text(62,179,'Delete',WHITE)
@@ -103,7 +104,7 @@ def G_typed(kind):
  text(6,204,'ENTER: pick  DEL: erase',GREY)
  nm=''
  sel=old=0
- G_frame(*G_kbox(0),GOLD)
+ G_frame(G_kbox(0),GOLD)
  while True:
   k=wkey()
   old=sel
@@ -128,8 +129,8 @@ def G_typed(kind):
    rect(64,42,192,22,BLACK)
    text(70,62,nm+('_'if len(nm)<8 else ''),WHITE)
   if sel!=old:
-   G_frame(*G_kbox(old),BLACK)
-   G_frame(*G_kbox(sel),GOLD)
+   G_frame(G_kbox(old),BLACK)
+   G_frame(G_kbox(sel),GOLD)
 def G_hatch(g):
  e=g.bag.pop(0)
  g.warm=12
