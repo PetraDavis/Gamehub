@@ -1,10 +1,33 @@
 # GHCRYPTB: part of GHCRYPTP. Keep it next to GHCRYPTP.
 from GHCRYPTC import*
 LEFT=24
-G_SPRITES=[(3.3,5.5,'couch'),(1.9,4.6,'table'),(4.4,6.4,'phone'),(1.0,6.5,'lamp'),(2.6,1.5,'desk'),(12.4,4.9,'rack'),(6.5,1.4,'vase')]
+def circ(x,y,r,c):
+ col(c)
+ fill_circle(x,y,r)
+def G_diff(old,new):
+ if old is None:
+  return new
+ out=[]
+ i=j=0
+ y=0
+ while y<G_VH:
+  o0,o1,oc=old[i]
+  n0,n1,nc=new[j]
+  e=min(o1,n1)
+  if oc!=nc:
+   if out and out[-1][1]==y and(out[-1][2]==nc):
+    out[-1]=(out[-1][0],e,nc)
+   else:
+    out.append((y,e,nc))
+  y=e
+  if o1==e:
+   i+=1
+  if n1==e:
+   j+=1
+ return out
 def G_column(g,t,u,top,h,k):
- cl=(0,0,0)if g.blackout else G_CEIL
- fl=(0,0,0)if g.blackout else G_shade(G_FLOOR,0.5 if not g.power else 1)
+ cl=0 if g.blackout else G_shade(G_CEIL,1)
+ fl=0 if g.blackout else G_shade(G_FLOOR,0.5 if not g.power else 1)
  y0=max(0,top)
  y1=min(G_VH,top+h)
  sp=[(0,y0,cl),(y0,y1,G_shade(G_colour(t),k)),(y1,G_VH,fl)]
@@ -17,7 +40,7 @@ def G_column(g,t,u,top,h,k):
   a=int(top+h*(1-v1))&~1
   b=int(top+h*(1-v0))&~1
   if b-a>=2:
-   return G_put(sp,max(0,a),min(G_VH,b),c if glow and(not g.blackout)else G_shade(c,k))
+   return G_put(sp,max(0,a),min(G_VH,b),G_shade(c,1 if glow and(not g.blackout)else k))
   return sp
  if t in 'lkjCF':
   if u<0.12 or u>0.88:
@@ -67,7 +90,15 @@ def G_column(g,t,u,top,h,k):
     sp=band(0.54,0.59,(60,230,90)if g.power else(255,50,40),True)
  return sp
 def G_render(g,full=False):
- if full or not hasattr(g,'cols')or g.cover!=COVER[0]:
+ gc.collect()
+ try:
+  G_draw(g,full)
+ except MemoryError:
+  g.cols=None
+  gc.collect()
+  G_draw(g,True)
+def G_draw(g,full):
+ if full or getattr(g,'cols',None)is None or g.cover!=COVER[0]:
   g.cover=COVER[0]
   g.cols=[None]*G_COLS
   g.ysk=None
@@ -144,6 +175,7 @@ def G_render(g,full=False):
   shown[i]=new[i]
  for key in sorted(runs,key=lambda q:q[2]):
   y0,y1,c=key
+  c=(c>>16,c>>8&255,c&255)
   for a,b in runs[key]:
    rect(a*G_CWID,y0,(b-a)*G_CWID,y1-y0,c)
  if ys:
@@ -183,30 +215,6 @@ def G_sprites(g,zb,ca,sa,new):
      y1=int(top+h*(1-v0))&~1
      if y1-y0>=2 and y0<G_VH:
       new[i]=G_put(new[i],max(0,y0),min(G_VH,y1),G_shade(c,k))
-def G_ys_place(g,zb,ca,sa):
- if not g.ys_vis:
-  return None
- dx=g.yx-g.x
- dy=g.yy-g.y
- fwd=dx*ca+dy*sa
- if fwd<0.2:
-  return None
- cx=(-dx*sa+dy*ca)/fwd/(G_FOV*0.5*1.15)
- scol=(cx+1)/2*G_COLS
- half=0.45/2/fwd/(G_FOV*0.5*1.15)*G_COLS/2
- h=int(G_VH*1.35/fwd)&~7
- top=(G_VH-h)//2
- a=None
- b=0
- for i in range(max(0,int(scol-half)),min(G_COLS,int(scol+half)+1)):
-  if zb[i]>=fwd:
-   if a is None:
-    a=i
-   b=i+1
- if a is None:
-  return None
- left=int((scol-half)*G_CWID)&~3
- return((left,int(2*half*G_CWID)&~3,top,h,a,b),a,b)
 def G_ys_draw(g,ys):
  left,wid,top,h,a,b=ys[0]
  lo=a*G_CWID
@@ -268,3 +276,14 @@ def G_ys_draw(g,ys):
  for rr,c in((r,(35,80,150)),(r*2//3,(80,175,245)),(max(1,r//3),(230,250,255))):
   for x,y in eyes:
    circ(x,y,rr,c)
+def G_ending():
+ cls()
+ ctext(40,'enCRYPTed',(200,60,60))
+ ctext(70,'The keypad flashes green.')
+ ctext(90,'End of the demo.')
+ ctext(125,'Full game at',GOLD)
+ ctext(147,G_LINK1,WHITE)
+ ctext(167,G_LINK2,WHITE)
+ ctext(203,'CLEAR: leave',GREY)
+ while wkey()!=CLR:
+  pass

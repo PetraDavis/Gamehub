@@ -4,6 +4,7 @@
 # DEL journal, CLEAR pause.
 from GHLIB import *
 import math
+import gc
 import random
 try:
     from time import monotonic as now
@@ -95,7 +96,9 @@ def clock():
 
 # ---------- drawing ----------
 def shade(c, k):
-    return (min(255, int(c[0] * k)), min(255, int(c[1] * k)), min(255, int(c[2] * k)))
+    # a colour as one number 0xRRGGBB: numbers need no memory of their own on
+    # the calculator, colour tuples do, and the screen holds hundreds of them
+    return min(255, int(c[0] * k)) << 16 | min(255, int(c[1] * k)) << 8 | min(255, int(c[2] * k))
 
 
 def light(g, i, d):
@@ -168,8 +171,8 @@ def diff(old, new):
 
 def column(g, t, u, top, h, k):
     # what one wall column looks like, top to bottom, as spans
-    cl = (0, 0, 0) if g.blackout else CEIL
-    fl = (0, 0, 0) if g.blackout else shade(FLOOR, .5 if not g.power else 1)
+    cl = 0 if g.blackout else shade(CEIL, 1)
+    fl = 0 if g.blackout else shade(FLOOR, .5 if not g.power else 1)
     y0 = max(0, top)
     y1 = min(VH, top + h)
     sp = [(0, y0, cl), (y0, y1, shade(colour(t), k)), (y1, VH, fl)]
@@ -184,7 +187,7 @@ def column(g, t, u, top, h, k):
         a = int(top + h * (1 - v1)) & ~1
         b = int(top + h * (1 - v0)) & ~1
         if b - a >= 2:
-            return put(sp, max(0, a), min(VH, b), c if glow and not g.blackout else shade(c, k))
+            return put(sp, max(0, a), min(VH, b), shade(c, 1 if glow and not g.blackout else k))
         return sp
     if t in "lkjCF":
         if u < .12 or u > .88:
@@ -240,10 +243,22 @@ def column(g, t, u, top, h, k):
 
 
 def render(g, full=False):
+    # Collect garbage every frame so memory stays in one piece. If the
+    # calculator still runs out, forget what is on screen and paint it all.
+    gc.collect()
+    try:
+        draw(g, full)
+    except MemoryError:
+        g.cols = None
+        gc.collect()
+        draw(g, True)
+
+
+def draw(g, full):
     # Every screen column is a list of coloured spans. Only the spans that
     # differ from what is on screen are painted, side-by-side columns with the
     # same change become one rectangle, and each colour is set only once.
-    if full or not hasattr(g, 'cols') or g.cover != COVER[0]:
+    if full or getattr(g, 'cols', None) is None or g.cover != COVER[0]:
         g.cover = COVER[0]
         g.cols = [None] * COLS
         g.ysk = None
@@ -321,6 +336,7 @@ def render(g, full=False):
         shown[i] = new[i]
     for key in sorted(runs, key=lambda q: q[2]):
         y0, y1, c = key
+        c = (c >> 16, c >> 8 & 255, c & 255)
         for a, b in runs[key]:
             rect(a * CWID, y0, (b - a) * CWID, y1 - y0, c)
     if ys:
