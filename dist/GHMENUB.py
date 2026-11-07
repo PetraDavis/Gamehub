@@ -7,7 +7,6 @@ import math
 from ti_system import store_list,recall_list
 import sys
 import gc
-UP=25
 DOWN=34
 LEFT=24
 RIGHT=26
@@ -43,6 +42,7 @@ def lt(c,k=0.35):
  return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
 def dk(c,k=0.65):
  return(int(c[0]*k),int(c[1]*k),int(c[2]*k))
+MSG=[0,0]
 I_BLACK=(0,0,0)
 I_WHITE=(255,255,255)
 I_INK=(20,20,20)
@@ -170,18 +170,17 @@ def I_wipe(x,y,c):
  I_box(x-4,y-16,8,3,c)
  for i in(-5,0,5):
   I_box(x+i-1,y-4,2,15,(0,0,0))
+def I_fortune(x,y,c):
+ I_box(x-19,y-10,13,20,(120,40,140))
+ I_box(x+6,y-10,13,20,(120,40,140))
+ I_box(x-8,y-15,16,25,(250,240,215))
+ I_poly([x,x+2,x+6,x+3,x+4,x,x-4,x-3,x-6,x-2],[y-9,y-4,y-4,y-1,y+4,y+1,y+4,y-1,y-4,y-4],I_GOLD)
 def I_names(x,y,c):
  I_box(x-14,y-9,28,18,I_WHITE)
  I_poly([x-14,x-21,x-14],[y-9,y,y+9],I_WHITE)
  I_box(x-17,y-1,3,3,(20,60,70))
  I_box(x-8,y-4,17,3,I_GOLD)
  I_box(x-8,y+2,11,3,I_INK)
-def I_detect(x,y,c):
- I_box(x-14,y+4,6,9,(120,90,60))
- I_box(x-6,y+8,6,9,(120,90,60))
- I_circ(x+2,y-4,11,(230,180,40))
- I_circ(x+2,y-4,8,(190,220,245))
- I_poly([x+9,x+13,x+19,x+15],[y+5,y+1,y+13,y+17],(120,80,40))
 def I_match(x,y,c):
  I_box(x-19,y-12,17,24,(200,70,90))
  I_box(x-15,y-8,9,16,(225,120,135))
@@ -201,9 +200,6 @@ def S_hname(s):
 H_BAR_Y=34
 H_BAR_H=22
 H_BAR_GAP=27
-def H_header():
- cls()
- ctext(22,'GAMEHUB',WHITE)
 def H_app_pos(i):
  return(50+i%4*73,82+i//4*70)
 def H_show_title(name,old=None):

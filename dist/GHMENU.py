@@ -1,5 +1,6 @@
 # GHMENU: the GAMEHUB menu. Run GAMEHUB, not this.
 from GHMENUB import*
+UP=25
 def rect(x,y,w,h,c):
  if w<1 or h<1:
   return
@@ -34,7 +35,6 @@ def halo(x,y,r,c,t=2):
  col(c)
  for i in range(t):
   draw_circle(x,y,r-i)
-MSG=[0,0]
 def message(lines,title=None):
  n=len(lines)+(1 if title else 0)
  h=n*18+30
@@ -167,11 +167,6 @@ def I_space(x,y,c):
  I_poly([x-8,x-13,x-8],[y-2,y+8,y+6],(215,40,40))
  I_poly([x+8,x+13,x+8],[y-2,y+8,y+6],(215,40,40))
  I_poly([x-5,x+5,x],[y+7,y+7,y+15],(250,170,40))
-def I_fortune(x,y,c):
- I_box(x-19,y-10,13,20,(120,40,140))
- I_box(x+6,y-10,13,20,(120,40,140))
- I_box(x-8,y-15,16,25,(250,240,215))
- I_poly([x,x+2,x+6,x+3,x+4,x,x-4,x-3,x-6,x-2],[y-9,y-4,y-4,y-1,y+4,y+1,y+4,y-1,y-4,y-4],I_GOLD)
 def I_star(x,y,c):
  I_box(x-7,y-15,14,9,(120,230,90))
  I_box(x-7,y-15,3,3,(8,10,32))
@@ -189,6 +184,12 @@ def I_dragon(x,y,c):
  I_box(x-7,y+9,4,5,(220,70,40))
  I_box(x+4,y+9,4,5,(220,70,40))
  I_box(x-15,y-7,3,3,I_BLACK)
+def I_detect(x,y,c):
+ I_box(x-14,y+4,6,9,(120,90,60))
+ I_box(x-6,y+8,6,9,(120,90,60))
+ I_circ(x+2,y-4,11,(230,180,40))
+ I_circ(x+2,y-4,8,(190,220,245))
+ I_poly([x+9,x+13,x+19,x+15],[y+5,y+1,y+13,y+17],(120,80,40))
 I_ICONS={'GHSOLI':I_solitaire,'GHBLOCKS':I_blocks,'GHSUDOKU':I_sudoku,'GHANIM':I_anim,'GHFLAP':I_flap,'GHTTT':I_ttt,'GHMERGE':I_g2048,'GHPONG':I_pong,'GHBREAK':I_breakout,'GHRPG':I_rpg,'GHSIMON':I_simon,'GHHANG':I_hangman,'GHSPACE':I_space,'GHFORTUN':I_fortune,'GHNAMES':I_names,'GHSTAR':I_star,'GHMATCH':I_match,'GHDRAGON':I_dragon,'GHDETECT':I_detect,'*keys':I_keys,'*wipe':I_wipe,'*about':I_about}
 def I_draw(mod,x,y,c):
  f=I_ICONS.get(mod)
@@ -213,14 +214,18 @@ def S_wipe():
     pass
   store_list(S_hname(s),[0])
   n+=1
- try:
-  recall_list('DRG')
-  store_list('DRG',[0])
-  n+=1
- except Exception:
-  pass
+ for nm in('DRG','DRB'):
+  try:
+   recall_list(nm)
+   store_list(nm,[0])
+   n+=1
+  except Exception:
+   pass
  return n
 H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK'),('Star Patrol','GHSTAR')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG'),('Memory Match','GHMATCH')]),('Adventure',[('Tiny Quest','GHRPG'),('Dragon Tamer','GHDRAGON'),('Detective Case','GHDETECT'),('Lost Orbit','GHSPACE')]),('Create',[('Animation Studio','GHANIM'),('Fortune Cards','GHFORTUN'),('Name Generator','GHNAMES')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
+def H_header():
+ cls()
+ ctext(22,'GAMEHUB',WHITE)
 def H_draw_bar(i,on,first=False):
  y=H_BAR_Y+i*H_BAR_GAP
  c=GOLD if on else WHITE

@@ -96,10 +96,11 @@ def wipe():
         store_list(hname(s), [0])
         n += 1
     # Dragon Tamer keeps its dragons in one list too
-    try:
-        recall_list("DRG")
-        store_list("DRG", [0])
-        n += 1
-    except Exception:
-        pass
+    for nm in ("DRG", "DRB"):
+        try:
+            recall_list(nm)
+            store_list(nm, [0])
+            n += 1
+        except Exception:
+            pass
     return n

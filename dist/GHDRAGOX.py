@@ -1,5 +1,16 @@
 # GHDRAGOX: part of GHDRAGON, loaded only while it is needed.
 from GHDRAGOP import*
+def G_unpack(n):
+ nm=''
+ while n:
+  nm=G_ABC[n%27-1]+nm
+  n//=27
+ return nm[0]+nm[1:].lower()
+def G_grown(g):
+ for d in g.pen:
+  if not d[9]&8:
+   return d
+ return None
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
 G_PAINTN=('Red','Blue','Green','Gold','Purple','Pink','Black','White')
 def G_rest(g):
@@ -24,21 +35,24 @@ def G_load(g):
  w=5 if v>3 else 4
  for i in range(9+k,len(s)-w+1,w):
   if v>3:
-   n,nm=(s[i],'')
-   while n:
-    nm=G_ABC[n%27-1]+nm
-    n//=27
-   nm=nm[0]+nm[1:].lower()
+   nm=G_unpack(s[i])
    i+=1
    t=s[i]
   else:
    nm,t=(G_NAMES[s[i]//32],s[i]%32)
   lv=s[i+1]
-  mh=20+6*min(4,G_DT[t][2])+6*(lv-1)
-  p=s[i+3]//200
-  g.pen.append([nm,t,lv,mh,mh,s[i+2],G_PAINT[p-1]if p else G_DT[t][3],s[i+3]//20%10,s[i+3]%20])
- if g.pen:
-  g.pick=g.pen[0]
+  mh=20+6*min(4,G_DT[t][2])+6*(lv-1)+6*(t==20)
+  x=s[i+3]%4000
+  p=x//200
+  g.pen.append([nm,t,lv,mh,mh,s[i+2],G_PAINT[p-1]if p else G_DT[t][3],x//20%10,x%20,s[i+3]//4000])
+ try:
+  b=[int(v)for v in recall_list('DRB')]
+  for i in range(1,len(b)-1,2):
+   t=b[i+1]%32
+   g.pen.append([G_unpack(b[i]),t,1,10,10,0,G_DT[t][3],0,0,8+b[i+1]//32])
+ except Exception:
+  pass
+ g.pick=G_grown(g)
  g.warm=12
 def G_new_quest(g):
  k=random.randint(0,2)
@@ -65,16 +79,30 @@ def G_board(g):
   g.quest=qs[c]
 def G_portrait(d):
  cls(G_NIGHT)
- G_drag(102,10,2,d[1],d[6],d[7],d[8])
+ if d[9]&8:
+  G_drag(131,45,1,d[1],d[6],d[7],d[8],None,0,d[9]&7)
+ else:
+  G_drag(102,10,2,d[1],d[6],d[7],d[8],None,0,d[9]&7)
 def G_pen(g):
+ pg=0
  while g.pen:
-  opts=[('> 'if d is g.pick else '')+d[0]+' L'+str(d[2])+' '+G_DT[d[1]][0][:6]for d in g.pen]
-  c=G_lst('Dragon pen '+str(len(g.pen))+'/10',opts+['Back'])
-  if c<0 or c>=len(g.pen):
+  k=G_kids(g)
+  top=pg*9
+  sh=g.pen[top:top+9]
+  opts=[('> 'if d is g.pick else '')+d[0]+(' baby'if d[9]&8 else ' L'+str(d[2]))+' '+G_DT[d[1]][0][:6]for d in sh]
+  more=len(g.pen)>9
+  c=G_lst('Pen '+str(k//4)+('','.25','.5','.75')[k%4]+'/10',opts+(['More...']if more else[])+['Back'])
+  if more and c==len(sh):
+   pg=pg+1 if(pg+1)*9<len(g.pen)else 0
+   continue
+  if c<0 or c>=len(sh):
    return
-  d=g.pen[c]
-  a=choose(d[0]+' the '+G_DT[d[1]][0],['Pick as partner','See '+d[0],'Let it go free','Back'])
-  if a==0:
+  d=sh[c]
+  b=d[9]&8
+  a=choose(d[0]+' the '+('baby 'if b else '')+G_DT[d[1]][0],['Pick as partner','See '+d[0],'Let it go free','Back'])
+  if a==0 and b:
+   message([d[0]+' is too little to','ride or fight. Babies','just live in your pen.'],'Baby')
+  elif a==0:
    g.pick=d
    if g.ride is not None:
     g.ride=d
@@ -82,11 +110,12 @@ def G_pen(g):
   elif a==1:
    t=G_DT[d[1]]
    G_portrait(d)
-   message([t[0]+' ('+G_RARE[t[2]]+')','Element: '+G_ENAME[t[1]],'Level '+str(d[2])+'  HP '+str(d[4])],d[0])
+   q=d[9]&7
+   message([(G_SCH[q][0]+' 'if q else '')+t[0]+' ('+G_RARE[t[2]]+')','Element: '+G_ENAME[t[1]],'A baby'if b else 'Level '+str(d[2])+'  HP '+str(d[4])],d[0])
   elif a==2 and choose('Free '+d[0]+' forever?',['No, keep '+d[0],'Yes, let it go'])==1:
    g.pen.remove(d)
    if g.pick is d:
-    g.pick=g.pen[0]if g.pen else None
+    g.pick=G_grown(g)
    if g.ride is d:
     g.ride=g.pick
    message([d[0]+' flies away. Bye!'],'Free')
@@ -150,6 +179,8 @@ def G_shop(g):
      message([G_GEAR[i][0]+' is in your bag.'],'Bought!')
   elif c in(1,2):
    G_dress(g,d,1 if c==1 else 9)
+  elif c==3 and d[9]&7:
+   message(['Shiny dragons keep','their special colours.'],'Paint')
   elif c==3:
    if g.coins<20:
     message(['You need 20 coins.'],'Not enough')
@@ -216,7 +247,7 @@ def G_menu(g):
 def G_win(g):
  cls()
  if g.pick:
-  G_drag(73,30,3,g.pick[1],g.pick[6],g.pick[7],g.pick[8])
+  G_drag(73,30,3,g.pick[1],g.pick[6],g.pick[7],g.pick[8],None,0,g.pick[9]&7)
  message(['The Shadow Wyrm flies far','away. Dragons return to','every land. You did it!'],'THE END')
  G_rest(g)
  G_save(g)
