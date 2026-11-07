@@ -121,6 +121,32 @@ FEAT = [
       ('r', 18, 3, 9, 5, 4), ('r', 22, 4, 10, 3, 2), ('r', 1, 5, 10, 1, 1), ('t', 0, 3, 8, 9, 8, 9, 10)]),
 ]
 
+# rarity extras: each rarity gets everything the rarer-less ones have, plus more,
+# so every step up looks cooler (shinies change these colours too).
+# (under the wing, over everything but the kind's own top shapes)
+TIER = [
+    # Common: just the dragon
+    ([], []),
+    # Uncommon: a row of spikes down its neck and tail
+    ([('t', 16, 12, 12, 14, 8, 16, 13), ('t', 16, 15, 14, 17, 10, 19, 16),
+      ('t', 16, 35, 19, 37, 15, 39, 20), ('t', 16, 40, 20, 42, 17, 44, 21), ('t', 16, 44, 21, 46, 19, 47, 22)], []),
+    # Rare: frills on its cheeks and a shine in its eye
+    ([], [('t', 15, 11, 13, 17, 9, 14, 16), ('t', 16, 12, 14, 17, 12, 14, 16), ('r', 1, 5, 10, 1, 1)]),
+    # Epic: gold horn tips, gold tail spikes, gold claws and a gold chest gem
+    ([], [('t', 2, 15, 4, 17, 2, 16, 5), ('t', 2, 10, 4, 12, 2, 11, 5),
+          ('t', 27, 35, 19, 37, 15, 39, 20), ('t', 27, 40, 20, 42, 17, 44, 21), ('t', 27, 44, 21, 46, 19, 47, 22),
+          ('t', 2, 36, 18, 37, 15, 38, 18), ('t', 2, 41, 19, 42, 17, 43, 19),
+          ('r', 2, 14, 33, 1, 1), ('r', 2, 27, 33, 1, 1),
+          ('t', 27, 11, 20, 13, 17, 15, 20), ('t', 27, 11, 20, 13, 23, 15, 20), ('r', 1, 13, 19, 1, 2)]),
+    # Legendary: a glowing golden aura of stars and a long flowing crest
+    ([], [('t', 15, 9, 12, 2, 3, 13, 9), ('t', 16, 9, 12, 5, 6, 12, 10),
+          ('r', 2, -3, 3, 1, 5), ('r', 2, -5, 5, 5, 1), ('r', 2, 21, -2, 1, 5), ('r', 2, 19, 0, 5, 1),
+          ('r', 2, 50, 12, 1, 5), ('r', 2, 48, 14, 5, 1), ('r', 1, -3, 5, 1, 1), ('r', 1, 21, 0, 1, 1), ('r', 1, 50, 14, 1, 1),
+          ('r', 2, 4, 1, 1, 1), ('r', 2, 42, 4, 1, 1), ('r', 2, 54, 28, 1, 1)]),
+]
+# Quantum has its own crystal spikes and core, so it gets the frills, the crest and a violet aura
+QTIER = ([], TIER[2][1] + TIER[4][1][:2] + [(k, 33 if c == 2 else c) + tuple(o) for k, c, *o in TIER[4][1][2:]])
+
 # accessories: 1-8 go on the head, 9-16 on the body
 GEAR = [
     [],
@@ -227,6 +253,8 @@ def main():
              "ARTF = (" + ",\n        ".join(lit(pack(f[0])) for f in FEAT) + ")",
              "ARTW = " + lit(bytes(c for f in FEAT for c in f[1])),
              "ARTO = (" + ",\n        ".join(lit(pack(f[2])) for f in FEAT) + ")",
+             "ARTU = (" + ", ".join(lit(pack(sum((TIER[i][0] for i in range(r + 1)), []))) for r in range(5)) + ", " + lit(pack(QTIER[0])) + ")",
+             "ARTT = (" + ", ".join(lit(pack(sum((TIER[i][1] for i in range(r + 1)), []))) for r in range(5)) + ", " + lit(pack(QTIER[1])) + ")",
              "ARTG = (" + ",\n        ".join(lit(pack(g)) for g in GEAR) + ")",
              "MONA = (" + ",\n        ".join(lit(pack(m[1])) for m in MON) + ")",
              "MONP = (" + ",\n        ".join(lit(bytes(v for c in m[0] for v in c)) for m in MON) + ")",
