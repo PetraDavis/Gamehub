@@ -43,7 +43,6 @@ def lt(c,k=0.35):
  return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
 def dk(c,k=0.65):
  return(int(c[0]*k),int(c[1]*k),int(c[2]*k))
-MSG=[0,0]
 I_BLACK=(0,0,0)
 I_WHITE=(255,255,255)
 I_INK=(20,20,20)
@@ -207,3 +206,7 @@ def H_header():
  ctext(22,'GAMEHUB',WHITE)
 def H_app_pos(i):
  return(50+i%4*73,82+i//4*70)
+def H_show_title(name,old=None):
+ if old:
+  ctext(203,old,BLACK)
+ ctext(203,name,GOLD)

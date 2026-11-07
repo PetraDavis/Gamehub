@@ -1,61 +1,6 @@
 # GHDRAGOC: part of GHDRAGOP. Keep it next to GHDRAGOP.
-from ti_draw import*
-from ti_system import*
-import time
-import random
-UP=25
-DOWN=34
-LEFT=24
-RIGHT=26
-OK=105
-CLR=45
-SECOND=21
-BLACK=(0,0,0)
-WHITE=(255,255,255)
-GOLD=(230,180,40)
-GREY=(110,110,110)
-DARK=(40,40,40)
-RED=(220,50,50)
-GREEN=(50,190,80)
-YELLOW=(240,220,60)
-H=210
-def shuffle(a):
- for i in range(len(a)-1,0,-1):
-  j=random.randint(0,i)
-  a[i],a[j]=(a[j],a[i])
-def wkey():
- return wait_key()
-_C=[None]
-def col(c):
- if c!=_C[0]:
-  _C[0]=c
-  set_color(c[0],c[1],c[2])
-def fr(x,y,w,h):
- fill_rect(x-1,y-1,w+1,h+1)
-def rect(x,y,w,h,c):
- if w<1 or h<1:
-  return
- col(c)
- fill_rect(x-1,y-1,w+1,h+1)
-COVER=[0]
-def cls(c=BLACK):
- COVER[0]+=1
- col(c)
- fill_rect(-1,-1,321,211)
-TY=6
-def text(x,y,s,c=WHITE):
- col(c)
- draw_text(x,y+TY,s)
-def ctext(y,s,c=WHITE,cx=160):
- col(c)
- draw_text(cx-len(s)*5,y+TY,s)
-def circ(x,y,r,c):
- col(c)
- fill_circle(x,y,r)
-def lt(c,k=0.35):
- return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
-def _corners(x,y,w,h,r,t):
- return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
+from GHDRAGOD import*
+from GHDRAGOD import _corners
 def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
  edge(x,y,w,h,r,c,t)
  if fill:
@@ -65,9 +10,6 @@ def edge(x,y,w,h,r,c,t=2,inner=BLACK):
  for bx,by,bw,bh in _corners(x,y,w,h,r,t):
   if bw>0 and bh>0:
    fr(bx,by,bw,bh)
-def pause(s):
- time.sleep(s)
-MSG=[0,0]
 def message(lines,title=None):
  n=len(lines)+(1 if title else 0)
  h=n*18+30
@@ -86,83 +28,162 @@ def message(lines,title=None):
   k=wkey()
   if k in(OK,CLR):
    return k
-def choose(title,opts,sel=0):
- cls()
- ctext(24,title,GOLD)
- n=len(opts)
- for i in range(n):
-  y=40+i*30
-  c=GOLD if i==sel else WHITE
-  rbox(60,y,200,24,8,c,2,BLACK,False)
-  ctext(y+18,opts[i],c)
- while True:
-  k=wkey()
-  old=sel
-  if k==UP:
-   sel=(sel-1)%n
-  elif k==DOWN:
-   sel=(sel+1)%n
-  elif k==OK:
-   return sel
-  elif k==CLR:
-   return-1
-  if sel==old:
-   continue
-  for i in(old,sel):
-   y=40+i*30
-   c=GOLD if i==sel else WHITE
-   edge(60,y,200,24,8,c)
-   ctext(y+18,opts[i],c)
-G_T=20
-G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','T..........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^^....','^^^^^^^^^^^^^^^^'])
-G_LANDS=('Green Valley','Fire Mountain','Frost Peaks')
-G_GROUND=((50,130,60),(85,65,55),(215,225,240))
-G_TALL=((35,100,45),(120,90,60),(170,190,220))
-G_WATER=(40,90,190)
-G_LAVA=(230,90,20)
-G_ROCK=(110,105,115)
-G_LEAF=(25,85,35)
-G_BARK=(90,60,30)
-G_ENAME=('fire','water','plant','star')
-G_RARE=('Common','Uncommon','Rare','Epic','Legendary')
-G_RCOL=(WHITE,(120,220,120),(90,160,255),(200,110,240),GOLD)
-G_DT=(('Ember',0,0,(220,70,40)),('Cinder',0,0,(235,140,40)),('Puddle',1,0,(60,130,230)),('Brook',1,0,(40,170,170)),('Sprig',2,0,(70,170,70)),('Mossy',2,0,(130,150,60)),('Pebble',2,0,(150,140,120)),('Magma',0,1,(170,40,30)),('Frost',1,1,(160,210,245)),('Thorn',2,1,(30,110,60)),('Storm',1,1,(120,100,200)),('Smoky',0,1,(90,90,100)),('Sunscale',0,2,(240,190,40)),('Coral',1,2,(240,120,150)),('Jade',2,2,(60,200,150)),('Blossom',2,2,(250,160,210)),('Phoenix',0,3,(255,90,60)),('Leviathan',1,3,(30,60,160)),('Oakheart',2,3,(110,80,40)),('Starwing',3,4,(250,240,180)))
+G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_PAINT=((220,70,40),(60,130,230),(70,170,70),(240,190,40),(200,110,240),(240,120,150),(40,40,50),(240,240,245))
-G_SHOP=(('Paint it',20,0),('Saddle',15,1),('Scarf',25,2),('Crown',60,4))
-G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
-G_BOSS=('Shadow Wyrm',110,12,0,(90,50,140),3)
-def G_beats(a,b):
- return a==3 and b!=3 or(a<3 and b==(a+2)%3)
-def G_egg_type(m):
- r=random.randint(0,99)+m*6
- rar=4 if r>=99 else 3 if r>=92 else 2 if r>=78 else 1 if r>=52 else 0
- return random.choice([i for i in range(len(G_DT))if G_DT[i][2]==rar])
-G_EGGS={}
-def G_el(d):
- return G_DT[d[1]][1]
-G_HUD=[None]
-class G_Game:
- pass
-def G_go_home(g):
- g.m,g.x,g.y=(0,3,2)
- G_rest(g)
-def G_rest(g):
- g.hp=g.mhp
- g.ride=None
- for d in g.pen:
-  d[3]=d[4]
-def G_new_quest(g):
- k=random.randint(0,2)
- if k==0:
-  n=random.randint(2,4)
-  land=random.randint(0,g.seen)
-  nm=random.choice(G_FOES[land])[0]
-  return[0,nm,n,0,8*n+6*land,'Beat '+str(n)+' '+nm+'s']
- if k==1:
-  return[1,None,1,0,20,'Hatch an egg']
- land=random.randint(0,g.seen)
- n=random.randint(3,5)
- return[2,land,n,0,7*n+6*land,str(n)+' wins: '+G_LANDS[land]]
-def G_stats(d):
- t=G_DT[d[1]]
- message([t[0]+' ('+G_RARE[t[2]]+')','Element: '+G_ENAME[t[1]],'Level '+str(d[2])+'  HP '+str(d[3])+'/'+str(d[4]),'Attack '+str(5+2*d[2]+2*t[2])],d[0])
+G_PAINTN=('Red','Blue','Green','Gold','Purple','Pink','Black','White')
+G_GEARC=(None,(250,150,200),(40,40,40),(130,60,190),GOLD,G_CYAN,BLACK,(250,150,200),(190,195,205),(220,40,30),G_BARK,(40,80,200),(190,195,205),(40,80,200),(90,190,80),(220,40,30),GOLD)
+def G_oval(x,y,s,c,k=0):
+ circ(x,y+2*s,7*s-k,c)
+ circ(x,y-2*s,6*s-k,c)
+ circ(x,y-5*s,4*s-k,c)
+def G_shapes(m,x,y,ch,out):
+ px=x*G_T
+ py=20+y*G_T
+ if ch=='T':
+  out.append((0,G_BARK,0,(px+8,py+14,4,6)))
+  out.append((1,G_LEAF,1,(px+10,py+8,8)))
+ elif ch=='~':
+  out.append((0,(110,160,235),0,(px+(x*5+y*3)%8,py+8,6,1)))
+ elif ch=='L':
+  out.append((0,(250,200,60),0,(px+(x*7+y*5)%12,py+6,5,3)))
+ elif ch=='"':
+  c=G_GROUND[m]
+  for o in(3,9,15):
+   out.append((0,c,0,(px+o,py+6+o%4,2,8)))
+ elif ch=='^':
+  out.append((0,G_ROCK,2,([px,px+10,px+20],[py+20,py+1,py+20])))
+  out.append((1,WHITE,2,([px+6,px+10,px+14],[py+8,py+1,py+8])))
+ elif ch=='H':
+  out.append((0,G_BARK,1,(px+10,py+12,9)))
+  out.append((1,(60,40,20),1,(px+10,py+12,6)))
+  out.append((2,(245,235,210),1,(px+7,py+12,3)))
+  out.append((2,(245,235,210),1,(px+13,py+11,3)))
+  out.append((3,(200,160,90),0,(px+1,py+15,18,2)))
+ elif ch=='E':
+  r=G_DT[G_EGGS.get((m,x,y),0)][2]
+  sh=(25,25,35)if r==4 else G_CYAN if r==5 else(245,235,210)
+  sp=G_MAG if r==5 else YELLOW if r==4 else G_RCOL[r]if r else(200,170,120)
+  out.append((0,G_BARK,0,(px+3,py+15,14,4)))
+  out.append((1,sh,1,(px+10,py+10,6)))
+  out.append((2,sp,0,(px+7,py+8,3,3)))
+  out.append((2,sp,0,(px+11,py+12,3,3)))
+ elif ch=='B':
+  out.append((0,(40,30,60),1,(px+10,py+10,9)))
+  out.append((1,G_BOSS[4],1,(px+10,py+10,6)))
+  out.append((2,(255,60,60),0,(px+6,py+8,3,3)))
+  out.append((2,(255,60,60),0,(px+11,py+8,3,3)))
+def G_hero(g,out):
+ px=g.x*G_T
+ py=20+g.y*G_T
+ d=g.ride
+ if d is not None:
+  c=d[6]
+  out.append((5,lt(c,0.45),2,([px,px+9,px+4],[py+2,py+11,py+14])))
+  out.append((6,c,0,(px+2,py+11,13,7)))
+  out.append((6,c,0,(px+13,py+6,7,7)))
+  out.append((6,c,0,(px,py+15,3,3)))
+  out.append((6,c,0,(px+4,py+18,3,2)))
+  out.append((6,c,0,(px+11,py+18,3,2)))
+  out.append((7,YELLOW if d[1]==19 else BLACK,0,(px+17,py+8,2,2)))
+  if d[8]:
+   out.append((7,G_GEARC[d[8]],0,(px+5,py+11,6,3)))
+  if d[7]:
+   out.append((8,G_GEARC[d[7]],0,(px+14,py+3,5,3)))
+  out.append((8,(240,200,160),1,(px+8,py+5,3)))
+  out.append((8,(60,120,230),0,(px+6,py+8,5,4)))
+  return
+ out.append((5,(240,200,160),1,(px+10,py+5,4)))
+ out.append((6,G_BARK,0,(px+6,py+1,8,3)))
+ out.append((6,(60,120,230),0,(px+6,py+9,8,7)))
+ out.append((6,(60,40,30),0,(px+6,py+16,3,4)))
+ out.append((6,(60,40,30),0,(px+11,py+16,3,4)))
+def G_paint(ops):
+ ops.sort(key=lambda o:(o[0],o[1],o[2],o[3][1]if o[2]==0 else 0,o[3][0]))
+ last=None
+ for layer,c,kind,a in ops:
+  if kind==0:
+   if last and last[0]==(layer,c)and(last[2]==a[1])and(last[4]==a[3])and(last[1]+last[3]==a[0]):
+    last[3]+=a[2]
+    continue
+   if last:
+    rect(last[1],last[2],last[3],last[4],last[0][1])
+   last=[(layer,c),a[0],a[1],a[2],a[3]]
+   continue
+  if last:
+   rect(last[1],last[2],last[3],last[4],last[0][1])
+   last=None
+  if kind==1:
+   circ(a[0],a[1],a[2],c)
+  else:
+   col(c)
+   fill_poly(a[0],a[1])
+ if last:
+  rect(last[1],last[2],last[3],last[4],last[0][1])
+def G_cells(g,todo,with_hero):
+ mp=g.maps[g.m]
+ ops=[]
+ rows={}
+ for x,y in todo:
+  rows.setdefault(y,[]).append(x)
+ for y in rows:
+  xs=sorted(rows[y])
+  i=0
+  while i<len(xs):
+   c=G_base(g.m,mp[y][xs[i]])
+   j=i+1
+   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
+    j+=1
+   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
+   i=j
+ for x,y in todo:
+  G_shapes(g.m,x,y,mp[y][x],ops)
+ if with_hero:
+  G_hero(g,ops)
+ G_paint(ops)
+def G_draw_map(g,after_msg=False):
+ r0,r1=(0,9)
+ if after_msg:
+  r0=max(0,(MSG[0]-20)//G_T)
+  r1=min(9,(MSG[0]+MSG[1]-20)//G_T+1)
+ else:
+  cls()
+  G_HUD[0]=None
+ G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
+ G_hud(g)
+def G_hud(g):
+ d=g.ride
+ if d is not None:
+  who=d[0]+' '+str(d[3])+'/'+str(d[4])
+ else:
+  who='You '+str(g.hp)+'/'+str(g.mhp)
+ t=(G_LANDS[g.m],who,'Egg '+str(g.warm)if g.bag else str(g.coins)+'c')
+ if t==G_HUD[0]:
+  return
+ old=G_HUD[0]or('','','')
+ if G_HUD[0]is None:
+  rect(0,0,320,20,BLACK)
+ for i,x,c in((0,4,GOLD),(1,140,WHITE),(2,262,YELLOW)):
+  if t[i]!=old[i]:
+   text(x,15,old[i],BLACK)
+   text(x,15,t[i],c)
+ G_HUD[0]=t
+def G_bar(x,y,w,v,mx,c):
+ f=max(0,min(w,int(w*v/mx)))if v>0 else 0
+ if v>0:
+  f=max(2,f)
+ rect(x,y,f,6,c)
+ rect(x+f,y,w-f,6,DARK)
+def G_foe_screen(f,title):
+ cls()
+ rbox(150,30,140,120,10,RED if f is G_DREAD else f[4],2,G_NIGHT)
+ G_foe_art(f)
+ ctext(24,title,GOLD)
+def G_quest_step(g,kind,what):
+ q=g.quest
+ if q is None or q[0]!=kind or(q[1]is not None and q[1]!=what):
+  return
+ q[3]+=1
+ if q[3]>=q[2]:
+  g.coins+=q[4]
+  g.quest=None
+  message(['You finished:',q[5],'+'+str(q[4])+' coins!'],'Quest done!')

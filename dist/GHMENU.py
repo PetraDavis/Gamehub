@@ -34,6 +34,7 @@ def halo(x,y,r,c,t=2):
  col(c)
  for i in range(t):
   draw_circle(x,y,r-i)
+MSG=[0,0]
 def message(lines,title=None):
  n=len(lines)+(1 if title else 0)
  h=n*18+30
@@ -212,6 +213,12 @@ def S_wipe():
     pass
   store_list(S_hname(s),[0])
   n+=1
+ try:
+  recall_list('DRG')
+  store_list('DRG',[0])
+  n+=1
+ except Exception:
+  pass
  return n
 H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK'),('Star Patrol','GHSTAR')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG'),('Memory Match','GHMATCH')]),('Adventure',[('Tiny Quest','GHRPG'),('Dragon Tamer','GHDRAGON'),('Detective Case','GHDETECT'),('Lost Orbit','GHSPACE')]),('Create',[('Animation Studio','GHANIM'),('Fortune Cards','GHFORTUN'),('Name Generator','GHNAMES')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
 def H_draw_bar(i,on,first=False):
@@ -250,10 +257,6 @@ def H_draw_app(app,i,on,first=False):
   except Exception:
    ctext(y+7,app[0][0],WHITE,x)
  halo(x,y,27,c,3)
-def H_show_title(name,old=None):
- if old:
-  ctext(203,old,BLACK)
- ctext(203,name,GOLD)
 def H_app_screen(ci,sel=0):
  cname,apps=H_CATS[ci]
  cls()
@@ -324,8 +327,8 @@ def H_wipe():
  cls()
  ctext(40,'DELETE ALL SAVES',GOLD)
  ctext(70,'This erases every')
- ctext(90,'Animation Studio')
- ctext(110,'animation.')
+ ctext(90,'Animation Studio animation')
+ ctext(110,'and your Dragon Tamer dragons.')
  ctext(150,'ENTER: delete',RED)
  ctext(175,'CLEAR: keep them')
  if wkey()!=OK:
