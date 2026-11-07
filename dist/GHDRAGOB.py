@@ -1,14 +1,23 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-def cls(c=BLACK):
+def message(lines,title=None):
+ n=len(lines)+(1 if title else 0)
+ h=n*18+30
+ y=(H-h)//2
+ rbox(20,y,280,h,8,WHITE)
+ MSG[0],MSG[1]=(y,h)
  COVER[0]+=1
- col(c)
- fill_rect(-1,-1,321,211)
-G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^^....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
-def G_egg_type(m):
- r=random.randint(0,999)
- rar=4 if r<4+2*m else 3 if r<30+10*m else 2 if r<110+25*m else 1 if r<330+40*m else 0
- return random.choice([i for i in range(20)if G_DT[i][2]==rar])
+ yy=y+24
+ if title:
+  ctext(yy,title,GOLD)
+  yy+=18
+ for s in lines:
+  ctext(yy,s)
+  yy+=18
+ while True:
+  k=wkey()
+  if k in(OK,CLR):
+   return k
 def G_art(b,x,y,s,P,out=None,f=0):
  for i in range(0,len(b),8):
   c=P[b[i+1]]
@@ -69,9 +78,12 @@ def G_shapes(m,x,y,ch,out):
   c=G_GROUND[m]
   for o in(3,9,15):
    out.append((0,c,0,(px+o,py+6+o%4,2,8)))
- elif ch=='^':
+ elif ch in '^C':
   out.append((0,G_ROCK,2,([px,px+10,px+20],[py+20,py+1,py+20])))
   out.append((1,WHITE,2,([px+6,px+10,px+14],[py+8,py+1,py+8])))
+  if ch=='C'and G_CAVE[0]:
+   out.append((2,(20,18,25),1,(px+10,py+17,5)))
+   out.append((3,YELLOW,0,(px+8,py+9,5,1)))
  elif ch in 'QS':
   out.append((0,(235,215,170),0,(px+3,py+9,14,11)))
   out.append((1,(200,50,40)if ch=='Q'else(50,90,200),2,([px,px+10,px+20],[py+10,py,py+10])))
@@ -94,8 +106,8 @@ def G_shapes(m,x,y,ch,out):
   v=G_EGGS.get((m,x,y),0)
   q,k=(v//32,v%32)
   r=G_DT[k%G_SMALL][2]
-  sh=G_SCH[q][2]if q else(25,25,35)if r==4 else G_CYAN if r==5 else(245,235,210)
-  sp=G_SCH[q][3]if q else G_MAG if r==5 else YELLOW if r==4 else G_RCOL[r]if r else(200,170,120)
+  sh=G_SCH[q][2]if q else(25,25,35)if r==4 else G_CYAN if r==5 else G_ROCK if r==6 else(245,235,210)
+  sp=G_SCH[q][3]if q else G_MAG if r==5 else YELLOW if r>=4 else G_RCOL[r]if r else(200,170,120)
   out.append((0,G_BARK,0,(px+3,py+15,14,4)))
   out.append((1,sh,1,(px+10,py+10,4 if k==G_SMALL else 6)))
   out.append((2,sp,0,(px+7,py+8,3,3)))

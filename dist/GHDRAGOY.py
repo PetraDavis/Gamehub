@@ -20,7 +20,7 @@ def G_egg(x,y,s,t):
   y+=2*s
   t=0
  r=G_DT[t][2]
- shell=((245,235,210),(225,240,205),(215,230,250),(235,215,250),(30,30,70),(20,20,45))[r]
+ shell=((245,235,210),(225,240,205),(215,230,250),(235,215,250),(30,30,70),(20,20,45),(125,118,110))[r]
  if q:
   shell=G_SCH[q][2]
  G_oval(x,y,s,BLACK,-1)
@@ -32,17 +32,18 @@ def G_egg(x,y,s,t):
    rect(x+dx*s,y+(dy-n)*s,s,(2*n+1)*s,YELLOW)
   circ(x+s,y-s,2*s,(250,230,140))
   circ(x+2*s,y-2*s,2*s,shell)
- elif r==5:
-  circ(x+2*s,y+4*s,4*s,(35,40,110))
-  circ(x-3*s,y+1*s,2*s,(35,40,110))
+ elif r>4:
+  m=(35,40,110)if r==5 else(90,84,78)
+  circ(x+2*s,y+4*s,4*s,m)
+  circ(x-3*s,y+1*s,2*s,m)
   Z=(-1,-8,2,-4,-2,-1,2,2,-1,5,1,8)
-  for c,w in(((110,50,180),s+1),((210,150,255),max(1,s//2))):
+  for c,w in(((110,50,180),s+1),((210,150,255),max(1,s//2)))if r==5 else(((245,140,30),s+1),((250,220,60),max(1,s//2))):
    col(c)
    for i in range(0,10,2):
     ax,ay,bx,by=(x+Z[i]*s,y+Z[i+1]*s,x+Z[i+2]*s,y+Z[i+3]*s)
     fill_poly([ax-w,ax+w,bx+w,bx-w],[ay,ay,by,by])
-  rect(x-5*s,y-3*s,s,s,(210,150,255))
-  rect(x+4*s,y-6*s,s,s,(210,150,255))
+  rect(x-5*s,y-3*s,s,s,c)
+  rect(x+4*s,y-6*s,s,s,c)
  else:
   sp=G_SCH[q][3]if q else((190,150,100),(90,170,80),(60,120,230),(150,80,220))[r]
   if r>=2:
@@ -68,15 +69,16 @@ def G_backpack(g):
  while wkey()not in(OK,CLR):
   pass
 def G_book(g):
- n=21 if g.book>>20&1 else 20
+ P=list(range(20))+[k for k in(20,21)if g.book>>k&1]
+ n=len(P)
  i=0
  while True:
   cls(G_NIGHT)
-  t=G_DT[i]
-  got=g.book>>i&1
+  t=G_DT[P[i]]
+  got=g.book>>P[i]&1
   ctext(22,'DRAGON BOOK  '+str(i+1)+'/'+str(n),GOLD)
   if got:
-   G_drag(102,30,2,i,t[3])
+   G_drag(102,30,2,P[i],t[3])
    ctext(150,t[0],WHITE)
    ctext(172,G_RARE[t[2]]+' '+G_ENAME[t[1]],G_RCOL[t[2]])
   else:
@@ -145,7 +147,7 @@ def G_hatch(g):
  q,e=(v//32,v%32)
  b=e==G_SMALL
  if b:
-  e=random.choice([i for i in range(21)if g.book>>i&1]or[0])
+  e=random.choice([i for i in range(22)if g.book>>i&1]or[0])
  t=G_DT[e]
  cls(G_NIGHT)
  ctext(24,'The egg is cracking!',GOLD)
@@ -168,7 +170,7 @@ def G_hatch(g):
  names=sample(G_NAMES,4)
  i=choose('Name your '+t[0]+':',names+['Type a name'])
  nm=names[max(0,i)]if i<4 else G_typed(t[0])or names[0]
- mh=20+6*min(4,t[2])+6*(e==20)
+ mh=20+6*min(4,t[2])+6*(e==20)+16*(e==21)
  d=[nm,e,1,mh,mh,0,t[3],0,0,q+8*b]
  g.pen.append(d)
  msg=[nm+' joins your pen!']
