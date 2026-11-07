@@ -1,4 +1,4 @@
-# GAMEHUBB: part of GAMEHUB. Keep it next to GAMEHUB.
+# GHMENUB: part of GHMENU. Keep it next to GHMENU.
 from ti_draw import*
 from ti_system import*
 import time
@@ -183,6 +183,21 @@ def I_breakout(x,y,c):
   I_box(x+dx,y+dy,2,2,(120,150,230))
  I_circ(x-1,y+5,2,I_WHITE)
  I_rr(x-11,y+13,22,4,1,I_WHITE)
+def I_simon(x,y,c):
+ r=18
+ cols=((40,170,60),(200,40,40),(40,80,200),(220,180,30))
+ for q in range(4):
+  a0=-math.pi/2+q*math.pi/2
+  xs=[x]
+  ys=[y]
+  for i in range(6):
+   a=a0+math.pi/2*i/5
+   xs.append(x+r*math.cos(a))
+   ys.append(y+r*math.sin(a))
+  I_poly(xs,ys,cols[q])
+ I_circ(x,y,5,I_BLACK)
+ I_box(x-1,y-r,2,2*r,I_BLACK)
+ I_box(x-r,y-1,2*r,2,I_BLACK)
 def I_keys(x,y,c):
  for i in range(3):
   for j in range(3):
@@ -198,16 +213,12 @@ def I_fortune(x,y,c):
  I_box(x+6,y-10,13,20,(120,40,140))
  I_box(x-8,y-15,16,25,(250,240,215))
  I_poly([x,x+2,x+6,x+3,x+4,x,x-4,x-3,x-6,x-2],[y-9,y-4,y-4,y-1,y+4,y+1,y+4,y-1,y-4,y-4],I_GOLD)
-def I_names(x,y,c):
- I_box(x-14,y-9,28,18,I_WHITE)
- I_poly([x-14,x-21,x-14],[y-9,y,y+9],I_WHITE)
- I_box(x-17,y-1,3,3,(20,60,70))
- I_box(x-8,y-4,17,3,I_GOLD)
- I_box(x-8,y+2,11,3,I_INK)
 def I_about(x,y,c):
  I_c_(c)
  fill_circle(x,y-10,3)
  fill_rect(x-3,y-5,6,19)
+def I_bg(mod):
+ return I_BG.get(mod,I_BLACK)
 S_SLOTS=3
 def S_hname(s):
  return 'A'+str(s)+'H'

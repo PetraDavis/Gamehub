@@ -171,19 +171,42 @@ def wipe():
     message([str(n) + " save lists cleared."], "Done")
 
 
-def main():
-    ci = 0
+def pick(st):
+    # The menu. Returns the game the player picked, or None to leave.
+    # st remembers [category, app, inside a category, error, game] between
+    # calls, because the menu is unloaded while a game runs (see main).
+    if st[3]:
+        cls()
+        message([st[3], "Is " + st[4] + " on the", "calculator?"], "Could not run")
+        st[3] = ""
     while True:
-        ci = cat_screen(ci)
-        if ci < 0:
-            cls()
+        if not st[2]:
+            ci = cat_screen(st[0])
+            if ci < 0:
+                cls()
+                return None
+            st[0], st[1], st[2] = ci, 0, 1
+        ai = app_screen(st[0], st[1])
+        if ai < 0:
+            st[2] = 0
+            continue
+        st[1] = ai
+        mod = CATS[st[0]][1][ai][1]
+        if mod[0] == "*":
+            run_app(mod)
+            continue
+        return mod
+
+
+def main():
+    # on the calculator, dist/GAMEHUB.py does this same loop but drops the
+    # whole menu from memory while a game runs (tools/bundle.py)
+    st = [0, 0, 0, "", ""]
+    while True:
+        mod = pick(st)
+        if not mod:
             return
-        ai = 0
-        while True:
-            ai = app_screen(ci, ai)
-            if ai < 0:
-                break
-            run_app(CATS[ci][1][ai][1])
+        run_app(mod)
 
 
 main()

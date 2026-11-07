@@ -330,11 +330,55 @@ def peel(rest, tail):
     return [n for n in rest if id(n) not in side], [n for n in rest if id(n) in side]
 
 
+# GAMEHUB itself is tiny: it loads the menu (GHMENU), and when a game is
+# picked it drops the whole menu from memory before loading the game, so
+# the calculator only ever holds one of them. GAMEHUB alone stayed in
+# memory under every game and they ran out of room together.
+LAUNCHER = """# GAMEHUB - game center for the TI-84 Evo. Run this file.
+import sys
+import gc
+def drop(names):
+ for k in names:
+  try:
+   del sys.modules[k]
+  except Exception:
+   pass
+st=[0,0,0,"",""]
+while True:
+ gc.collect()
+ import GHMENU
+ mod=GHMENU.H_pick(st)
+ GHMENU=None
+ drop(["GHMENU"]+["GHMENU"+c for c in "BCDEF"])
+ gc.collect()
+ if not mod:
+  break
+ try:
+  m=__import__(mod)
+  if not getattr(m,"RAN",False):
+   m.main()
+ except Exception as e:
+  st[3]=str(e)[:26]
+  st[4]=mod
+ m=None
+ drop([mod]+[mod[:7]+c for c in "BCDEF"])
+"""
+
+
 def build_hub():
     mods = mods_map([])
     parts = [convert(LIB, mods), convert('GHICONS', mods), convert('GHSAVE', mods), convert('GAMEHUB', mods)]
+    # the menu file doesn't run main(); GAMEHUB calls its pick()
+    hub = parts[-1]
+    hub.body = [n for n in hub.body if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Call)
+                                            and getattr(n.value.func, 'id', '') == 'H_main')]
+    keep = ast.parse('H_pick')
+    parts.append(keep)
     shake(parts)
-    return split(parts, 'GAMEHUB', '# GAMEHUB - game center for the TI-84 Evo. Run this file.', [])
+    parts.pop()
+    out = split(parts, 'GHMENU', '# GHMENU: the GAMEHUB menu. Run GAMEHUB, not this.', keep.body)
+    out['GAMEHUB'] = LAUNCHER
+    return out
 
 
 def keep_only(tree, var, key):
@@ -436,7 +480,7 @@ if __name__ == '__main__':
         if f.endswith('.py') and f[:-3] not in out:
             os.remove(os.path.join(DIST, f))
     # the site sends every file a game needs
-    parts['GAMEHUB'] = sorted(f for f in out if f.startswith('GAMEHUB'))[::-1]
+    parts['GAMEHUB'] = sorted(f for f in out if f.startswith('GHMENU'))[::-1] + ['GAMEHUB']
     import json
     open(os.path.join(DIST, 'parts.js'), 'w').write('window.PARTS = ' + json.dumps(parts, sort_keys=True) + ';\n')
     for name, src in out.items():
