@@ -1,12 +1,33 @@
-# GHCRYPTB: part of GHCRYPT. Keep it next to GHCRYPT.
+# GHCRYPTB: part of GHCRYPTP. Keep it next to GHCRYPTP.
 from GHCRYPTC import*
-from GHCRYPTC import _corners
+UP=25
+DOWN=34
+LEFT=24
+RIGHT=26
+OK=105
+CLR=45
+DEL=23
+BLACK=(0,0,0)
 WHITE=(255,255,255)
+GOLD=(230,180,40)
+GREY=(110,110,110)
+def key():
+ return get_key(0)
+def wkey():
+ return wait_key()
+_C=[None]
+def col(c):
+ if c!=_C[0]:
+  _C[0]=c
+  set_color(c[0],c[1],c[2])
+def fr(x,y,w,h):
+ fill_rect(x-1,y-1,w+1,h+1)
 def rect(x,y,w,h,c):
  if w<1 or h<1:
   return
  col(c)
  fill_rect(x-1,y-1,w+1,h+1)
+COVER=[0]
 def cls(c=BLACK):
  COVER[0]+=1
  col(c)
@@ -20,11 +41,11 @@ def ctext(y,s,c=WHITE,cx=160):
 def circ(x,y,r,c):
  col(c)
  fill_circle(x,y,r)
-def ring(x,y,r,c,t=2,inner=BLACK):
- col(c)
- fill_circle(x,y,r)
- col(inner)
- fill_circle(x,y,r-t)
+def _corners(x,y,w,h,r,t):
+ if r<=t:
+  return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
+ a=min(r//2,2*t)
+ return((x+r,y,w-2*r,t),(x+r,y+h-t,w-2*r,t),(x,y+r,t,h-2*r),(x+w-t,y+r,t,h-2*r),(x+a,y+t,r-a,t),(x+w-r,y+t,r-a,t),(x+a,y+h-2*t,r-a,t),(x+w-r,y+h-2*t,r-a,t),(x+t,y+a,t,r-a),(x+w-2*t,y+a,t,r-a),(x+t,y+h-r,t,r-a),(x+w-2*t,y+h-r,t,r-a))
 def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
  edge(x,y,w,h,r,c,t)
  if not fill:
@@ -45,6 +66,8 @@ def edge(x,y,w,h,r,c,t=2,inner=BLACK):
  for bx,by,bw,bh in _corners(x,y,w,h,r,t):
   if bw>0 and bh>0:
    fr(bx,by,bw,bh)
+def pause(s):
+ time.sleep(s)
 def choose(title,opts,sel=0):
  cls()
  ctext(24,title,GOLD)
@@ -72,12 +95,25 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
-def I_draw(mod,x,y,c):
- f=I_ICONS.get(mod)
- if f:
-  f(x,y,c)
+try:
+ from time import monotonic as G_now
+except Exception:
+ G_now=None
 G_MAP=['#BBBB###SSS###','B....#.......#','B............k','#####G.......#','#....#.......#','T....l.......j','#....#.......C','########PF####']
+G_VW=320
+G_VH=172
+G_CWID=G_VW//G_COLS
+G_WALL=(75,95,99)
+G_DOOR=(110,75,45)
+G_FLOOR=(42,36,32)
+G_CEIL=(16,16,18)
+G_LINK1='petradavis.github.io/'
+G_LINK2='Encrypted/?ysolde=1'
+G_CIPHER='LI WKH OLJKWV GLH VKH LV LQ WKH URRP. GRQW UXQ. KLGH LQ WKH FRDW FORVHW. LWV FRGH LV HFKR'
+G_TAPGRID=('ABCDE','FGHIK','LMNOP','QRSTU','VWXYZ')
 G_KNOCKS=((4,1),(4,5),(2,4),(1,5),(4,4))
+class G_St:
+ pass
 G_SPR={'couch':(1.3,((0,1,0,0.2,(150,40,45)),(0.08,0.92,0.2,0.36,(120,30,35)),(0,0.12,0.2,0.28,(150,40,45)),(0.88,1,0.2,0.28,(150,40,45)))),'table':(0.9,((0,0.12,0,0.28,(95,65,40)),(0.88,1,0,0.28,(95,65,40)),(0,1,0.28,0.33,(120,85,50)),(0.3,0.7,0.33,0.37,(140,70,180)))),'phone':(0.6,((0,0.15,0,0.3,(95,65,40)),(0.85,1,0,0.3,(95,65,40)),(0,1,0.3,0.34,(120,85,50)),(0.25,0.75,0.34,0.42,(20,20,20)))),'lamp':(0.6,((0.45,0.55,0,0.55,(180,150,70)),(0.15,0.85,0.55,0.72,(235,220,170)))),'desk':(1.2,((0,0.1,0,0.3,(95,65,40)),(0.9,1,0,0.3,(95,65,40)),(0,1,0.3,0.35,(120,85,50)),(0.2,0.5,0.35,0.38,(200,190,150)))),'rack':(0.7,((0.46,0.54,0,0.8,(80,55,35)),(0.15,0.45,0.35,0.75,(60,70,110)),(0.55,0.85,0.4,0.72,(110,50,50)))),'vase':(0.7,((0.1,0.9,0,0.25,(95,65,40)),(0.35,0.65,0.25,0.45,(60,120,140)),(0.3,0.7,0.45,0.55,(90,140,70))))}
 G_SPRITES=[(3.3,5.5,'couch'),(1.9,4.6,'table'),(4.4,6.4,'phone'),(1.0,6.5,'lamp'),(2.6,1.5,'desk'),(12.4,4.9,'rack'),(6.5,1.4,'vase')]
 G_ROOMS=(('Library',0,0,5,3),('Living Room',0,3,5,8),('Grand Foyer',5,0,14,8))
@@ -95,6 +131,8 @@ def G_room(g):
   if x0<=g.x<x1 and y0<=g.y<y1:
    return n
  return 'Grand Foyer'
+def G_clock():
+ return G_now()if G_now else 0
 def G_shade(c,k):
  return(min(255,int(c[0]*k)),min(255,int(c[1]*k)),min(255,int(c[2]*k)))
 def G_light(g,i,d):
@@ -117,6 +155,8 @@ def G_colour(t):
  if t=='B':
   return(90,60,35)
  return G_WALL
+def G_lq(k):
+ return int(k*5+0.5)/5
 def G_put(sp,a,b,c):
  if b<=a:
   return sp
@@ -179,15 +219,7 @@ def G_sprites(g,zb,ca,sa,new):
      y1=int(top+h*(1-v0))&~1
      if y1-y0>=2 and y0<G_VH:
       new[i]=G_put(new[i],max(0,y0),min(G_VH,y1),G_shade(c,k))
-def G_bottom(g,prompt):
- if prompt==g.shown:
-  return
- g.shown=prompt
- rect(0,G_VH,320,210-G_VH,BLACK)
- text(4,G_VH+15,G_room(g),GREY)
- if g.flash:
-  text(250,G_VH+15,'LIGHT',GOLD)
- text(4,G_VH+33,prompt[:31],WHITE)
+G_YS=[]
 def G__poly_slabs(pts,kind,step,top=True,bottom=True):
  ys=[p[1]for p in pts]
  y=min(ys)
@@ -254,69 +286,33 @@ def G__build_ys():
  G__oval(0,0,17,25,0,4)
  for ex,ey in((137.2,41.2),(149.1,48.55)):
   G_YS.append(((ex-2)/256,(ex+2)/256,1-(ey+2)/640,1-(ey-2)/640,4))
+G_YG=4
 G_RIM=((215,215,225),(170,175,190),(250,250,255))
-def G_ys_draw(g,ys):
- if not G_YS:
-  G__build_ys()
- left,wid,top,h,a,b=ys[0]
- lo=a*G_CWID
- hi=b*G_CWID
- rows={}
- eyes=[]
- for u0,u1,v0,v1,kind in G_YS:
-  xa=max(lo,int(left+u0*wid))//G_YG
-  xb=min(hi,int(left+u1*wid)+1+G_YG-1)//G_YG
-  ya=int(top+h*(1-v1))
-  yb=int(top+h*(1-v0))+1
-  if kind==4:
-   eyes.append(((xa+xb)*G_YG//2,(ya+yb)//2))
-   continue
-  if xb<=xa:
-   continue
-  for r in range(max(0,ya)//G_YG,(min(G_VH,yb)+G_YG-1)//G_YG):
-   if r in rows:
-    rows[r].append((xa,xb))
-   else:
-    rows[r]=[(xa,xb)]
- out=[]
- open_={}
- for r in range(G_VH//G_YG+1):
-  cur={}
-  segs=sorted(rows.get(r,()))
-  m=[]
-  for xa,xb in segs:
-   if m and xa<=m[-1][1]:
-    if xb>m[-1][1]:
-     m[-1][1]=xb
-   else:
-    m.append([xa,xb])
-  for xa,xb in m:
-   if xb-xa>=3:
-    cur[xa,xa+1,0]=1
-    cur[xa+1,xb-1,1]=1
-    cur[xb-1,xb,0]=1
-   else:
-    cur[xa,xb,0]=1
-  for key in list(open_):
-   if key not in cur:
-    out.append((key,open_.pop(key),r))
-  for key in cur:
-   if key not in open_:
-    open_[key]=r
- g.rim=[]
- for c in(0,1):
-  for(xa,xb,kind),r0,r1 in out:
-   if kind==c:
-    x,y,w,hh=(xa*G_YG,r0*G_YG,(xb-xa)*G_YG,min(G_VH,r1*G_YG)-r0*G_YG)
-    if hh>0:
-     rect(x,y,w,hh,G_INSIDE if c else G_RIM[0])
-     if not c:
-      g.rim.append((x,y,w,hh))
- r=max(2,wid//12)
- eyes=[(x,y)for x,y in eyes if lo+r<=x<hi-r and r<=y<G_VH-r]
- for rr,c in((r,(35,80,150)),(r*2//3,(80,175,245)),(max(1,r//3),(230,250,255))):
-  for x,y in eyes:
-   circ(x,y,rr,c)
+G_INSIDE=(36,36,44)
+def G_ys_place(g,zb,ca,sa):
+ if not g.ys_vis:
+  return None
+ dx=g.yx-g.x
+ dy=g.yy-g.y
+ fwd=dx*ca+dy*sa
+ if fwd<0.2:
+  return None
+ cx=(-dx*sa+dy*ca)/fwd/(G_FOV*0.5*1.15)
+ scol=(cx+1)/2*G_COLS
+ half=0.45/2/fwd/(G_FOV*0.5*1.15)*G_COLS/2
+ h=int(G_VH*1.35/fwd)&~7
+ top=(G_VH-h)//2
+ a=None
+ b=0
+ for i in range(max(0,int(scol-half)),min(G_COLS,int(scol+half)+1)):
+  if zb[i]>=fwd:
+   if a is None:
+    a=i
+   b=i+1
+ if a is None:
+  return None
+ left=int((scol-half)*G_CWID)&~3
+ return((left,int(2*half*G_CWID)&~3,top,h,a,b),a,b)
 def G_ys_shimmer(g):
  if not g.rim:
   return
@@ -363,8 +359,6 @@ def G_toast(g,lines):
  while wkey()not in(OK,CLR):
   pass
  g.shown=None
-def G_say(g,s):
- G_toast(g,G_wrap(s,27))
 def G_objective(g):
  if not g.power:
   t='It is pitch dark. Find the power switch by the front door.'
