@@ -1,6 +1,5 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-UP=25
 def choose(title,opts,sel=0):
  cls()
  ctext(24,title,GOLD)
@@ -28,9 +27,13 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
-G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','T..........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^^....','^^^^^^^^^^^^^^^^'])
+G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
 G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
+def G_egg_type(m):
+ r=random.randint(0,99)+m*6
+ rar=4 if r>=99 else 3 if r>=92 else 2 if r>=78 else 1 if r>=52 else 0
+ return random.choice([i for i in range(20)if G_DT[i][2]==rar])
 def G_egg(x,y,s,t):
  r=G_DT[t][2]
  shell=((245,235,210),(225,240,205),(215,230,250),(235,215,250),(30,30,70),(20,20,45))[r]
@@ -62,109 +65,69 @@ def G_egg(x,y,s,t):
   for dx,dy in((-3,-5),(2,-3),(-2,5),(3,5),(-5,2))[:3+r]:
    rect(x+dx*s,y+dy*s,2*s,2*s,sp)
  circ(x-3*s,y-5*s,s+1,WHITE)
-def G_battle(g,f):
- name,fhp,fat,xp,fc,fe=f
- mx=fhp
- G_foe_screen(f,name+' appears!')
- log=''
- sel=0
- was=None
- while True:
-  d=g.ride
-  opts=('Claw','Breath','Run')if d is not None else('Sword','Run')
-  n=len(opts)
-  w=300//n
-  sel=min(sel,n-1)
-  now=(d[0]if d else 'You',d[3]if d else g.hp,fhp,sel,log,n)
-  if was is None or was[0]!=now[0]:
-   rect(0,40,148,60,BLACK)
-   rect(0,150,320,34,BLACK)
-   text(12,56,now[0],d[6]if d and d[1]!=19 else WHITE)
-   text(12,86,name[:12],RED if f is G_DREAD else fc)
-   for i in range(n):
-    cc=GOLD if i==sel else WHITE
-    rbox(10+i*w,154,w-6,24,8,cc)
-    text(10+i*w+(w-6)//2-len(opts[i])*5,172,opts[i],cc)
-   was=None
-  if was is None or was[1]!=now[1]:
-   G_bar(12,62,120,now[1],d[4]if d else g.mhp,GREEN)
-  if was is None or was[2]!=fhp:
-   G_bar(12,92,120,fhp,mx,RED)
-  if was is not None and was[3]!=sel:
-   for i in(was[3],sel):
-    cc=GOLD if i==sel else WHITE
-    edge(10+i*w,154,w-6,24,8,cc)
-    text(10+i*w+(w-6)//2-len(opts[i])*5,172,opts[i],cc)
-  if was is None or was[4]!=log:
-   rect(0,186,320,24,BLACK)
-   text(6,202,log[:31],GREY)
-  was=now
-  k=wkey()
-  if k in(LEFT,RIGHT):
-   sel=(sel+(1 if k==RIGHT else-1))%n
-   continue
-  if k!=OK:
-   continue
-  o=opts[sel]
-  if o=='Run':
-   if f is G_BOSS:
-    log='The Wyrm blocks your way!'
+def G_paint(ops):
+ ops.sort(key=lambda o:(o[0],o[1],o[2],o[3][1]if o[2]==0 else 0,o[3][0]))
+ last=None
+ for layer,c,kind,a in ops:
+  if kind==0:
+   if last and last[0]==(layer,c)and(last[2]==a[1])and(last[4]==a[3])and(last[1]+last[3]==a[0]):
+    last[3]+=a[2]
     continue
-   if random.random()<0.6:
-    return True
-   log="Couldn't get away."
-  elif o=='Sword':
-   dm=random.randint(3,5)
-   fhp-=dm
-   log='Sword hits for '+str(dm)+'.'
+   if last:
+    rect(last[1],last[2],last[3],last[4],last[0][1])
+   last=[(layer,c),a[0],a[1],a[2],a[3]]
+   continue
+  if last:
+   rect(last[1],last[2],last[3],last[4],last[0][1])
+   last=None
+  if kind==1:
+   circ(a[0],a[1],a[2],c)
   else:
-   at=5+2*d[2]+2*G_DT[d[1]][2]
-   if o=='Claw':
-    dm=at+random.randint(0,2)
-    log='Claw hits for '+str(dm)+'.'
-   else:
-    dm=at+random.randint(2,5)
-    if G_beats(G_el(d),fe):
-     dm*=2
-     log='Super breath! '+str(dm)+'.'
-    elif G_beats(fe,G_el(d)):
-     dm//=2
-     log='Weak breath... '+str(dm)+'.'
-    else:
-     log='Breath hits for '+str(dm)+'.'
-   fhp-=dm
-  if fhp<=0:
-   msg=[]
-   for dd in g.pen:
-    if dd[3]>0 and(dd is d or dd is g.pick):
-     dd[5]+=xp
-     while dd[5]>=dd[2]*10:
-      dd[5]-=dd[2]*10
-      dd[2]+=1
-      dd[4]+=6
-      dd[3]=dd[4]
-      msg.append(dd[0]+' is now level '+str(dd[2])+'!')
-   message(msg[:3]or['You won!'],name+' beaten')
-   if f is not G_BOSS:
-    G_quest_step(g,0,name)
-    G_quest_step(g,2,g.m)
-   return True
-  dm=max(1,fat+random.randint(0,3)-(d[2]if d else 0))
-  log+=' It hits '+str(dm)+'.'
-  if d is not None:
-   d[3]=max(0,d[3]-dm)
-   if d[3]==0:
-    g.ride=None
-    message([d[0]+' is too tired to fly.','You fight on foot!'],'Oh no')
-    G_foe_screen(f,name)
-    was=None
-  else:
-   g.hp-=dm
-   if g.hp<=0:
-    cls()
-    ctext(60,'YOU DIED',RED)
-    message(['The '+name+' won.','Back to your last save','at the nest.'],'Game over')
-    return False
+   col(c)
+   fill_poly(a[0],a[1])
+ if last:
+  rect(last[1],last[2],last[3],last[4],last[0][1])
+def G_cells(g,todo,with_hero):
+ mp=g.maps[g.m]
+ ops=[]
+ rows={}
+ for x,y in todo:
+  rows.setdefault(y,[]).append(x)
+ for y in rows:
+  xs=sorted(rows[y])
+  i=0
+  while i<len(xs):
+   c=G_base(g.m,mp[y][xs[i]])
+   j=i+1
+   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
+    j+=1
+   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
+   i=j
+ for x,y in todo:
+  G_shapes(g.m,x,y,mp[y][x],ops)
+ if with_hero:
+  G_hero(g,ops)
+ G_paint(ops)
+def G_draw_map(g,after_msg=False):
+ r0,r1=(0,9)
+ if after_msg:
+  r0=max(0,(MSG[0]-20)//G_T)
+  r1=min(9,(MSG[0]+MSG[1]-20)//G_T+1)
+ else:
+  cls()
+  G_HUD[0]=None
+ G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
+ G_hud(g)
+def G_save(g):
+ s=[2,g.coins,g.own,g.book]+(g.bag+[-1]*5)[:5]
+ for d in g.pen:
+  p=G_PAINT.index(d[6])+1 if d[6]in G_PAINT and d[6]!=G_DT[d[1]][3]else 0
+  s+=[G_NAMES.index(d[0])*32+d[1],d[2],d[5],p*200+d[7]*20+d[8]]
+ try:
+  from ti_system import store_list
+  store_list('DRG',s)
+ except Exception:
+  pass
 def G_new_quest(g):
  k=random.randint(0,2)
  if k==0:
@@ -211,6 +174,21 @@ def G_lst(title,opts):
    return sel
   elif k==CLR:
    return-1
+def G_dress(g,d,first):
+ ids=[i for i in range(first,first+8)if g.own>>i&1]
+ if not ids:
+  message(['Buy one in the shop first.'],'Nothing to wear')
+  return
+ c=G_lst('Wear on '+('head'if first==1 else 'body'),[G_GEAR[i][0]for i in ids]+['Nothing'])
+ if c<0:
+  return
+ v=ids[c]if c<len(ids)else 0
+ if first==1:
+  d[7]=v
+ else:
+  d[8]=v
+ G_portrait(d)
+ message([d[0]+' looks great!'],'Dressed up')
 def G_put_egg(g,t,near):
  mp=g.maps[g.m]
  for n in range(30):
@@ -235,6 +213,6 @@ def G_evil(g):
  G_draw_map(g)
  if not G_put_egg(g,20,True)and len(g.bag)<5:
   g.bag.append(20)
- message(['The Dread Drake flies','away... and leaves its','QUANTUM EGG behind!'],'Whoa!')
+ message(['The Dread Drake flies','away... and leaves a','strange egg behind!'],'Whoa!')
  G_draw_map(g,True)
  return True

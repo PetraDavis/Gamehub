@@ -1,30 +1,23 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
-def G_egg_type(m):
- r=random.randint(0,99)+m*6
- rar=4 if r>=99 else 3 if r>=92 else 2 if r>=78 else 1 if r>=52 else 0
- return random.choice([i for i in range(20)if G_DT[i][2]==rar])
-def G_save(g):
- s=[1,g.coins,g.own]+(g.bag+[-1]*5)[:5]
+class G_Game:
+ pass
+def G_rest(g):
+ g.hp=g.mhp
+ g.ride=None
  for d in g.pen:
-  p=G_PAINT.index(d[6])+1 if d[6]in G_PAINT and d[6]!=G_DT[d[1]][3]else 0
-  s+=[G_NAMES.index(d[0])*32+d[1],d[2],d[5],p*200+d[7]*20+d[8]]
- try:
-  from ti_system import store_list
-  store_list('DRG',s)
- except Exception:
-  pass
+  d[3]=d[4]
 def G_load(g):
  try:
   from ti_system import recall_list
   s=[int(v)for v in recall_list('DRG')]
  except Exception:
   return
- if len(s)<8 or s[0]!=1:
+ if len(s)<9 or s[0]!=2:
   return
- g.coins,g.own=(s[1],s[2])
- g.bag=[e for e in s[3:8]if e>=0]
- for i in range(8,len(s)-3,4):
+ g.coins,g.own,g.book=(s[1],s[2],s[3])
+ g.bag=[e for e in s[4:9]if e>=0]
+ for i in range(9,len(s)-3,4):
   t=s[i]%32
   lv=s[i+1]
   mh=20+6*min(4,G_DT[t][2])+6*(lv-1)
@@ -51,21 +44,6 @@ def G_pen(g):
    g.pen.remove(d)
    if g.pick is d:
     g.pick=g.pen[0]
-def G_dress(g,d,first):
- ids=[i for i in range(first,first+8)if g.own>>i&1]
- if not ids:
-  message(['Buy one in the shop first.'],'Nothing to wear')
-  return
- c=G_lst('Wear on '+('head'if first==1 else 'body'),[G_GEAR[i][0]for i in ids]+['Nothing'])
- if c<0:
-  return
- v=ids[c]if c<len(ids)else 0
- if first==1:
-  d[7]=v
- else:
-  d[8]=v
- G_portrait(d)
- message([d[0]+' looks great!'],'Dressed up')
 def G_shop(g):
  while True:
   d=g.pick
@@ -103,7 +81,7 @@ def G_nest(g):
  G_rest(g)
  G_save(g)
  while True:
-  c=choose('The Nest (saved)',['Dragon pen','Quest board','Shop','Backpack','Leave the nest'])
+  c=choose('The Nest (saved)',['Dragon pen','Quest board','Shop','Backpack and book','Leave the nest'])
   if c==0:
    G_pen(g)
   elif c==1:
@@ -114,7 +92,10 @@ def G_nest(g):
    else:
     G_shop(g)
   elif c==3:
-   G_backpack(g)
+   if choose('Look at your',['Backpack','Dragon book'])==1:
+    G_book(g)
+   else:
+    G_backpack(g)
   else:
    G_save(g)
    return
@@ -125,13 +106,38 @@ def G_backpack(g):
   ctext(100,'No eggs. Go and find some!')
  for i in range(len(g.bag)):
   G_egg(40+i*60,90,3,g.bag[i])
-  text(16+i*60,150,G_RARE[G_DT[g.bag[i]][2]][:5],G_RCOL[G_DT[g.bag[i]][2]])
+  r=G_DT[g.bag[i]][2]
+  text(16+i*60,150,'???'if r>4 else G_RARE[r][:5],G_RCOL[r])
  if g.bag:
   text(6,186,'The first egg hatches in '+str(g.warm),WHITE)
  n=len([i for i in range(1,17)if g.own>>i&1])
  text(6,204,'Accessories: '+str(n)+' of 16',GREY)
  while wkey()not in(OK,CLR):
   pass
+def G_book(g):
+ n=21 if g.book>>20&1 else 20
+ i=0
+ while True:
+  cls(G_NIGHT)
+  t=G_DT[i]
+  got=g.book>>i&1
+  ctext(22,'DRAGON BOOK  '+str(i+1)+'/'+str(n),GOLD)
+  if got:
+   G_drag(102,30,2,i,t[3])
+   ctext(150,t[0],WHITE)
+   ctext(172,G_RARE[t[2]]+' '+G_ENAME[t[1]],G_RCOL[t[2]])
+  else:
+   G_oval(160,90,4,(30,32,55))
+   ctext(98,'?',GREY)
+   ctext(150,'???',GREY)
+   ctext(172,'Not found yet',GREY)
+  f=len([k for k in range(20)if g.book>>k&1])
+  text(6,204,'Found '+str(f)+' of 20   Left/Right',GREY)
+  k=wkey()
+  if k in(LEFT,RIGHT):
+   i=(i+(1 if k==RIGHT else-1))%n
+  elif k in(OK,CLR):
+   return
 def G_hatch(g):
  e=g.bag.pop(0)
  g.warm=12
@@ -142,7 +148,7 @@ def G_hatch(g):
  pause(1.0)
  cls(G_NIGHT)
  G_drag(73,30,3,e,t[3])
- ctext(200,G_RARE[t[2]]+' '+t[0]+' dragon!',G_RCOL[t[2]])
+ ctext(200,(''if t[2]>4 else G_RARE[t[2]]+' ')+t[0]+' dragon!',G_RCOL[t[2]])
  pause(1.2)
  names=sample(G_NAMES,4)
  i=choose('Name your '+t[0]+':',names)
@@ -151,11 +157,14 @@ def G_hatch(g):
  d=[nm,e,1,mh,mh,0,t[3],0,0]
  g.pen.append(d)
  msg=[nm+' joins your pen!']
+ if not g.book>>e&1:
+  g.book|=1<<e
+  msg.append('New page in your book!')
  if g.pick is None:
   g.pick=d
   msg+=['Press ENTER to ride.','Dragons fly over water,','lava and mountains.']
  G_draw_map(g)
- message(msg,G_RARE[t[2]]+' '+t[0])
+ message(msg,t[0])
  G_quest_step(g,1,None)
  G_draw_map(g,True)
 def G_menu(g):
@@ -164,7 +173,7 @@ def G_menu(g):
   first='Get off '+d[0]
  else:
   first='Ride '+d[0]+(''if d[3]>0 else ' (tired)')
- c=choose(d[0]+' the '+G_DT[d[1]][0],[first,'Backpack','Keep exploring'])
+ c=choose(d[0]+' the '+G_DT[d[1]][0],[first,'Backpack','Dragon book','Keep exploring'])
  if c==0:
   if g.ride is not None:
    if g.maps[g.m][g.y][g.x]in '~L^':
@@ -182,6 +191,8 @@ def G_menu(g):
    g.ride=d
  elif c==1:
   G_backpack(g)
+ elif c==2:
+  G_book(g)
  G_draw_map(g)
 def G_play():
  g=G_Game()
@@ -201,6 +212,7 @@ def G_play():
  g.warm=12
  g.coins=0
  g.own=0
+ g.book=0
  g.quest=None
  g.seen=0
  g.spawn=30

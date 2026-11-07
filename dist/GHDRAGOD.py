@@ -1,129 +1,41 @@
 # GHDRAGOD: part of GHDRAGOP. Keep it next to GHDRAGOP.
-from ti_draw import*
-from ti_system import*
-import time
-import random
-DOWN=34
-LEFT=24
-RIGHT=26
-OK=105
-CLR=45
-SECOND=21
-BLACK=(0,0,0)
-WHITE=(255,255,255)
-GOLD=(230,180,40)
-GREY=(110,110,110)
-DARK=(40,40,40)
-RED=(220,50,50)
-GREEN=(50,190,80)
-YELLOW=(240,220,60)
-H=210
-def shuffle(a):
- for i in range(len(a)-1,0,-1):
-  j=random.randint(0,i)
-  a[i],a[j]=(a[j],a[i])
-def sample(seq,k):
- a=list(seq)
- shuffle(a)
- return a[:k]
-def wkey():
- return wait_key()
-_C=[None]
-def col(c):
- if c!=_C[0]:
-  _C[0]=c
-  set_color(c[0],c[1],c[2])
-def fr(x,y,w,h):
- fill_rect(x-1,y-1,w+1,h+1)
-def rect(x,y,w,h,c):
- if w<1 or h<1:
-  return
- col(c)
- fill_rect(x-1,y-1,w+1,h+1)
-COVER=[0]
-def cls(c=BLACK):
- COVER[0]+=1
- col(c)
- fill_rect(-1,-1,321,211)
-TY=6
-def text(x,y,s,c=WHITE):
- col(c)
- draw_text(x,y+TY,s)
+from GHDRAGOE import*
+UP=25
 def ctext(y,s,c=WHITE,cx=160):
  col(c)
  draw_text(cx-len(s)*5,y+TY,s)
-def circ(x,y,r,c):
- col(c)
- fill_circle(x,y,r)
 def lt(c,k=0.35):
  return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
-def dk(c,k=0.65):
- return(int(c[0]*k),int(c[1]*k),int(c[2]*k))
 def _corners(x,y,w,h,r,t):
  return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
-def pause(s):
- time.sleep(s)
-MSG=[0,0]
-G_TEST=True
-G_EVIL=0.12 if G_TEST else 0.004
-G_T=20
-G_LANDS=('Green Valley','Fire Mountain','Frost Peaks')
-G_GROUND=((50,130,60),(85,65,55),(215,225,240))
-G_TALL=((35,100,45),(120,90,60),(170,190,220))
-G_WATER=(40,90,190)
-G_LAVA=(230,90,20)
-G_ROCK=(110,105,115)
-G_LEAF=(25,85,35)
-G_BARK=(90,60,30)
-G_CYAN=(60,230,230)
-G_NIGHT=(45,50,80)
-G_MAG=(230,60,220)
-G_ENAME=('fire','water','plant','star')
-G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum')
-G_RCOL=(WHITE,(120,220,120),(90,160,255),(200,110,240),GOLD,G_CYAN)
-G_DT=(('Pyrrak',0,0,(220,70,40)),('Smoldedrake',0,0,(235,140,40)),('Aquawyrm',1,0,(60,130,230)),('Gillwing',1,0,(40,170,170)),('Fernling',2,0,(70,170,70)),('Lichenwing',2,0,(130,150,60)),('Stonewyrm',2,0,(150,140,120)),('Volcanox',0,1,(170,40,30)),('Ashveil',0,1,(75,75,85)),('Glacius',1,1,(160,210,245)),('Tempestra',1,1,(120,100,200)),('Thornwyrm',2,1,(30,110,60)),('Dawnwing',0,2,(240,190,40)),('Pearlhorn',1,2,(240,120,150)),('Jadewyrm',2,2,(60,200,150)),('Petalwyrm',2,2,(250,160,210)),('Blazequill',0,3,(255,90,60)),('Abyssar',1,3,(30,60,160)),('Rootwyrm',2,3,(110,80,40)),('Lumora',3,4,(25,25,35)),('Quantum',3,5,(25,30,80)))
+def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
+ edge(x,y,w,h,r,c,t)
+ if fill:
+  rect(x+t,y+t,w-2*t,h-2*t,inner)
+def edge(x,y,w,h,r,c,t=2,inner=BLACK):
+ col(c)
+ for bx,by,bw,bh in _corners(x,y,w,h,r,t):
+  if bw>0 and bh>0:
+   fr(bx,by,bw,bh)
+G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','T..........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^^....','^^^^^^^^^^^^^^^^'])
+G_PAINT=((220,70,40),(60,130,230),(70,170,70),(240,190,40),(200,110,240),(240,120,150),(40,40,50),(240,240,245))
 G_PAL=(BLACK,WHITE,(250,220,60),(245,140,30),(220,40,30),(120,120,125),(200,200,210),(30,90,40),(90,190,80),(250,150,200),(110,75,40),G_CYAN,G_MAG,GOLD,(170,210,250))
-G_PAL2=((130,60,190),(190,195,205),(40,80,200),(30,30,70),(200,130,255),(170,20,30))
-G_ARTB=b'\x02\x10\x1e\x19-\x08/\x19\x00\x19\x1b"\x04\x07\x00\x00\x00\x19\x19(\x05\x02\x00\x00\x00\x19)"\x04\x07\x00\x00\x00\x19\'(\x05\x02\x00\x00\x02\x11)\x1a9\x1f)#\x02\x116\x1b<\x1f6#\x01\x11\x1a\x1e\x05\x00\x00\x00\x01\x11)\x1e\x05\x00\x00\x00\x00\x11\x1a\x19\x0f\n\x00\x00\x02\x11\x12\x15\x1c\x1a\x16 \x00\x11\x11\x14\x07\n\x00\x00\x00\x11\n\x10\x0c\x08\x00\x00\x00\x11\x08\x13\x04\x05\x00\x00\x02\x10) 9\x1f)#\x00\x10\x08\x17\x0b\x02\x00\x00\x00\x18\x1a\x19\x0e\x02\x00\x00\x00\x18\x0b\x10\t\x01\x00\x00\x00\x0f\x18 \x13\x03\x00\x00\x00\x0f\x11\x18\x02\x06\x00\x00\x02\x0f\x12\x10\x19\n\x15\x12\x00\x10\x1d \x01\x03\x00\x00\x00\x10! \x01\x03\x00\x00\x00\x10% \x01\x03\x00\x00\x02\x10\x0f\x11\x14\n\x12\x11\x02\x0f\x18\x1a(\n%\x1c\x02\x10(\n\x1c\x1b\x1e\x1b\x02\x10(\n!\x1c#\x1c\x02\x11\x17\x1a(\t\x1a\x1a\x01\x11\x1a\x1b\x03\x00\x00\x00\x01\x11\x1b"\x04\x00\x00\x00\x00\x11\x18"\x05\x07\x00\x00\x00\x11\x16(\x07\x02\x00\x00\x01\x11("\x04\x00\x00\x00\x00\x11%"\x05\x07\x00\x00\x00\x11#(\x07\x02\x00\x00\x00\x19\x0c\x10\x05\x01\x00\x00\x00\x01\x0c\x12\x03\x02\x00\x00\x00\x01\n\x17\x01\x01\x00\x00\x00\x01\x16)\x01\x01\x00\x00\x00\x01#)\x01\x01\x00\x00\x02\x01(\t*\x07)\x0b\x00\x00\r\x12\x02\x02\x00\x00\x00\x00\t\x14\x01\x01\x00\x00'
-G_ARTF=(b'\x02\x036\x1e<\x10@\x1e\x02\x029\x1e<\x15>\x1e',b'\x01\x06\x05\x12\x02\x00\x00\x00\x01\x06\x02\x0e\x03\x00\x00\x00\x01\x05\x00\t\x02\x00\x00\x00',b'\x01\x0f!\x1f\x06\x00\x00\x00\x02\x10\x1e\x18"\x11&\x18',b'\x00\x01\x16\x1c\x07\x02\x00\x00\x00\x01\x1d\x1d\x07\x02\x00\x00\x00\x01$\x1c\x08\x02\x00\x00',b'\x02\x08\r\x10\x11\x07\x15\x10\x00\x07\x10\r\x01\x04\x00\x00',b'\x00\x07\x1a\x19\x05\x03\x00\x00\x00\x07#\x1d\x06\x03\x00\x00\x00\x07\x0c\x11\x03\x02\x00\x00\x00\x07,\x1d\x04\x02\x00\x00',b'\x01\x05\x1a\x18\x03\x00\x00\x00\x01\x05 \x17\x03\x00\x00\x00\x01\x05&\x18\x03\x00\x00\x00\x01\x05\x10\x11\x02\x00\x00\x00',b'\x00\x03\x1a\x1b\x06\x01\x00\x00\x00\x03\x1f\x1c\x01\x05\x00\x00\x00\x03$\x1a\x01\x06\x00\x00\x00\x03%\x1f\x05\x01\x00\x00\x00\x03\r\x16\x04\x01\x00\x00',b'\x02\x05\x18\x1a(\n%\x1c\x02\x10(\n\x1c\x1b\x1e\x1b\x02\x10(\n!\x1c#\x1c\x02\x11\x17\x1a(\t\x1a\x1a\x01\x11\x1a\x1b\x03\x00\x00\x00\x02\x01(\t*\x07)\x0b\x01\x06\x05\x14\x02\x00\x00\x00',b'\x02\x01\x18\x18\x1a\x12\x1c\x18\x02\x01\x1e\x18 \x12"\x18\x02\x01&\x18(\x12*\x18\x02\x01-\x1c/\x171\x1c',b'\x00\x02\x1f\x0f\x02\x04\x00\x00\x00\x02\x1f\x12\x05\x02\x00\x00\x00\x02"\x13\x02\x05\x00\x00',b'\x02\x10*\x1c,\x17.\x1c\x02\x10/\x1c1\x173\x1c\x02\x10\x12\x14\x15\x0e\x18\x14',b'\x01\x02\x1a\x1e\x04\x00\x00\x00\x01\r\x1a\x1e\x02\x00\x00\x00',b'\x00\t\r\t\x02\x07\x00\x00\x00\t\x0b\n\x02\x02\x00\x00\x00\t\x12\x08\x02\x08\x00\x00\x00\t\x14\t\x02\x02\x00\x00',b'\x00\x0b\x0e\x10\x03\x03\x00\x00\x00\x01\x0f\x10\x01\x01\x00\x00',b'\x01\x01 \x10\x02\x00\x00\x00\x01\t$\x15\x02\x00\x00\x00\x01\x01\x1e\x17\x02\x00\x00\x00\x01\x02!\x13\x01\x00\x00\x00',b'\x02\x03\x18\x1a(\n%\x1c\x02\x02(\n\x1c\x1b\x1e\x1b\x02\x02(\n!\x1c#\x1c\x02\x11\x17\x1a(\t\x1a\x1a\x01\x11\x1a\x1b\x03\x00\x00\x00\x02\x01(\t*\x07)\x0b\x02\x02\x0b\x10\x0e\x07\x11\x10\x02\x035\x1e;\rA\x1e\x02\x028\x1e;\x13>\x1e',b'\x00\x11&\x1a\x0e\x06\x00\x00\x02\x0f\x1c\x18 \x12$\x18\x02\x0f)\x1a,\x14/\x1a',b"\x00\n\x0e\x08\x02\x08\x00\x00\x00\n\x0b\t\x04\x02\x00\x00\x00\n\x12\x08\x02\x08\x00\x00\x00\n\x13\x08\x04\x02\x00\x00\x00\x10\x1b\x19\x01\t\x00\x00\x00\x10!\x19\x01\t\x00\x00\x00\x10'\x19\x01\t\x00\x00",b'\x02\x15\x18\x1a(\n%\x1c\x02\x00(\n\x1c\x1b\x1e\x1b\x02\x00(\n!\x1c#\x1c\x02\x11\x17\x1a(\t\x1a\x1a\x01\x11\x1a\x1b\x03\x00\x00\x00\x02\x01(\t*\x07)\x0b\x00\x02 \x0e\x02\x02\x00\x00\x00\x02#\x13\x02\x02\x00\x00\x00\x02\x1d\x16\x02\x02\x00\x00\x00\x02%\x0c\x01\x01\x00\x00\x00\x02!\x17\x01\x01\x00\x00\x02\x02 \x19#\x1f\x1d\x1f\x00\x02\r\x12\x02\x02\x00\x00',b'\x00\x00!\x19\t\n\x00\x00\x01\x00)\x1e\x05\x00\x00\x00\x02\x00)\x1a9\x1f)#\x02\x16\x12\x10\x19\n\x15\x12\x00\x16\x11\x18\x02\x06\x00\x00\x02\x00\x18\x1a(\n%\x1c\x02\x12(\n\x1c\x1b\x1e\x1b\x02\x12(\n!\x1c#\x1c\x02\x11\x17\x1a(\t\x1a\x1a\x01\x11\x1a\x1b\x03\x00\x00\x00\x02\x01(\t*\x07)\x0b\x00\x16\x19\x1d\x08\x01\x00\x00\x00\x16 \x1d\x01\x04\x00\x00\x00\x16  \t\x01\x00\x00\x00\x16)\x1c\x01\x04\x00\x00\x00\x16.\x1d\x08\x01\x00\x00\x00\x16\n\x15\x06\x01\x00\x00\x00\x16\r\x12\x02\x02\x00\x00\x00\x120\x12\x02\x02\x00\x00\x00\x164\x16\x01\x01\x00\x00\x00\x12\x04\x0c\x02\x02\x00\x00\x00\x16\x06\t\x01\x01\x00\x00',b'\x02\x17\x1a\x19\x1c\x13\x1f\x19\x02\x17 \x19"\x12%\x19\x02\x17&\x19(\x13+\x19\x02\x17-\x1b/\x162\x1c\x02\x173\x1d5\x197\x1e\x02\x17\x12\x14\x14\x0f\x17\x14\x02\x00\x18\x1a(\n%\x1c\x02\x17(\n\x1c\x1b\x1e\x1b\x02\x17(\n!\x1c#\x1c\x02\x11\x17\x1a(\t\x1a\x1a\x01\x11\x1a\x1b\x03\x00\x00\x00\x02\x01(\t*\x07)\x0b\x02\x00\x11\x11\x1c\x02\x16\x12\x02\x00\x0e\x10\x14\x04\x12\x11\x00\x17\x08\x17\x0b\x01\x00\x00\x00\x17\x11\x18\x02\x06\x00\x00\x00\x19\x18 \x13\x03\x00\x00\x00\x01\n\x17\x01\x02\x00\x00\x00\x01\r\x17\x01\x02\x00\x00\x00\x01\x10\x17\x01\x02\x00\x00\x00\x12\x0b\x11\x05\x04\x00\x00\x00\x16\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00\x02\x00\x0b\x10\x11\x10\x11\x12')
-G_ARTG=(b'',b'\x02\t\x11\x0e\r\n\r\x12\x02\t\x11\x0e\x15\n\x15\x12\x00\x04\x10\r\x02\x02\x00\x00',b'\x00\n\n\x11\x0c\x02\x00\x00\x00\x00\x0b\x10\x05\x04\x00\x00\x00\x0e\x0c\x11\x03\x02\x00\x00',b'\x02\x12\n\x10\x10\x01\x16\x10\x00\x02\x0f\x08\x02\x02\x00\x00',b'\x00\r\x0b\r\n\x03\x00\x00\x02\r\x0b\r\x0c\t\x0e\r\x02\r\x0e\r\x10\x08\x12\r\x02\r\x12\r\x14\t\x15\r\x00\x04\x0f\x0e\x02\x01\x00\x00',b'\x02\x0b\x0c\x10\x10\x02\x14\x10\x00\x02\x0e\n\x04\x02\x00\x00\x01\x0c\x10\x02\x02\x00\x00\x00',b'\x00\x00\n\x0f\x0c\x02\x00\x00\x00\x00\x0c\x05\x08\n\x00\x00\x00\x04\x0c\x0c\x08\x02\x00\x00',b'\x01\t\x13\x0b\x02\x00\x00\x00\x01\t\x16\x0e\x02\x00\x00\x00\x01\t\x10\x0e\x02\x00\x00\x00\x01\t\x13\x11\x02\x00\x00\x00\x01\x02\x13\x0e\x02\x00\x00\x00',b'\x00\x13\x0b\x0c\n\x05\x00\x00\x00\r\n\x10\x0c\x01\x00\x00\x02\x01\x0b\r\x07\x07\r\x0b\x02\x01\x15\r\x19\x07\x13\x0b',b'\x00\x04\x12\x15\x08\x03\x00\x00\x00\x04\x15\x18\x03\x07\x00\x00',b'\x00\n\x1c\x15\n\x04\x00\x00\x00\r\x1e\x19\x02\x06\x00\x00',b'\x02\x14\x14\x15(\x160(\x00\x02\x14\x15\x03\x03\x00\x00',b'\x00\x13\x17\x19\x14\x07\x00\x00\x00\x06\x17\x1c\x14\x01\x00\x00\x00\x13\x12\x15\x06\x06\x00\x00',b'\x00\x14\x12\x16\x08\x02\x00\x00\x01\x02\x16\x1a\x02\x00\x00\x00\x00\x00\x15\x1b\x02\x01\x00\x00',b"\x00\x08$\x12\x08\x07\x00\x00\x00\x07$\x12\x08\x02\x00\x00\x00\x02'\x14\x02\x01\x00\x00",b"\x00\n&\x06\x01\x12\x00\x00\x00\x04'\x06\x08\x05\x00\x00\x00\x02*\x08\x02\x01\x00\x00",b'\x00\r\x12\x17\x08\x01\x00\x00\x00\r\x15\x18\x02\x02\x00\x00\x01\x0b\x16\x1b\x02\x00\x00\x00')
-G_BOSS=('Shadow Wyrm',110,12,0,(90,50,140),3)
-G_DREAD=('Dread Drake',70,11,30,(40,35,45),3)
-def G_beats(a,b):
- return a==3 and b!=3 or(a<3 and b==(a+2)%3)
-def G_art(b,x,y,s,P):
- for i in range(0,len(b),8):
-  c=P[b[i+1]]
-  a1,a2,a3,a4,a5,a6=(b[i+2],b[i+3],b[i+4],b[i+5],b[i+6],b[i+7])
-  if b[i]==0:
-   rect(x+a1*s,y+a2*s,a3*s,a4*s,c)
-  elif b[i]==1:
-   circ(x+a1*s,y+a2*s,a3*s,c)
-  else:
-   col(c)
-   fill_poly([x+a1*s,x+a3*s,x+a5*s],[y+a2*s,y+a4*s,y+a6*s])
 def G_drag(x,y,s,t,c,head=0,body=0):
- P=G_PAL+(lt(c,0.45),dk(c,0.6),c)+G_PAL2+(lt(c,0.2),dk(c,0.4))
+ P=G_PAL+(lt(c,0.45),dk(c,0.6),c)+G_PAL2+(lt(c,0.2),dk(c,0.4))+G_PAL3
  G_art(G_ARTB,x,y,s,P)
  G_art(G_ARTF[t],x,y,s,P)
+ w,b=(G_ARTW[2*t],G_ARTW[2*t+1])
+ G_art(bytes((2,w,24,26,40,10,37,28,2,b,40,10,28,27,30,27,2,b,40,10,33,28,35,28,2,17,23,26,40,9,26,26,1,17,26,27,3,0,0,0,2,1,40,9,42,7,41,11)),x,y,s,P)
+ G_art(G_ARTL,x,y,s,P)
+ G_art(G_ARTO[t],x,y,s,P)
  if body:
   G_art(G_ARTG[body],x,y,s,P)
  if head:
   G_art(G_ARTG[head],x,y,s,P)
-def G_base(m,ch):
- if ch=='~':
-  return G_WATER
- if ch=='L':
-  return G_LAVA
- if ch=='"':
-  return G_TALL[m]
- return G_GROUND[m]
-G_EGGS={}
-def G_el(d):
- return G_DT[d[1]][1]
-G_HUD=[None]
-class G_Game:
- pass
+def G_oval(x,y,s,c,k=0):
+ circ(x,y+2*s,7*s-k,c)
+ circ(x,y-2*s,6*s-k,c)
+ circ(x,y-5*s,4*s-k,c)
 def G_foe_art(f):
  c=f[4]
  n=f[0]
@@ -131,70 +43,151 @@ def G_foe_art(f):
  if f is G_BOSS or f is G_DREAD:
   G_drag(162,42,2,21 if f is G_DREAD else 8,c)
  elif n=='Goblin':
-  col(c)
-  fill_poly([196,206,206],[72,80,88])
-  fill_poly([244,234,234],[72,80,88])
-  rect(206,100,28,30,(120,80,40))
-  circ(220,86,15,c)
-  rect(210,82,5,5,(250,220,60))
-  rect(225,82,5,5,(250,220,60))
-  rect(212,94,16,3,d)
-  rect(236,92,5,30,G_BARK)
-  circ(238,92,7,G_BARK)
-  rect(208,130,8,10,c)
-  rect(224,130,8,10,c)
+  l=lt(c,0.35)
+  col(d)
+  fill_poly([192,207,207],[70,80,90])
+  fill_poly([248,233,233],[70,80,90])
+  col((230,140,150))
+  fill_poly([198,207,207],[75,81,87])
+  fill_poly([242,233,233],[75,81,87])
+  rect(200,120,8,14,d)
+  rect(232,104,8,18,d)
+  rect(204,100,32,30,(95,60,30))
+  rect(204,100,14,30,(125,85,45))
+  rect(204,116,32,4,(60,40,20))
+  rect(218,116,4,4,GOLD)
+  circ(220,86,15,d)
+  circ(218,84,13,c)
+  circ(214,80,5,l)
+  rect(208,80,9,2,(40,60,20))
+  rect(223,80,9,2,(40,60,20))
+  rect(210,83,5,4,(250,220,60))
+  rect(225,83,5,4,(250,220,60))
+  rect(212,84,2,2,BLACK)
+  rect(227,84,2,2,BLACK)
+  rect(212,93,16,4,(60,20,20))
+  rect(214,93,2,2,WHITE)
+  rect(224,93,2,2,WHITE)
+  rect(238,92,5,34,(80,50,25))
+  circ(240,90,8,(80,50,25))
+  circ(238,88,5,G_BARK)
+  rect(207,130,9,10,d)
+  rect(224,130,9,10,c)
  elif n=='Bog Toad':
-  circ(220,110,28,c)
-  circ(204,84,9,c)
-  circ(236,84,9,c)
-  circ(204,84,4,BLACK)
-  circ(236,84,4,BLACK)
-  rect(198,112,44,3,d)
-  rect(200,124,40,12,lt(c,0.4))
-  for x,y in((208,98),(232,100),(220,92)):
-   rect(x,y,5,5,d)
- elif n in('Lava Imp','Ice Wraith'):
+  l=lt(c,0.4)
+  circ(220,112,28,d)
+  circ(216,108,25,c)
+  circ(208,98,8,l)
+  circ(204,84,10,d)
+  circ(236,84,10,d)
+  circ(203,83,8,c)
+  circ(235,83,8,c)
+  circ(204,84,5,(240,200,60))
+  circ(236,84,5,(240,200,60))
+  rect(203,81,3,6,BLACK)
+  rect(235,81,3,6,BLACK)
+  rect(202,81,1,1,WHITE)
+  rect(234,81,1,1,WHITE)
+  rect(198,108,44,3,dk(c,0.4))
+  circ(220,126,14,lt(c,0.55))
+  rect(206,126,28,12,lt(c,0.55))
+  for x,y in((206,98),(232,100),(222,94),(240,114)):
+   circ(x,y,3,d)
+   rect(x-1,y-2,1,1,l)
+  rect(192,132,14,6,d)
+  rect(234,132,14,6,d)
+ elif n=='Lava Imp':
+  col((170,30,20))
+  fill_poly([193,247,234,220,206],[84,84,138,120,138])
+  col((240,110,30))
+  fill_poly([199,241,230,220,210],[86,86,128,114,128])
+  col((250,200,60))
+  fill_poly([208,232,220],[92,92,116])
+  col((250,220,60))
+  fill_poly([238,254,244],[112,94,126])
+  col((110,20,20))
+  fill_poly([205,213,211],[72,48,68])
+  fill_poly([235,227,229],[72,48,68])
+  circ(220,80,17,(170,30,20))
+  circ(218,78,15,(240,110,30))
+  circ(213,72,5,(250,180,80))
+  rect(209,74,7,3,(110,20,20))
+  rect(224,74,7,3,(110,20,20))
+  rect(210,77,5,5,(255,240,120))
+  rect(225,77,5,5,(255,240,120))
+  rect(212,78,2,3,BLACK)
+  rect(227,78,2,3,BLACK)
+  rect(211,88,18,3,(90,10,10))
+  rect(213,88,2,2,WHITE)
+  rect(225,88,2,2,WHITE)
+ elif n=='Ice Wraith':
+  col((90,140,200))
+  fill_poly([193,247,234,220,206],[84,84,138,120,138])
   col(c)
-  fill_poly([195,245,232,220,208],[84,84,136,118,136])
-  circ(220,80,17,c)
-  e=(255,240,120)if n=='Lava Imp'else(20,40,120)
-  rect(211,76,5,5,e)
-  rect(224,76,5,5,e)
-  col(lt(c,0.5)if n=='Ice Wraith'else(120,20,20))
-  if n=='Lava Imp':
-   fill_poly([206,212,210],[70,50,68])
-   fill_poly([234,228,230],[70,50,68])
-   col((250,220,60))
-   fill_poly([238,252,244],[112,96,124])
-  else:
-   for x in(204,216,228):
-    fill_poly([x,x+6,x+12],[100,120,100])
+  fill_poly([199,239,228,220,210],[84,84,130,116,130])
+  col((225,240,255))
+  fill_poly([204,222,214],[86,86,120])
+  col(WHITE)
+  for x in(200,212,224,236):
+   fill_poly([x-6,x,x+6],[126,142,126])
+  circ(220,80,17,(90,140,200))
+  circ(218,78,15,c)
+  circ(213,72,5,(225,240,255))
+  rect(209,74,8,9,(20,30,70))
+  rect(223,74,8,9,(20,30,70))
+  rect(211,77,4,4,(120,220,255))
+  rect(225,77,4,4,(120,220,255))
+  rect(214,88,12,6,(20,30,70))
+  circ(254,70,3,(225,240,255))
+  circ(186,100,2,(225,240,255))
  else:
-  s=1 if n=='Rock Troll'else 2
   r=n=='Rock Troll'
-  rect(198,92,44,44,c)
-  circ(220,78,18,c)
-  rect(186,96,12,34,c)
-  rect(242,96,12,34,c)
-  rect(204,136,12,8,d)
-  rect(224,136,12,8,d)
-  rect(210,72,5,5,BLACK if r else(60,150,230))
-  rect(225,72,5,5,BLACK if r else(60,150,230))
-  rect(212,84,16,3,d)
+  l=lt(c,0.35)
+  dd=dk(c,0.4)
+  rect(184,96,14,36,d)
+  rect(242,96,14,36,d)
+  circ(191,134,8,d)
+  circ(249,134,8,d)
+  rect(198,92,44,44,d)
+  rect(198,92,38,40,c)
+  rect(202,96,12,20,l)
+  rect(204,136,12,8,dd)
+  rect(224,136,12,8,dd)
+  circ(220,78,18,d)
+  circ(218,76,16,c)
+  circ(212,70,6,l)
+  rect(208,71,8,2,dd)
+  rect(224,71,8,2,dd)
   if r:
-   for x,y in((204,100),(226,110),(210,122),(232,96)):
-    circ(x,y,4,d)
+   rect(210,74,5,4,(250,170,40))
+   rect(225,74,5,4,(250,170,40))
+   rect(211,85,18,4,dd)
+   rect(212,85,3,2,WHITE)
+   rect(225,85,3,2,WHITE)
+   rect(208,60,14,5,(80,140,60))
+   for x,y in((206,104),(228,114),(214,124),(232,98)):
+    circ(x,y,4,dd)
+    rect(x-2,y-3,2,1,l)
+   rect(222,100,1,10,dd)
+   rect(222,109,7,1,dd)
   else:
    col((150,150,165))
-   fill_poly([204,200,210],[64,50,62])
-   fill_poly([236,240,230],[64,50,62])
+   fill_poly([206,198,212],[64,46,62])
+   fill_poly([234,242,228],[64,46,62])
+   col((110,110,125))
+   fill_poly([206,202,212],[64,52,62])
+   fill_poly([234,238,228],[64,52,62])
+   circ(220,82,10,(190,210,235))
+   rect(210,74,5,5,(60,150,230))
+   rect(225,74,5,5,(60,150,230))
+   rect(211,75,2,2,WHITE)
+   rect(226,75,2,2,WHITE)
+   rect(212,86,16,4,(60,30,50))
+   rect(213,86,2,3,WHITE)
+   rect(225,86,2,3,WHITE)
    for x in range(200,240,8):
-    rect(x,90,4,6,lt(c,0.5))
-def G_rest(g):
- g.hp=g.mhp
- g.ride=None
- for d in g.pen:
-  d[3]=d[4]
+    rect(x,128,4,6,(190,210,235))
+    rect(x+2,100,3,6,(190,210,235))
 def G_portrait(d):
  cls(G_NIGHT)
  G_drag(102,10,2,d[1],d[6],d[7],d[8])
