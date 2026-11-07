@@ -1,7 +1,8 @@
 # GHCRYPTB: part of GHCRYPT. Keep it next to GHCRYPT.
 from GHCRYPTC import*
 from GHCRYPTC import _corners
-GOLD=(230,180,40)
+def wkey():
+ return wait_key()
 def rect(x,y,w,h,c):
  if w<1 or h<1:
   return

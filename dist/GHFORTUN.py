@@ -80,6 +80,8 @@ def edge(x,y,w,h,r,c,t=2,inner=BLACK):
  for bx,by,bw,bh in _corners(x,y,w,h,r,t):
   if bw>0 and bh>0:
    fr(bx,by,bw,bh)
+def pause(s):
+ time.sleep(s)
 def _wrap(s,n=30):
  out=[]
  line=''
@@ -180,7 +182,7 @@ G_FACE=(250,240,215)
 G_INK=(40,30,50)
 G_CW=36
 G_CH=54
-G_DECK=(('The Star','star','You made a wish that mattered.','Hope is shining on you.','A wish will come true.'),('The Moon','moon','You found a way in the dark.','Trust your dreams tonight.','A secret will be revealed.'),('The Sun','sun','You had a really good day.','You bring warmth to others.','Happy days are coming.'),('The Key','key','You unlocked something new.','An answer is close by.','A door will open for you.'),('The Cat','cat','You were braver than you knew.','Be curious and look around.','You will land on your feet.'),('The Bridge','bridge','You made a new friend.','Reach out to someone.','Two paths will meet.'),('The Lantern','lantern','Someone helped you see.','You are a light for a friend.','You will find what was lost.'),('The Crown','crown','You were proud of yourself.','Lead the way, others follow.','You will win something.'),('The Wave','wave','A big change washed over you.','Go with the flow today.','An adventure is on its way.'),('The Mountain','mountain','You climbed a hard hill.','Keep going, you are close.','You will reach the top.'),('The Bird','bird','You heard some good news.','Say what is on your mind.','A message will reach you.'),('The Clock','clock','You waited for something.','Now is the right time.','Good things take time.'))
+G_DECK=(('The Star','star','You made a wish that mattered.','Hope is shining on you.','A wish will come true.'),('The Moon','moon','You found a way in the dark.','Trust your dreams tonight.','A secret will be revealed.'),('The Sun','sun','You had a really good day.','You bring warmth to others.','Happy days are coming.'),('The Key','key','You unlocked something new.','An answer is close by.','A door will open for you.'),('The Cat','cat','You were braver than you knew.','Be curious and look around.','You will land on your feet.'),('The Bridge','bridge','You made a new friend.','Reach out to someone.','Two paths will meet.'),('The Lantern','lantern','Someone helped you see.','You are a light for a friend.','You will find what was lost.'),('The Crown','crown','You were proud of yourself.','Lead the way, others follow.','You will win something.'),('The Wave','wave','A big change washed over you.','Go with the flow today.','An adventure is on its way.'),('The Mountain','mountain','You climbed a hard hill.','Keep going, you are close.','You will reach the top.'),('The Bird','bird','You heard some good news.','Say what is on your mind.','A message will reach you.'),('The Clock','clock','You waited for something.','Now is the right time.','Good things take time.'),('The Tree','tree','You grew a lot this year.','Stay strong and steady.','Something you plant will grow.'),('The Heart','heart','Someone was kind to you.','You are loved more than you know.','A friendship will get closer.'),('The Ship','ship','You left something behind.',"Set your sails, it's time.",'A trip is in your future.'),('The Flame','flame','You stood up for yourself.','Your spark is bright today.','You will find a new passion.'),('The Rainbow','rainbow','A storm finally ended.','Look for the bright side.','A happy surprise is coming.'),('The Book','book','You learned a big lesson.','Ask, and you will find out.','You will discover a talent.'),('The Owl','owl','You noticed what others missed.','Listen more than you speak.','A wise choice will pay off.'),('The Feather','feather','You let go of a worry.','Take it easy today.','Things will feel lighter soon.'))
 G_TIMES=('PAST','NOW','FUTURE')
 def G_art(kind,x,y,s=1):
  def r(a,b,w,h,c):
@@ -237,6 +239,50 @@ def G_art(kind,x,y,s=1):
   col(GOLD)
   fill_poly([x+5*s,x+10*s,x+5*s],[y-2*s,y,y+2*s])
   r(1,-3,2,2,G_INK)
+ elif kind=='tree':
+  r(-2,2,4,9,(130,80,40))
+  circ(x,y-3*s,8*s,(60,150,70))
+ elif kind=='heart':
+  circ(x-4*s,y-3*s,5*s,RED)
+  circ(x+4*s,y-3*s,5*s,RED)
+  col(RED)
+  fill_poly([x-9*s,x+9*s,x],[y-1*s,y-1*s,y+9*s])
+ elif kind=='ship':
+  col((80,140,220))
+  fill_poly([x-1*s,x-1*s,x-9*s],[y-11*s,y+2*s,y+2*s])
+  fill_poly([x+1*s,x+1*s,x+8*s],[y-8*s,y+2*s,y+2*s])
+  col((140,90,50))
+  fill_poly([x-11*s,x+11*s,x+7*s,x-7*s],[y+4*s,y+4*s,y+9*s,y+9*s])
+ elif kind=='flame':
+  col((240,110,30))
+  fill_poly([x,x+7*s,x+6*s,x-6*s,x-7*s],[y-11*s,y,y+8*s,y+8*s,y])
+  col((250,210,60))
+  fill_poly([x,x+4*s,x+3*s,x-3*s,x-4*s],[y-4*s,y+3*s,y+8*s,y+8*s,y+3*s])
+ elif kind=='rainbow':
+  for i,c in enumerate(((220,50,50),(245,150,30),(240,210,50),(70,170,80),(60,120,220))):
+   circ(x,y+5*s,(12-2*i)*s,c)
+  circ(x,y+5*s,2*s,G_FACE)
+  r(-13,5,27,13,G_FACE)
+ elif kind=='book':
+  r(-11,-7,22,15,(60,90,170))
+  r(-10,-6,9,13,WHITE)
+  r(1,-6,9,13,WHITE)
+  r(-8,-3,5,1,GREY)
+  r(3,-3,5,1,GREY)
+  r(-8,0,5,1,GREY)
+  r(3,0,5,1,GREY)
+ elif kind=='owl':
+  circ(x,y+1*s,9*s,(140,95,60))
+  circ(x-4*s,y-1*s,3*s,WHITE)
+  circ(x+4*s,y-1*s,3*s,WHITE)
+  r(-5,-2,2,2,G_INK)
+  r(3,-2,2,2,G_INK)
+  col(GOLD)
+  fill_poly([x-2*s,x+2*s,x],[y+2*s,y+2*s,y+5*s])
+ elif kind=='feather':
+  col((90,170,160))
+  fill_poly([x+8*s,x+4*s,x-6*s,x-9*s,x-3*s],[y-10*s,y-2*s,y+7*s,y+9*s,y-2*s])
+  r(-8,6,2,4,G_INK)
  elif kind=='clock':
   circ(x,y,9*s,G_INK)
   circ(x,y,7*s,WHITE)
@@ -259,7 +305,8 @@ def G_reading():
  deck=list(range(len(G_DECK)))
  shuffle(deck)
  row=deck[:7]
- taken=[]
+ nxt=7
+ cards=[]
  cls(G_TABLE)
  ctext(22,'Pick 3 cards',GOLD)
  for i in range(7):
@@ -270,36 +317,27 @@ def G_reading():
   text(x+28-len(G_TIMES[t])*5,208,G_TIMES[t],GREY)
  sel=0
  G_frame(G_spot(sel)[0],G_spot(sel)[1],GOLD)
- while len(taken)<3:
+ while len(cards)<3:
   k=wkey()
   old=sel
   if k==CLR:
    return False
   if k in(LEFT,RIGHT):
-   d=1 if k==RIGHT else-1
-   sel=(sel+d)%7
-   while sel in taken:
-    sel=(sel+d)%7
+   sel=(sel+(1 if k==RIGHT else-1))%7
   elif k==OK:
-   G_frame(G_spot(sel)[0],G_spot(sel)[1],G_TABLE)
+   x=50+len(cards)*90+10
+   cards.append(row[sel])
    rect(G_spot(sel)[0],G_spot(sel)[1],G_CW,G_CH,G_TABLE)
-   x=50+len(taken)*90+10
    G_face(x,130,row[sel])
-   taken.append(sel)
-   if len(taken)<3:
-    old=-1
-    while sel in taken:
-     sel=(sel+1)%7
-    G_frame(G_spot(sel)[0],G_spot(sel)[1],GOLD)
+   if len(cards)<3:
+    row[sel]=deck[nxt]
+    nxt+=1
+    pause(0.25)
+    G_back(G_spot(sel)[0],G_spot(sel)[1])
    continue
   if sel!=old:
    G_frame(G_spot(old)[0],G_spot(old)[1],G_TABLE)
    G_frame(G_spot(sel)[0],G_spot(sel)[1],GOLD)
- ctext(22,'Pick 3 cards',G_TABLE)
- ctext(22,'ENTER: read them',GOLD)
- if wkey()==CLR:
-  return False
- cards=[row[i]for i in taken]
  for t in range(3):
   name,kind=(G_DECK[cards[t]][0],G_DECK[cards[t]][1])
   cls(G_TABLE)
