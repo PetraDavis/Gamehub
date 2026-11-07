@@ -25,6 +25,6 @@ g.note = g.closet = g.living = g.tv = True
 shot(g, '6living', 5.6, 5.5, math.pi)
 shot(g, '7livingtv', 3.5, 4.4, math.pi*0.85)
 shot(g, '8library', 6.5, 2.4, math.pi)
-g.ys_vis = True; g.yx, g.yy = 9.5, 2.5
+g.ys_vis = True; g.yx, g.yy = 9.5, 4.3
 shot(g, '9ysolde', 9.5, 6.0, -math.pi/2)
 shot(g, '10keypad', 12.3, 2.4, 0)
