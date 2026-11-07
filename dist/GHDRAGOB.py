@@ -7,16 +7,15 @@ def rect(x,y,w,h,c):
   return
  col(c)
  fill_rect(x-1,y-1,w+1,h+1)
-def cls(c=BLACK):
- COVER[0]+=1
- col(c)
- fill_rect(-1,-1,321,211)
 def text(x,y,s,c=WHITE):
  col(c)
  draw_text(x,y+TY,s)
 def ctext(y,s,c=WHITE,cx=160):
  col(c)
  draw_text(cx-len(s)*5,y+TY,s)
+def circ(x,y,r,c):
+ col(c)
+ fill_circle(x,y,r)
 def lt(c,k=0.35):
  return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
 def dk(c,k=0.65):
@@ -32,7 +31,6 @@ G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T..
 G_GROUND=((50,130,60),(85,65,55),(215,225,240))
 G_TALL=((35,100,45),(120,90,60),(170,190,220))
 G_DT=list(zip(('Pyrrak','Smoldedrake','Aquawyrm','Gillwing','Fernling','Lichenwing','Stonewyrm','Volcanox','Ashveil','Glacius','Tempestra','Thornwyrm','Dawnwing','Pearlhorn','Jadewyrm','Petalwyrm','Blazequill','Abyssar','Rootwyrm','Lumora','Quantum'),b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03',b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05',G_cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
-G_BOSS=('Shadow Wyrm',110,12,0,(90,50,140),3)
 def G_base(m,ch):
  if ch=='~':
   return G_WATER
@@ -170,3 +168,9 @@ def G_hud(g):
    text(x,15,old[i],BLACK)
    text(x,15,t[i],c)
  G_HUD[0]=t
+def G_battle(*a):
+ import GHDRAGOW
+ r=GHDRAGOW.G_battle(*a)
+ GHDRAGOW=None
+ G__drop('GHDRAGOW')
+ return r
