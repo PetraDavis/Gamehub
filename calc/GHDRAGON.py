@@ -375,10 +375,10 @@ SMALL = 31
 
 
 def egg_roll(g, t):
-    # 1 in 20 eggs is small (once you have a dragon kind in your book), 1 in 50 is shiny:
-    # silver 40%, gold 30%, neon 20%, purple-blue 10%
+    # 1 in 20 eggs is small (once you have a dragon kind in your book). Any egg, small too,
+    # is shiny 1 time in 50: silver 40%, gold 30%, neon 20%, purple-blue 10%
     if g.book & 0x1FFFFF and random.random() < 0.05:
-        return SMALL
+        t = SMALL
     if random.random() < 0.02:
         r = random.random()
         return t + 32 * (1 if r < 0.4 else 2 if r < 0.7 else 3 if r < 0.9 else 4)
@@ -650,7 +650,7 @@ def rest(g):
 # DRG: [4, coins, accessories owned, species in the book, steps until the Dread Drake returns,
 #  eggs in the bag (up to 5, -1 = none), then 5 numbers a dragon: name (letters 1-26 in base 27),
 #  kind, level, xp, shiny*4000+paint*200+head*20+body]
-# DRB: [1, then 2 numbers a baby: name, kind]
+# DRB: [1, then 2 numbers a baby: name, kind + 32 * shiny]
 def pack(nm):
     n = 0
     for ch in nm.upper():
@@ -671,7 +671,7 @@ def save(g):
     b = [1]
     for d in g.pen:
         if d[9] & 8:
-            b += [pack(d[0]), d[1]]
+            b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
             continue
         p = PAINT.index(d[6]) + 1 if d[6] in PAINT and d[6] != DT[d[1]][3] else 0
         s += [pack(d[0]), d[1], d[2], d[5], (d[9] & 7) * 4000 + p * 200 + d[7] * 20 + d[8]]
@@ -714,7 +714,8 @@ def load(g):
     try:
         b = [int(v) for v in recall_list("DRB")]
         for i in range(1, len(b) - 1, 2):
-            g.pen.append([unpack(b[i]), b[i + 1], 1, 10, 10, 0, DT[b[i + 1]][3], 0, 0, 8])
+            t = b[i + 1] % 32
+            g.pen.append([unpack(b[i]), t, 1, 10, 10, 0, DT[t][3], 0, 0, 8 + b[i + 1] // 32])
     except Exception:
         pass
     g.pick = grown(g)
@@ -1034,11 +1035,11 @@ def hatch(g):
         pause(0.25)
     cls((255, 248, 215))
     if b:
-        drag(102, 55, 2, e, t[3])
+        drag(102, 55, 2, e, t[3], 0, 0, None, 0, q)
     else:
         drag(73, 30, 3, e, t[3], 0, 0, None, 0, q)
     rect(0, 182, 320, 28, NIGHT)
-    ctext(200, "A baby " + t[0] + "!" if b else (SCH[q][0] + " " if q else "" if t[2] > 4 else RARE[t[2]] + " ") + t[0] + " dragon!",
+    ctext(200, "A baby " + (SCH[q][0] + " " if q else "") + t[0] + "!" if b else (SCH[q][0] + " " if q else "" if t[2] > 4 else RARE[t[2]] + " ") + t[0] + " dragon!",
           SCH[q][2] if q else RCOL[t[2]])
     pause(1.2)
     names = sample(NAMES, 4)
@@ -1249,7 +1250,7 @@ def play():
                 g.warm = 12
             g.bag.append(e)
             hud(g)
-            message(["You found a small egg!", "It's in your backpack."] if e % 32 == SMALL else
+            message(["You found a" + (" shiny" if e > 31 else "") + " small egg!", "It's in your backpack."] if e % 32 == SMALL else
                     ["You found a" + (" shiny" if e > 31 else "n") + " egg with", RARE[DT[e % 32][2]] + " spots! It's in", "your backpack."], "An egg!")
             draw_map(g, True)
             continue

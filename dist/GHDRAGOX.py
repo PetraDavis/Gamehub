@@ -48,7 +48,8 @@ def G_load(g):
  try:
   b=[int(v)for v in recall_list('DRB')]
   for i in range(1,len(b)-1,2):
-   g.pen.append([G_unpack(b[i]),b[i+1],1,10,10,0,G_DT[b[i+1]][3],0,0,8])
+   t=b[i+1]%32
+   g.pen.append([G_unpack(b[i]),t,1,10,10,0,G_DT[t][3],0,0,8+b[i+1]//32])
  except Exception:
   pass
  g.pick=G_grown(g)

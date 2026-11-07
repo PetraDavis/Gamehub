@@ -159,11 +159,11 @@ def G_hatch(g):
   pause(0.25)
  cls((255,248,215))
  if b:
-  G_drag(102,55,2,e,t[3])
+  G_drag(102,55,2,e,t[3],0,0,None,0,q)
  else:
   G_drag(73,30,3,e,t[3],0,0,None,0,q)
  rect(0,182,320,28,G_NIGHT)
- ctext(200,'A baby '+t[0]+'!'if b else(G_SCH[q][0]+' 'if q else ''if t[2]>4 else G_RARE[t[2]]+' ')+t[0]+' dragon!',G_SCH[q][2]if q else G_RCOL[t[2]])
+ ctext(200,'A baby '+(G_SCH[q][0]+' 'if q else '')+t[0]+'!'if b else(G_SCH[q][0]+' 'if q else ''if t[2]>4 else G_RARE[t[2]]+' ')+t[0]+' dragon!',G_SCH[q][2]if q else G_RCOL[t[2]])
  pause(1.2)
  names=sample(G_NAMES,4)
  i=choose('Name your '+t[0]+':',names+['Type a name'])

@@ -1,18 +1,18 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-def ctext(y,s,c=WHITE,cx=160):
- col(c)
- draw_text(cx-len(s)*5,y+TY,s)
-def lt(c,k=0.35):
- return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
 def _corners(x,y,w,h,r,t):
  return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
+def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
+ edge(x,y,w,h,r,c,t)
+ if fill:
+  rect(x+t,y+t,w-2*t,h-2*t,inner)
 def edge(x,y,w,h,r,c,t=2,inner=BLACK):
  col(c)
  for bx,by,bw,bh in _corners(x,y,w,h,r,t):
   if bw>0 and bh>0:
    fr(bx,by,bw,bh)
 G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^^....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
+G_GROUND=((50,130,60),(85,65,55),(215,225,240),(75,150,70))
 def G_egg_type(m):
  r=random.randint(0,999)
  rar=4 if r<4+2*m else 3 if r<30+10*m else 2 if r<110+25*m else 1 if r<330+40*m else 0
@@ -110,7 +110,7 @@ def G_shapes(m,x,y,ch,out):
 G_SCH=(None,('Silver',(190,195,205),(240,242,248),(105,110,125)),('Gold',(235,185,40),(255,235,130),(150,100,20)),('Neon',(40,255,140),(240,255,60),(255,40,220)),('Purple-blue',(130,60,210),(70,150,255),(40,30,120)))
 def G_egg_roll(g,t):
  if g.book&2097151 and random.random()<0.05:
-  return G_SMALL
+  t=G_SMALL
  if random.random()<0.02:
   r=random.random()
   return t+32*(1 if r<0.4 else 2 if r<0.7 else 3 if r<0.9 else 4)
