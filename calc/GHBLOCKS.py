@@ -62,43 +62,71 @@ def sq(x, y, c):
         return
     px = X0 + x * C
     py = Y0 + y * C
+    # only filled rectangles that stay inside the cell, so erasing a cell
+    # with one WELL square leaves nothing behind (lines can bleed outside)
     if c == WELL:
         rect(px, py, C, C, WELL)
-        rect(px + 4, py + 4, 1, 1, DOT)
+        rect(px + 4, py + 4, 2, 2, DOT)
     else:
         rect(px, py, C, C, dk(c, 0.55))
         rect(px, py, C - 1, C - 1, c)
-        col(lt(c, 0.45))
-        draw_line(px, py, px + C - 2, py)
-        draw_line(px, py, px, py + C - 2)
-        rect(px + 2, py + 2, 2, 2, lt(c, 0.7))
+        rect(px, py, C - 1, 2, lt(c, 0.45))
+        rect(px, py, 2, C - 1, lt(c, 0.45))
+        rect(px + 3, py + 3, 2, 2, lt(c, 0.7))
 
 
-def draw_piece(p, c=None):
-    for x, y in get(p):
-        sq(x, y, COLS[p[0]] if c is None else c)
+class Well:
+    # remembers what each cell shows, so only cells that change are drawn
+    def __init__(self):
+        self.s = [[-1] * CW for i in range(CH)]
+        self.last = []
 
-
-def board(b):
-    for y in range(CH):
-        for x in range(CW):
-            v = b[y][x]
+    def put(self, x, y, v):
+        if 0 <= y and self.s[y][x] != v:
+            self.s[y][x] = v
             sq(x, y, COLS[v - 1] if v else WELL)
 
+    def show(self, b, p, full=False):
+        # the piece's old and new cells, or every cell after rows clear
+        new = [c for c in get(p) if c[1] >= 0] if p else []
+        if full:
+            cells = [(x, y) for y in range(CH) for x in range(CW)]
+        else:
+            cells = self.last + new
+        self.last = new
+        v = p[0] + 1 if p else 0
+        want = [(v if c in new else b[c[1]][c[0]], c) for c in cells]
+        # one colour at a time is quicker on the calculator
+        want.sort()
+        for w, c in want:
+            self.put(c[0], c[1], w)
 
-def side(score, lines, nxt):
-    for y, h in ((26, 64), (96, 40), (142, 40)):
-        rbox(226, y, 88, h, 6, (150, 110, 190), 2, PANEL)
-    text(234, 44, "NEXT", (200, 185, 230))
-    for x, y in get((nxt, 0, 0, 0)):
-        c = COLS[nxt]
-        rect(244 + x * 9, 54 + y * 9, 9, 9, dk(c, 0.55))
-        rect(244 + x * 9, 54 + y * 9, 8, 8, c)
-        rect(245 + x * 9, 55 + y * 9, 2, 2, lt(c, 0.7))
-    text(234, 114, "SCORE", (200, 185, 230))
-    text(234, 131, str(score))
-    text(234, 160, "LINES", (200, 185, 230))
-    text(234, 177, str(lines))
+
+def side(score, lines, nxt, old):
+    # only the parts that changed: the next shape, the score, the lines
+    if old is None:
+        for y, h in ((26, 64), (96, 40), (142, 40)):
+            rbox(226, y, 88, h, 6, (150, 110, 190), 2, PANEL)
+        text(234, 44, "NEXT", (200, 185, 230))
+        text(234, 114, "SCORE", (200, 185, 230))
+        text(234, 160, "LINES", (200, 185, 230))
+        old = (None, None, None)
+    if nxt != old[2]:
+        rect(240, 50, 40, 22, PANEL)
+        for x, y in get((nxt, 0, 0, 0)):
+            c = COLS[nxt]
+            rect(244 + x * 9, 54 + y * 9, 9, 9, dk(c, 0.55))
+            rect(244 + x * 9, 54 + y * 9, 8, 8, c)
+            rect(245 + x * 9, 55 + y * 9, 2, 2, lt(c, 0.7))
+    if score != old[0]:
+        if old[0] is not None:
+            text(234, 131, str(old[0]), PANEL)
+        text(234, 131, str(score))
+    if lines != old[1]:
+        if old[1] is not None:
+            text(234, 177, str(old[1]), PANEL)
+        text(234, 177, str(lines))
+    return (score, lines, nxt)
 
 
 def game():
@@ -107,7 +135,8 @@ def game():
     for i in range(0, 210, 30):
         rect(0, i, 320, 15, (58, 25, 80))
     rbox(X0 - 4, Y0 - 4, CW * C + 8, CH * C + 8, 4, WHITE, 2, WELL)
-    board(b)
+    well = Well()
+    well.show(b, None, True)
     rbox(4, 26, 96, 56, 6, GOLD, 2, PANEL)
     text(14, 48, "STACK", GOLD)
     text(14, 68, "DROP", GOLD)
@@ -124,16 +153,16 @@ def game():
     t = 0
     held = 0
     hc = 0
-    side(score, lines, nxt)
+    sd = side(score, lines, nxt, None)
     while True:
         if p is None:
             p = [nxt, 0, 3, -1]
             nxt = random.randint(0, 6)
-            side(score, lines, nxt)
+            sd = side(score, lines, nxt, sd)
             if not ok(b, p):
                 message(["Score " + str(score), "Lines " + str(lines)], "Stacked to the top")
                 return
-            draw_piece(p)
+            well.show(b, p)
         k = key()
         if k == CLR:
             return
@@ -164,16 +193,14 @@ def game():
         t += 1
         fall = t >= speed
         if q != p and ok(b, q):
-            draw_piece(p, WELL)
             p = q
-            draw_piece(p)
+            well.show(b, p)
         if fall:
             t = 0
             q = [p[0], p[1], p[2], p[3] + 1]
             if ok(b, q):
-                draw_piece(p, WELL)
                 p = q
-                draw_piece(p)
+                well.show(b, p)
             else:
                 for x, y in get(p):
                     if y >= 0:
@@ -185,7 +212,8 @@ def game():
                         b.insert(0, [0] * CW)
                     lines += len(full)
                     score += (0, 100, 300, 500, 800)[len(full)]
-                    board(b)
+                    well.show(b, None, True)
+                    sd = side(score, lines, nxt, sd)
                 p = None
         pause(0.02)
 

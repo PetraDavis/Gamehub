@@ -24,26 +24,30 @@ def key():
  return get_key(0)
 def wkey():
  return wait_key()
+_C = [None]
 def col(c):
- set_color(c[0], c[1], c[2])
+ if c != _C[0]:
+  _C[0] = c
+  set_color(c[0], c[1], c[2])
+def fr(x, y, w, h):
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
 def rect(x, y, w, h, c):
- if w < 2 or h < 2:
-  if w < 1 or h < 1:
-   return
-  col(c)
-  draw_line(x, y, x + w - 1, y + h - 1)
+ if w < 1 or h < 1:
   return
  col(c)
- fill_rect(x, y, w, h)
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
+COVER = [0]
 def cls(c=BLACK):
+ COVER[0] += 1
  col(c)
- fill_rect(-1, -1, 322, 212)
+ fill_rect(-1, -1, 321, 211)
+TY = 6
 def text(x, y, s, c=WHITE):
  col(c)
- draw_text(x, y, s)
+ draw_text(x, y + TY, s)
 def ctext(y, s, c=WHITE, cx=160):
  col(c)
- draw_text(cx - len(s) * 5, y, s)
+ draw_text(cx - len(s) * 5, y + TY, s)
 def circ(x, y, r, c):
  col(c)
  fill_circle(x, y, r)
@@ -53,9 +57,15 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  col(inner)
  fill_circle(x, y, r - t)
 def rrect(x, y, w, h, r, c):
+ if w < 2 * r + 1 or h < 2 * r + 1:
+  r = max(0, min(w, h) // 2 - 1)
  col(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ if w - 2 * r >= 1:
+  fr(x + r, y, w - 2 * r, h)
+ if h - 2 * r >= 1:
+  fr(x, y + r, w, h - 2 * r)
+ if r < 1:
+  return
  fill_circle(x + r, y + r, r)
  fill_circle(x + w - r - 1, y + r, r)
  fill_circle(x + r, y + h - r - 1, r)
@@ -63,13 +73,33 @@ def rrect(x, y, w, h, r, c):
 def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
  rrect(x, y, w, h, r, c)
  rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def edge(x, y, w, h, r, c, t=2, inner=BLACK):
+ col(c)
+ fr(x + r, y, w - 2 * r, t)
+ fr(x + r, y + h - t, w - 2 * r, t)
+ fr(x, y + r, t, h - 2 * r)
+ fr(x + w - t, y + r, t, h - 2 * r)
+ for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
+  col(c)
+  fill_circle(cx, cy, r)
+  col(inner)
+  fill_circle(cx, cy, max(r - t, 2))
+  ax = cx + 1 if sx > 0 else cx - r
+  ay = y + t if sy > 0 else cy - r
+  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
+  ax = x + t if sx > 0 else cx - r
+  ay = cy + 1 if sy > 0 else cy - r
+  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
 def pause(s):
  time.sleep(s)
+MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
  h = n * 18 + 30
  y = (H - h) // 2
  rbox(20, y, 280, h, 8, WHITE)
+ MSG[0], MSG[1] = (y, h)
+ COVER[0] += 1
  yy = y + 24
  if title:
   ctext(yy, title, GOLD)
@@ -85,13 +115,14 @@ def choose(title, opts, sel=0):
  cls()
  ctext(24, title, GOLD)
  n = len(opts)
+ for i in range(n):
+  y = 40 + i * 30
+  c = GOLD if i == sel else WHITE
+  rbox(60, y, 200, 24, 8, c)
+  ctext(y + 18, opts[i], c)
  while True:
-  for i in range(n):
-   y = 40 + i * 30
-   c = GOLD if i == sel else WHITE
-   rbox(60, y, 200, 24, 8, c)
-   ctext(y + 18, opts[i], c)
   k = wkey()
+  old = sel
   if k == UP:
    sel = (sel - 1) % n
   elif k == DOWN:
@@ -100,6 +131,11 @@ def choose(title, opts, sel=0):
    return sel
   elif k == CLR:
    return -1
+  for i in (old, sel):
+   y = 40 + i * 30
+   c = GOLD if i == sel else WHITE
+   edge(60, y, 200, 24, 8, c)
+   ctext(y + 18, opts[i], c)
 def _wrap(s, n=30):
  out = []
  line = ''
@@ -142,13 +178,17 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(122, title, GOLD)
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
+  first = True
   while True:
    for i in range(n):
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
-    rect(x, 166, bw, 28, BLACK)
-    rbox(x, 166, bw, 28, 10, c)
+    if first:
+     rbox(x, 166, bw, 28, 10, c)
+    else:
+     edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+   first = False
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -171,7 +211,7 @@ def icons_c_(c):
  set_color(c[0], c[1], c[2])
 def icons_box(x, y, w, h, c):
  icons_c_(c)
- fill_rect(int(x), int(y), max(2, int(w)), max(2, int(h)))
+ fill_rect(int(x) - 1, int(y) - 1, max(1, int(w)) + 1, max(1, int(h)) + 1)
 def icons_circ(x, y, r, c):
  icons_c_(c)
  fill_circle(int(x), int(y), int(r))
@@ -387,60 +427,139 @@ def anim_paint(s, i, v):
  y = anim_CY + i // anim_CWD * anim_P
  if v >= 16:
   c = anim_PAL[v - 16]
-  rect(x, y, anim_P, anim_P, anim_PAL[0])
+  w = anim_PAL[0]
+  rect(x, y, anim_P, 1, w)
+  rect(x, y + anim_P - 1, anim_P, 1, w)
+  rect(x, y + 1, 1, anim_P - 2, w)
+  rect(x + anim_P - 1, y + 1, 1, anim_P - 2, w)
   rect(x + 1, y + 1, anim_P - 2, anim_P - 2, ((c[0] + 510) // 3, (c[1] + 510) // 3, (c[2] + 510) // 3))
  else:
   rect(x, y, anim_P, anim_P, anim_PAL[v])
  s.shown[i] = v
-def anim_refresh(s):
- for i in range(anim_N):
-  v = anim_want(s, i)
-  if s.shown[i] != v:
-   anim_paint(s, i, v)
+def anim_refresh(s, src=None):
+ runs = {}
+ onion = []
+ hide = s.hide
+ for r in range(anim_CHG):
+  base = r * anim_CWD
+  c = 0
+  while c < anim_CWD:
+   i = base + c
+   v = src[i] if src is not None else anim_want(s, i)
+   if v >= 16 or (i == hide and s.shown[i] == v):
+    if s.shown[i] != v:
+     onion.append((i, v))
+    c += 1
+    continue
+   e = c
+   dirty = False
+   while e < anim_CWD:
+    j = base + e
+    w = src[j] if src is not None else anim_want(s, j)
+    if w != v or (j == hide and s.shown[j] == v):
+     break
+    if s.shown[j] != v:
+     dirty = True
+     s.shown[j] = v
+    e += 1
+   if dirty:
+    if v in runs:
+     runs[v].append((c, r, e - c))
+    else:
+     runs[v] = [(c, r, e - c)]
+   c = e
+ for v in runs:
+  for c, r, n in runs[v]:
+   rect(anim_CX + c * anim_P, anim_CY + r * anim_P, n * anim_P, anim_P, anim_PAL[v])
+ for i, v in onion:
+  anim_paint(s, i, v)
 def anim_cursor(s):
  x = anim_CX + s.cx * anim_P
  y = anim_CY + s.cy * anim_P
  v = s.cur[s.cy * anim_CWD + s.cx]
  col(BLACK if v in (0, 3, 6, 15) else WHITE)
- draw_rect(x + 1, y + 1, anim_P - 3, anim_P - 3)
+ draw_rect(x, y, anim_P - 2, anim_P - 2)
+ s.hide = s.cy * anim_CWD + s.cx
 def anim_uncursor(s):
  i = s.cy * anim_CWD + s.cx
+ s.hide = -1
  anim_paint(s, i, anim_want(s, i))
-def anim_palette(s, sel=-1):
+def anim_label(s, key, x, y, t, c, bg=WHITE):
+ old = s.lab.get(key)
+ s.lab[key] = (t, c)
+ if old is None:
+  text(x, y, t, c)
+  return
+ o, oc = old
+ for k in range(max(len(o), len(t))):
+  a = o[k] if k < len(o) else ' '
+  b = t[k] if k < len(t) else ' '
+  if a != b:
+   if a != ' ':
+    rect(x + k * 10, y - 12, 10, 16, bg)
+   if b != ' ':
+    text(x + k * 10, y, b, c)
+  elif oc != c and b != ' ':
+   text(x + k * 10, y, b, c)
+def anim_swatch(s, c, sel=-1):
+ x = 210 + c % 4 * 26
+ y = 30 + c // 4 * 26
+ e = anim_INK if c == sel else GOLD if c == s.col else WHITE
+ rect(x - 2, y - 2, 26, 2, e)
+ rect(x - 2, y + 22, 26, 2, e)
+ rect(x - 2, y, 2, 22, e)
+ rect(x + 22, y, 2, 22, e)
+def anim_palette(s):
  for c in range(16):
   x = 210 + c % 4 * 26
   y = 30 + c // 4 * 26
-  rect(x - 2, y - 2, 26, 26, WHITE)
-  if c == s.col:
-   rbox(x - 2, y - 2, 26, 26, 5, GOLD, 2, WHITE)
-  if c == sel:
-   rbox(x - 2, y - 2, 26, 26, 5, anim_INK, 2, WHITE)
   rect(x + 1, y + 1, 20, 20, anim_PAL[c])
   if c == 0:
    col(GREY)
-   draw_rect(x + 1, y + 1, 19, 19)
+   draw_rect(x, y, 20, 20)
+  anim_swatch(s, c)
 def anim_topbar(s):
- rect(0, 0, 320, 22, WHITE)
- text(4, 17, 'Frame ' + str(s.ci + 1) + '/' + str(len(s.F)), anim_INK)
- text(160, 17, str(s.fps) + 'fps', GREY)
  pct = anim_used(s) * 100 // anim_MAXB
- text(236, 17, 'Mem ' + str(pct) + '%', RED if pct > 90 else GREY)
-def anim_botbar(s):
- rect(0, 176, 320, 34, WHITE)
- m = ('Pen up', 'PEN DOWN', 'ERASER')[s.pen]
- text(6, 190, m, anim_HI if s.pen else anim_INK)
- text(6, 205, 'ENTER pen DEL eraser 2nd menu', GREY)
+ anim_label(s, 'fr', 4, 17, 'Frame ' + str(s.ci + 1) + '/' + str(len(s.F)), anim_INK)
+ anim_label(s, 'fps', 160, 17, str(s.fps) + 'fps', GREY)
+ anim_label(s, 'mem', 236, 17, 'Mem ' + str(pct) + '%', RED if pct > 90 else GREY)
+def anim_botbar(s, a=None, b=None):
+ if a is None:
+  a = ('Pen up', 'PEN DOWN', 'ERASER')[s.pen]
+  ca = anim_HI if s.pen else anim_INK
+ else:
+  ca = anim_HI
+ anim_label(s, 'b1', 6, 190, a, ca)
+ anim_label(s, 'b2', 6, 206, b or 'ENTER pen DEL eraser 2nd menu', GREY)
+def anim_side(s):
+ rect(anim_MX, 22, 320 - anim_MX, 154, WHITE)
+ s.lab.pop('on', None)
+ s.lab.pop('sv', None)
+ anim_palette(s)
+ anim_sidetext(s)
+def anim_sidetext(s):
+ anim_label(s, 'on', 210, 150, 'Onion ' + ('on' if s.onion else 'off'), GREY)
+ anim_label(s, 'sv', 210, 168, 'Saved ' + (str(s.slot) if s.slot else '-'), GREY)
 def anim_full(s):
  cls(WHITE)
- rect(anim_CX - 2, anim_CY - 2, anim_CWD * anim_P + 4, anim_CHG * anim_P + 4, DARK)
- s.shown = bytearray([255] * anim_N)
+ rect(anim_CX - 2, anim_CY - 2, anim_CWD * anim_P + 4, 2, DARK)
+ rect(anim_CX - 2, anim_CY + anim_CHG * anim_P, anim_CWD * anim_P + 4, 2, DARK)
+ rect(anim_CX - 2, anim_CY, 2, anim_CHG * anim_P, DARK)
+ rect(anim_CX + anim_CWD * anim_P, anim_CY, 2, anim_CHG * anim_P, DARK)
+ s.shown = bytearray(anim_N)
+ s.hide = -1
+ s.lab = {}
  anim_refresh(s)
- anim_palette(s)
+ anim_side(s)
  anim_topbar(s)
  anim_botbar(s)
- rect(208, 136, 104, 36, WHITE)
- text(210, 150, 'Onion ' + ('on' if s.onion else 'off'), GREY)
- text(210, 168, 'Saved ' + (str(s.slot) if s.slot else '-'), GREY)
+ anim_cursor(s)
+def anim_update(s):
+ anim_uncursor(s)
+ anim_refresh(s)
+ anim_topbar(s)
+ anim_sidetext(s)
+ anim_botbar(s)
  anim_cursor(s)
 def anim_set_px(s, i, c):
  if s.cur[i] != c:
@@ -487,6 +606,7 @@ def anim_go(s, j):
 def anim_add_frame(s, blank):
  if anim_used(s) > anim_MAXB:
   message(['Memory is full.', 'Save, or delete frames.'], "Can't add")
+  s.broke = True
   return
  anim_commit(s)
  i = s.ci
@@ -520,23 +640,16 @@ def anim_del_frame(s):
  s.changed = True
 def anim_play(s):
  anim_commit(s)
- onion = s.onion
- s.onion = False
- rect(0, 176, 320, 34, WHITE)
- text(6, 190, 'Playing. Up/Down: speed', anim_HI)
- text(6, 205, 'Any other key stops', GREY)
+ anim_uncursor(s)
+ anim_botbar(s, 'Playing. Up/Down: speed', 'Any other key stops')
  i = 0
  fr = bytearray(anim_N)
  while True:
   if s.F[i][0] == 1 or i == 0:
    fr = bytearray(anim_N)
   anim_apply(fr, s.F[i])
-  for p in range(anim_N):
-   if s.shown[p] != fr[p]:
-    anim_paint(s, p, fr[p])
-  rect(0, 0, 150, 22, WHITE)
-  text(4, 17, 'Frame ' + str(i + 1) + '/' + str(len(s.F)), anim_INK)
-  t = 0
+  anim_refresh(s, fr)
+  anim_label(s, 'fr', 4, 17, 'Frame ' + str(i + 1) + '/' + str(len(s.F)), anim_INK)
   steps = max(1, 12 // s.fps)
   stop = False
   for q in range(steps):
@@ -556,22 +669,41 @@ def anim_play(s):
   i = (i + 1) % len(s.F)
  while key():
   pass
- s.onion = onion
  s.cur = anim_dec(s, s.ci)
- anim_full(s)
-anim_ITEMS = ('Color', 'Fill area', 'Undo', 'Clear frame', 'Next frame', 'Prev frame', 'Add copy', 'Add blank', 'Delete frame', 'Play', 'Speed', 'Onion skin', 'Save', 'Load', 'New', 'Quit')
-def anim_menu(sel):
- cls()
- ctext(18, 'STUDIO MENU', GOLD)
+ anim_update(s)
+anim_ITEMS = ('Color', 'Fill area', 'Undo', 'Clear frame', 'Next frame', 'Prev frame', 'Add copy', 'Add blank', 'Del frame', 'Play', 'Speed', 'Onion skin', 'Save', 'Load', 'New', 'Quit')
+anim_MX = 202
+anim_MY = 24
+anim_MH = 25
+anim_MV = 6
+def anim_mbox(x, y, w, h, c):
+ rect(x + 4, y, w - 8, 2, c)
+ rect(x + 4, y + h - 2, w - 8, 2, c)
+ rect(x, y + 4, 2, h - 8, c)
+ rect(x + w - 2, y + 4, 2, h - 8, c)
+ rect(x + 2, y + 2, 2, 2, c)
+ rect(x + w - 4, y + 2, 2, 2, c)
+ rect(x + 2, y + h - 4, 2, 2, c)
+ rect(x + w - 4, y + h - 4, 2, 2, c)
+def anim_mrow(s, r, i, on):
+ y = anim_MY + r * anim_MH
+ c = GOLD if on else WHITE
+ if s.lab.get(('mb', r)) != c:
+  anim_mbox(anim_MX + 1, y, 116, 22, c)
+  s.lab['mb', r] = c
+ anim_label(s, ('m', r), anim_MX + 5, y + 16, anim_ITEMS[i], c, BLACK)
+def anim_menu(s, sel):
+ rect(anim_MX, 22, 320 - anim_MX, 154, BLACK)
+ for r in range(anim_MV):
+  s.lab.pop(('mb', r), None)
+  s.lab.pop(('m', r), None)
+ anim_botbar(s, 'MENU  Up/Down: pick', 'ENTER: do it  2nd: close')
+ top = min(max(0, sel - 2), 16 - anim_MV)
+ for r in range(anim_MV):
+  anim_mrow(s, r, top + r, top + r == sel)
  while True:
-  for i in range(16):
-   x = 8 + i // 8 * 156
-   y = 26 + i % 8 * 23
-   c = GOLD if i == sel else WHITE
-   rect(x, y, 150, 21, BLACK)
-   rbox(x, y, 148, 21, 8, c)
-   text(x + 74 - len(anim_ITEMS[i]) * 5, y + 16, anim_ITEMS[i], c)
   k = wkey()
+  old = sel
   if k == UP:
    sel = (sel - 1) % 16
   elif k == DOWN:
@@ -579,14 +711,28 @@ def anim_menu(sel):
   elif k in (LEFT, RIGHT):
    sel = (sel + 8) % 16
   elif k == OK:
-   return sel
+   break
   elif k in (CLR, SECOND):
-   return -1
+   sel = -1
+   break
+  nt = top
+  if sel < top:
+   nt = sel
+  elif sel >= top + anim_MV:
+   nt = sel - anim_MV + 1
+  top = nt
+  for r in range(anim_MV):
+   anim_mrow(s, r, top + r, top + r == sel)
+ anim_side(s)
+ anim_botbar(s)
+ return sel
 def anim_pick_color(s):
  sel = s.col
+ anim_swatch(s, sel, sel)
+ anim_botbar(s, 'Arrows: pick a colour', 'ENTER: use it  CLEAR: back')
  while True:
-  anim_palette(s, sel)
   k = wkey()
+  old = sel
   if k == LEFT:
    sel = (sel - 1) % 16
   elif k == RIGHT:
@@ -596,18 +742,26 @@ def anim_pick_color(s):
   elif k == DOWN:
    sel = (sel + 4) % 16
   elif k == OK:
+   old = s.col
    s.col = sel
+   anim_swatch(s, old)
    break
   elif k == CLR:
    break
- anim_palette(s)
+  if sel != old:
+   anim_swatch(s, old, sel)
+   anim_swatch(s, sel, sel)
+ anim_swatch(s, sel)
+ anim_swatch(s, s.col)
+ anim_botbar(s)
 def anim_pick_speed(s):
  cls()
+ ctext(80, 'PLAYBACK SPEED', GOLD)
+ ctext(140, 'ENTER done', GREY)
+ s.lab = {}
  while True:
-  rect(0, 60, 320, 80, BLACK)
-  ctext(80, 'PLAYBACK SPEED', GOLD)
-  ctext(110, '< ' + str(s.fps) + ' frames a second >')
-  ctext(140, 'ENTER done', GREY)
+  t = '< ' + str(s.fps) + ' frames a second >'
+  anim_label(s, 'sp', 160 - len(t) * 5, 110, t, WHITE, BLACK)
   k = wkey()
   if k == LEFT and s.fps > 1:
    s.fps -= 1
@@ -688,6 +842,8 @@ def anim_studio():
  s.pen = 0
  s.onion = True
  s.shown = bytearray([255] * anim_N)
+ s.hide = -1
+ s.lab = {}
  msel = 0
  anim_full(s)
  held = 0
@@ -727,8 +883,9 @@ def anim_studio():
    if s.pen:
     i = s.cy * anim_CWD + s.cx
     anim_set_px(s, i, s.col if s.pen == 1 else 0)
-    anim_paint(s, i, anim_want(s, i))
-    anim_cursor(s)
+    if s.shown[i] != anim_want(s, i):
+     anim_uncursor(s)
+     anim_cursor(s)
    anim_botbar(s)
    anim_topbar(s)
    continue
@@ -737,12 +894,12 @@ def anim_studio():
    anim_botbar(s)
    continue
   if k == SECOND or k == CLR:
-   c = anim_menu(msel)
+   s.pen = 0
+   c = anim_menu(s, msel)
    if c >= 0:
     msel = c
-   s.pen = 0
+   s.broke = False
    if c == 0:
-    anim_full(s)
     anim_pick_color(s)
    elif c == 1:
     anim_fill(s)
@@ -769,24 +926,31 @@ def anim_studio():
    elif c == 8:
     anim_del_frame(s)
    elif c == 9:
-    anim_full(s)
     anim_play(s)
    elif c == 10:
     anim_pick_speed(s)
+    s.broke = True
    elif c == 11:
     s.onion = not s.onion
    elif c == 12:
     anim_do_save(s)
+    s.broke = True
    elif c == 13:
     anim_do_load(s)
+    s.broke = True
    elif c == 14:
+    if s.changed:
+     s.broke = True
     if not s.changed or message(['Unsaved changes will', 'be lost. ENTER: new', 'CLEAR: cancel'], 'New?') == OK:
      anim_reset(s, [anim_enc_key(bytearray(anim_N))], 6)
    elif c == 15:
     if not s.changed or message(['Unsaved changes will', 'be lost. ENTER: quit', 'CLEAR: cancel'], 'Quit?') == OK:
      return
-   if c != 0:
+    s.broke = True
+   if s.broke:
     anim_full(s)
+   elif c != 9:
+    anim_update(s)
 anim_RULES = 'Draw a picture, add frames, and play them back. Saves stay on the calculator.'
 anim_KEYS = ['Arrows: move  ENTER: pen', 'DEL: eraser  2nd: menu', 'Menu: colors, frames, play,', 'speed, save and load']
 def anim_main():

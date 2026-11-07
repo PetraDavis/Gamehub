@@ -20,26 +20,30 @@ GREEN = (50, 190, 80)
 H = 210
 def wkey():
  return wait_key()
+_C = [None]
 def col(c):
- set_color(c[0], c[1], c[2])
+ if c != _C[0]:
+  _C[0] = c
+  set_color(c[0], c[1], c[2])
+def fr(x, y, w, h):
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
 def rect(x, y, w, h, c):
- if w < 2 or h < 2:
-  if w < 1 or h < 1:
-   return
-  col(c)
-  draw_line(x, y, x + w - 1, y + h - 1)
+ if w < 1 or h < 1:
   return
  col(c)
- fill_rect(x, y, w, h)
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
+COVER = [0]
 def cls(c=BLACK):
+ COVER[0] += 1
  col(c)
- fill_rect(-1, -1, 322, 212)
+ fill_rect(-1, -1, 321, 211)
+TY = 6
 def text(x, y, s, c=WHITE):
  col(c)
- draw_text(x, y, s)
+ draw_text(x, y + TY, s)
 def ctext(y, s, c=WHITE, cx=160):
  col(c)
- draw_text(cx - len(s) * 5, y, s)
+ draw_text(cx - len(s) * 5, y + TY, s)
 def circ(x, y, r, c):
  col(c)
  fill_circle(x, y, r)
@@ -49,9 +53,15 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  col(inner)
  fill_circle(x, y, r - t)
 def rrect(x, y, w, h, r, c):
+ if w < 2 * r + 1 or h < 2 * r + 1:
+  r = max(0, min(w, h) // 2 - 1)
  col(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ if w - 2 * r >= 1:
+  fr(x + r, y, w - 2 * r, h)
+ if h - 2 * r >= 1:
+  fr(x, y + r, w, h - 2 * r)
+ if r < 1:
+  return
  fill_circle(x + r, y + r, r)
  fill_circle(x + w - r - 1, y + r, r)
  fill_circle(x + r, y + h - r - 1, r)
@@ -59,11 +69,31 @@ def rrect(x, y, w, h, r, c):
 def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
  rrect(x, y, w, h, r, c)
  rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def edge(x, y, w, h, r, c, t=2, inner=BLACK):
+ col(c)
+ fr(x + r, y, w - 2 * r, t)
+ fr(x + r, y + h - t, w - 2 * r, t)
+ fr(x, y + r, t, h - 2 * r)
+ fr(x + w - t, y + r, t, h - 2 * r)
+ for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
+  col(c)
+  fill_circle(cx, cy, r)
+  col(inner)
+  fill_circle(cx, cy, max(r - t, 2))
+  ax = cx + 1 if sx > 0 else cx - r
+  ay = y + t if sy > 0 else cy - r
+  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
+  ax = x + t if sx > 0 else cx - r
+  ay = cy + 1 if sy > 0 else cy - r
+  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
  h = n * 18 + 30
  y = (H - h) // 2
  rbox(20, y, 280, h, 8, WHITE)
+ MSG[0], MSG[1] = (y, h)
+ COVER[0] += 1
  yy = y + 24
  if title:
   ctext(yy, title, GOLD)
@@ -117,13 +147,17 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(122, title, GOLD)
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
+  first = True
   while True:
    for i in range(n):
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
-    rect(x, 166, bw, 28, BLACK)
-    rbox(x, 166, bw, 28, 10, c)
+    if first:
+     rbox(x, 166, bw, 28, 10, c)
+    else:
+     edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+   first = False
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -145,7 +179,7 @@ def icons_c_(c):
  set_color(c[0], c[1], c[2])
 def icons_box(x, y, w, h, c):
  icons_c_(c)
- fill_rect(int(x), int(y), max(2, int(w)), max(2, int(h)))
+ fill_rect(int(x) - 1, int(y) - 1, max(1, int(w)) + 1, max(1, int(h)) + 1)
 def icons_circ(x, y, r, c):
  icons_c_(c)
  fill_circle(int(x), int(y), int(r))
@@ -277,24 +311,43 @@ def rpg_hero(x, y):
  rect(px + 11, py + 16, 3, 4, (60, 40, 30))
  rect(px + 15, py + 4, 2, 11, (210, 215, 225))
  rect(px + 14, py + 12, 4, 2, GOLD)
-def rpg_draw_map(g):
+def rpg_draw_map(g, after_msg=False):
  m = g.m
- for y in range(10):
+ r0, r1 = (0, 10)
+ if after_msg:
+  r0 = max(0, (MSG[0] - 20) // rpg_T)
+  r1 = min(10, (MSG[0] + MSG[1] - 20) // rpg_T + 1)
+ else:
+  rpg_HUD[0] = None
+ for y in range(r0, r1):
   for x in range(16):
    rpg_tile(m, x, y, g.maps[m][y][x])
- rpg_hero(g.x, g.y)
+ if r0 <= g.y < r1:
+  rpg_hero(g.x, g.y)
  rpg_hud(g)
+rpg_HUD = [None]
 def rpg_hud(g):
- rect(0, 0, 320, 20, BLACK)
- text(4, 15, rpg_NAMES[g.m][:13], GOLD)
- text(140, 15, 'HP' + str(g.hp) + '/' + str(g.mhp))
- text(240, 15, 'LV' + str(g.lv) + ' P' + str(g.pot))
+ t = (rpg_NAMES[g.m][:13], 'HP' + str(g.hp) + '/' + str(g.mhp), 'LV' + str(g.lv) + ' P' + str(g.pot))
+ if t == rpg_HUD[0]:
+  return
+ if rpg_HUD[0] is None:
+  rect(0, 0, 320, 20, BLACK)
+  old = ('', '', '')
+ else:
+  old = rpg_HUD[0]
+ for i, x, c in ((0, 4, GOLD), (1, 140, WHITE), (2, 240, WHITE)):
+  if t[i] != old[i]:
+   text(x, 15, old[i], BLACK)
+   text(x, 15, t[i], c)
+ rpg_HUD[0] = t
 class rpg_Game:
  pass
 def rpg_bar(x, y, w, v, mx, c):
- rect(x, y, w, 6, DARK)
+ f = max(0, min(w, int(w * v / mx))) if v > 0 else 0
  if v > 0:
-  rect(x, y, max(2, int(w * v / mx)), 6, c)
+  f = max(2, f)
+ rect(x, y, f, 6, c)
+ rect(x + f, y, w - f, 6, DARK)
 def rpg_foe_art(f):
  c = f[5]
  n = f[0]
@@ -335,18 +388,29 @@ def rpg_battle(g, f):
  opts = ['Attack', 'Potion', 'Run']
  sel = 0
  log = ''
+ text(12, 56, 'You', WHITE)
+ text(12, 86, name[:12], f[5])
+ for i in range(3):
+  c = GOLD if i == sel else WHITE
+  rbox(10 + i * 102, 154, 96, 24, 8, c)
+  text(58 + i * 102 - len(opts[i]) * 5, 172, opts[i], c)
+ was = None
  while True:
-  rect(0, 150, 320, 60, BLACK)
-  rect(10, 40, 130, 100, BLACK)
-  text(12, 56, 'You', WHITE)
-  rpg_bar(12, 62, 120, g.hp, g.mhp, GREEN)
-  text(12, 86, name[:12], f[5])
-  rpg_bar(12, 92, 120, fhp, mx, RED)
-  for i in range(3):
-   c = GOLD if i == sel else WHITE
-   rbox(10 + i * 102, 154, 96, 24, 8, c)
-   text(58 + i * 102 - len(opts[i]) * 5, 172, opts[i], c)
-  text(10, 202, log[:31], GREY)
+  now = (g.hp, fhp, sel, log)
+  if was is None or was[0] != now[0]:
+   rpg_bar(12, 62, 120, g.hp, g.mhp, GREEN)
+  if was is None or was[1] != now[1]:
+   rpg_bar(12, 92, 120, fhp, mx, RED)
+  if was is not None and was[2] != sel:
+   for i in (was[2], sel):
+    c = GOLD if i == sel else WHITE
+    edge(10 + i * 102, 154, 96, 24, 8, c)
+    text(58 + i * 102 - len(opts[i]) * 5, 172, opts[i], c)
+  if was is None or was[3] != log:
+   if was is not None:
+    text(10, 202, was[3][:31], BLACK)
+   text(10, 202, log[:31], GREY)
+  was = now
   k = wkey()
   if k == LEFT:
    sel = (sel - 1) % 3
@@ -407,13 +471,13 @@ def rpg_play():
  cls()
  rpg_draw_map(g)
  message(['The Hollow King took', "the village's light.", 'Bring it back!'], 'TINY QUEST')
- rpg_draw_map(g)
+ rpg_draw_map(g, True)
  while True:
   k = wkey()
   if k == CLR:
    if message(['ENTER: quit adventure', 'CLEAR: keep going'], 'Quit?') == OK:
     return
-   rpg_draw_map(g)
+   rpg_draw_map(g, True)
    continue
   dx, dy = {LEFT: (-1, 0), RIGHT: (1, 0), UP: (0, -1), DOWN: (0, 1)}.get(k, (0, 0))
   if dx == 0 and dy == 0:
@@ -432,13 +496,13 @@ def rpg_play():
    g.hp = g.mhp
    rpg_hud(g)
    message(['You rest by the fire.', 'HP restored.'], 'Cottage')
-   rpg_draw_map(g)
+   rpg_draw_map(g, True)
    continue
   if ch == 'C':
    mp[ny][nx] = 'c'
    g.pot += 1
    message(['You found a potion!'], 'Chest')
-   rpg_draw_map(g)
+   rpg_draw_map(g, True)
    continue
   if ch == 'B':
    if rpg_battle(g, rpg_BOSS):

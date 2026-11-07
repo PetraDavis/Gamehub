@@ -48,15 +48,31 @@ def clash(b, i):
     return False
 
 
+SHOWN = {}
+
+
 def cell(b, fixed, i, cur):
+    # draws only what changed in the cell: its number, the number's colour,
+    # or the gold cursor outline (which sits around the number, never on it)
     x = X0 + (i % 9) * S
     y = Y0 + (i // 9) * S
-    bg = (250, 225, 140) if i == cur else ((236, 238, 246) if fixed[i] else WHITE)
-    rect(x + 1, y + 1, S - 2, S - 2, bg)
+    bg = (236, 238, 246) if fixed[i] else WHITE
     v = b[i]
-    if v:
-        c = INK if fixed[i] else (RED if clash(b, i) else PEN)
-        text(x + 5, y + 17, str(v), c)
+    c = (INK if fixed[i] else (RED if clash(b, i) else PEN)) if v else None
+    on = i == cur
+    old = SHOWN.get(i)
+    if old is None or old[0] != v:
+        rect(x + 1, y + 1, S - 2, S - 2, bg)
+        old = None
+    if v and (old is None or old[1] != c):
+        text(x + 5, y + 16, str(v), c)
+    if old is None or old[2] != on:
+        k = GOLD if on else bg
+        rect(x + 1, y + 1, S - 2, 2, k)
+        rect(x + 1, y + S - 3, S - 2, 2, k)
+        rect(x + 1, y + 3, 2, S - 6, k)
+        rect(x + S - 3, y + 3, 2, S - 6, k)
+    SHOWN[i] = (v, c, on)
 
 
 def grid():
@@ -83,6 +99,7 @@ def game(holes):
     text(214, 90, "ENTER +1", GREY)
     text(214, 110, "DEL erase", GREY)
     text(214, 130, "CLEAR quit", GREY)
+    SHOWN.clear()
     cur = 0
     while fixed[cur]:
         cur += 1
@@ -112,7 +129,7 @@ def game(holes):
             if v >= 0:
                 b[cur] = v
                 for i in range(81):
-                    if not fixed[i] and b[i]:
+                    if not fixed[i]:
                         cell(b, fixed, i, cur)
                 if 0 not in b and valid(b):
                     message(["Every row, column and", "box is complete."], "Solved!")

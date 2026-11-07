@@ -20,36 +20,44 @@ RED = (220, 50, 50)
 H = 210
 def wkey():
  return wait_key()
+_C = [None]
 def col(c):
- set_color(c[0], c[1], c[2])
+ if c != _C[0]:
+  _C[0] = c
+  set_color(c[0], c[1], c[2])
+def fr(x, y, w, h):
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
 def rect(x, y, w, h, c):
- if w < 2 or h < 2:
-  if w < 1 or h < 1:
-   return
-  col(c)
-  draw_line(x, y, x + w - 1, y + h - 1)
+ if w < 1 or h < 1:
   return
  col(c)
- fill_rect(x, y, w, h)
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
+COVER = [0]
 def cls(c=BLACK):
+ COVER[0] += 1
  col(c)
- fill_rect(-1, -1, 322, 212)
+ fill_rect(-1, -1, 321, 211)
+TY = 6
 def ctext(y, s, c=WHITE, cx=160):
  col(c)
- draw_text(cx - len(s) * 5, y, s)
+ draw_text(cx - len(s) * 5, y + TY, s)
+def circ(x, y, r, c):
+ col(c)
+ fill_circle(x, y, r)
 def lt(c, k=0.35):
  return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
 def dk(c, k=0.65):
  return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
-def ring(x, y, r, c, t=2, inner=BLACK):
- col(c)
- fill_circle(x, y, r)
- col(inner)
- fill_circle(x, y, r - t)
 def rrect(x, y, w, h, r, c):
+ if w < 2 * r + 1 or h < 2 * r + 1:
+  r = max(0, min(w, h) // 2 - 1)
  col(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ if w - 2 * r >= 1:
+  fr(x + r, y, w - 2 * r, h)
+ if h - 2 * r >= 1:
+  fr(x, y + r, w, h - 2 * r)
+ if r < 1:
+  return
  fill_circle(x + r, y + r, r)
  fill_circle(x + w - r - 1, y + r, r)
  fill_circle(x + r, y + h - r - 1, r)
@@ -57,11 +65,35 @@ def rrect(x, y, w, h, r, c):
 def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
  rrect(x, y, w, h, r, c)
  rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def edge(x, y, w, h, r, c, t=2, inner=BLACK):
+ col(c)
+ fr(x + r, y, w - 2 * r, t)
+ fr(x + r, y + h - t, w - 2 * r, t)
+ fr(x, y + r, t, h - 2 * r)
+ fr(x + w - t, y + r, t, h - 2 * r)
+ for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
+  col(c)
+  fill_circle(cx, cy, r)
+  col(inner)
+  fill_circle(cx, cy, max(r - t, 2))
+  ax = cx + 1 if sx > 0 else cx - r
+  ay = y + t if sy > 0 else cy - r
+  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
+  ax = x + t if sx > 0 else cx - r
+  ay = cy + 1 if sy > 0 else cy - r
+  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+def halo(x, y, r, c, t=2):
+ col(c)
+ for i in range(t):
+  draw_circle(x, y, r - i)
+MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
  h = n * 18 + 30
  y = (H - h) // 2
  rbox(20, y, 280, h, 8, WHITE)
+ MSG[0], MSG[1] = (y, h)
+ COVER[0] += 1
  yy = y + 24
  if title:
   ctext(yy, title, GOLD)
@@ -84,7 +116,7 @@ def icons_c_(c):
  set_color(c[0], c[1], c[2])
 def icons_box(x, y, w, h, c):
  icons_c_(c)
- fill_rect(int(x), int(y), max(2, int(w)), max(2, int(h)))
+ fill_rect(int(x) - 1, int(y) - 1, max(1, int(w)) + 1, max(1, int(h)) + 1)
 def icons_line(x1, y1, x2, y2, c, t=1):
  icons_c_(c)
  for o in range(t):
@@ -101,8 +133,8 @@ def icons_poly(xs, ys, c):
  fill_poly([int(v) for v in xs], [int(v) for v in ys])
 def icons_rr(x, y, w, h, r, c):
  icons_c_(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ fill_rect(x + r - 1, y - 1, w - 2 * r + 1, h + 1)
+ fill_rect(x - 1, y + r - 1, w + 1, h - 2 * r + 1)
  for cx in (x + r, x + w - r - 1):
   for cy in (y + r, y + h - r - 1):
    fill_circle(cx, cy, r)
@@ -128,7 +160,7 @@ def icons_digits(x, y, s, c, p=2):
   bits = icons_FONT[ch]
   for n in range(15):
    if bits[n] == '1':
-    fill_rect(x + i * 4 * p + n % 3 * p, y + n // 3 * p, p, p)
+    fill_rect(x + i * 4 * p + n % 3 * p - 1, y + n // 3 * p - 1, p + 1, p + 1)
 def icons_bevel(x, y, s, c):
  lt = tuple((min(255, v + 70) for v in c))
  dk = tuple((v // 2 for v in c))
@@ -188,7 +220,7 @@ def icons_sudoku(x, y, c):
   icons_hline(x0, x0 + 3 * s, y0 + i * s, icons_INK)
  icons_c_(icons_INK)
  for o in (0, 1):
-  draw_rect(x0 - o, y0 - o, 3 * s + 2 * o, 3 * s + 2 * o)
+  draw_rect(x0 - o - 1, y0 - o - 1, 3 * s + 2 * o + 1, 3 * s + 2 * o + 1)
 def icons_anim(x, y, c):
  icons_box(x - 20, y - 13, 41, 27, (35, 35, 40))
  for i in range(5):
@@ -230,7 +262,7 @@ def icons_g2048(x, y, c):
  icons_digits(x - 14, y - 5, '2048', icons_WHITE)
 def icons_pong(x, y, c):
  icons_c_(icons_WHITE)
- draw_rect(x - 21, y - 15, 43, 31)
+ draw_rect(x - 22, y - 16, 44, 32)
  icons_hline(x - 21, x + 21, y, (200, 210, 230))
  for i in range(6):
   icons_box(x, y - 15 + i * 6, 2, 3, icons_WHITE)
@@ -377,7 +409,7 @@ def icons_wipe(x, y, c):
 def icons_about(x, y, c):
  icons_c_(c)
  fill_circle(x, y - 10, 3)
- fill_rect(x - 2, y - 4, 5, 18)
+ fill_rect(x - 3, y - 5, 6, 19)
 icons_ICONS = {'GHSOLI': icons_solitaire, 'GHBLOCKS': icons_blocks, 'GHSUDOKU': icons_sudoku, 'GHANIM': icons_anim, 'GHFLAP': icons_flap, 'GHTTT': icons_ttt, 'GHMERGE': icons_g2048, 'GHPONG': icons_pong, 'GHBREAK': icons_breakout, 'GHRPG': icons_rpg, 'GHSIMON': icons_simon, 'GHHANG': icons_hangman, 'GHCRYPT': icons_crypt, '*keys': icons_keys, '*wipe': icons_wipe, '*about': icons_about}
 def icons_bg(mod):
  return icons_BG.get(mod, icons_BLACK)
@@ -415,15 +447,18 @@ mehub_BAR_GAP = 27
 def mehub_header():
  cls()
  ctext(22, 'GAMEHUB', WHITE)
-def mehub_draw_bar(i, on):
+def mehub_draw_bar(i, on, first=False):
  y = mehub_BAR_Y + i * mehub_BAR_GAP
  c = GOLD if on else WHITE
- rbox(50, y, 220, mehub_BAR_H, 9, c)
+ if first:
+  rbox(50, y, 220, mehub_BAR_H, 9, c)
+ else:
+  edge(50, y, 220, mehub_BAR_H, 9, c)
  ctext(y + 17, mehub_CATS[i][0], c)
 def mehub_cat_screen(sel):
  mehub_header()
  for i in range(len(mehub_CATS)):
-  mehub_draw_bar(i, i == sel)
+  mehub_draw_bar(i, i == sel, True)
  while True:
   k = wkey()
   old = sel
@@ -440,17 +475,19 @@ def mehub_cat_screen(sel):
    mehub_draw_bar(sel, True)
 def mehub_app_pos(i):
  return (50 + i % 4 * 73, 82 + i // 4 * 70)
-def mehub_draw_app(app, i, on):
+def mehub_draw_app(app, i, on, first=False):
  x, y = mehub_app_pos(i)
  c = GOLD if on else WHITE
- try:
-  ring(x, y, 27, c, 2, icons_bg(app[1]))
-  icons_draw(app[1], x, y, WHITE)
- except Exception:
-  ring(x, y, 27, c)
-  ctext(y + 7, app[0][0], c, x)
-def mehub_show_title(name):
- rect(0, 186, 320, 24, BLACK)
+ if first:
+  try:
+   circ(x, y, 26, icons_bg(app[1]))
+   icons_draw(app[1], x, y, WHITE)
+  except Exception:
+   ctext(y + 7, app[0][0], WHITE, x)
+ halo(x, y, 27, c, 3)
+def mehub_show_title(name, old=None):
+ if old:
+  ctext(203, old, BLACK)
  ctext(203, name, GOLD)
 def mehub_app_screen(ci, sel=0):
  cname, apps = mehub_CATS[ci]
@@ -458,7 +495,7 @@ def mehub_app_screen(ci, sel=0):
  rbox(90, 8, 140, 24, 9, WHITE)
  ctext(26, cname, WHITE)
  for i in range(len(apps)):
-  mehub_draw_app(apps[i], i, i == sel)
+  mehub_draw_app(apps[i], i, i == sel, True)
  mehub_show_title(apps[sel][0])
  n = len(apps)
  while True:
@@ -479,7 +516,7 @@ def mehub_app_screen(ci, sel=0):
   if sel != old:
    mehub_draw_app(apps[old], old, False)
    mehub_draw_app(apps[sel], sel, True)
-   mehub_show_title(apps[sel][0])
+   mehub_show_title(apps[sel][0], apps[old][0])
 def mehub_run_app(mod):
  if mod == '*keys':
   return mehub_key_test()

@@ -26,8 +26,19 @@ def court():
 
 
 def paddle(x, y, c):
-    block(x, y, 6, PH, c, 1)
+    # side by side pieces that never overlap, so redrawing it can't flash
+    rect(x, y, 1, PH, lt(c))
+    rect(x + 1, y, 1, PH, c)
+    rect(x + 2, y, 2, 4, c)
     rect(x + 2, y + 4, 2, PH - 8, lt(c, 0.5))
+    rect(x + 2, y + PH - 4, 2, 4, c)
+    rect(x + 4, y, 1, PH, c)
+    rect(x + 5, y, 1, PH, dk(c))
+
+
+def puck(x, y):
+    rect(x - 4, y - 4, 8, 8, BALL)
+    rect(x - 2, y - 2, 2, 2, lt(BALL, 0.6))
 
 
 def scores(a, b):
@@ -85,18 +96,18 @@ def game():
                 vx = max(-9, -vx * 1.06)
                 vy += (by - (cy + PH / 2)) / 6
                 bx = 302
-            rect(int(obx) - 4, int(oby) - 4, 9, 9, TABLE)
+            vacate(int(obx) - 4, int(oby) - 4, int(bx) - 4, int(by) - 4, 8, 8, TABLE)
             if opy != py:
-                rect(8, opy, 6, PH, TABLE)
+                vacate(8, opy, 8, py, 6, PH, TABLE)
             if ocy != cy:
-                rect(306, ocy, 6, PH, TABLE)
+                vacate(306, ocy, 306, cy, 6, PH, TABLE)
             if 126 < obx < 194:
                 net()
             if opy != py or 0 < obx < 24:
                 paddle(8, py, WHITE)
             if ocy != cy or 296 < obx < 320:
                 paddle(306, cy, GOLD)
-            ball(int(bx), int(by), 4, BALL)
+            puck(int(bx), int(by))
             if bx < 0:
                 cpu += 1
                 serve = 1
@@ -105,7 +116,7 @@ def game():
                 me += 1
                 serve = -1
                 break
-        rect(int(bx) - 4, int(by) - 4, 9, 9, TABLE)
+        rect(int(bx) - 4, int(by) - 4, 8, 8, TABLE)
         net()
         scores(me, cpu)
     message(["You " + str(me) + " - " + str(cpu) + " Calculator"], "You win!" if me > cpu else "Calculator wins")

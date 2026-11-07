@@ -17,26 +17,30 @@ GREY = (110, 110, 110)
 H = 210
 def wkey():
  return wait_key()
+_C = [None]
 def col(c):
- set_color(c[0], c[1], c[2])
+ if c != _C[0]:
+  _C[0] = c
+  set_color(c[0], c[1], c[2])
+def fr(x, y, w, h):
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
 def rect(x, y, w, h, c):
- if w < 2 or h < 2:
-  if w < 1 or h < 1:
-   return
-  col(c)
-  draw_line(x, y, x + w - 1, y + h - 1)
+ if w < 1 or h < 1:
   return
  col(c)
- fill_rect(x, y, w, h)
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
+COVER = [0]
 def cls(c=BLACK):
+ COVER[0] += 1
  col(c)
- fill_rect(-1, -1, 322, 212)
+ fill_rect(-1, -1, 321, 211)
+TY = 6
 def text(x, y, s, c=WHITE):
  col(c)
- draw_text(x, y, s)
+ draw_text(x, y + TY, s)
 def ctext(y, s, c=WHITE, cx=160):
  col(c)
- draw_text(cx - len(s) * 5, y, s)
+ draw_text(cx - len(s) * 5, y + TY, s)
 def circ(x, y, r, c):
  col(c)
  fill_circle(x, y, r)
@@ -50,9 +54,15 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  col(inner)
  fill_circle(x, y, r - t)
 def rrect(x, y, w, h, r, c):
+ if w < 2 * r + 1 or h < 2 * r + 1:
+  r = max(0, min(w, h) // 2 - 1)
  col(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ if w - 2 * r >= 1:
+  fr(x + r, y, w - 2 * r, h)
+ if h - 2 * r >= 1:
+  fr(x, y + r, w, h - 2 * r)
+ if r < 1:
+  return
  fill_circle(x + r, y + r, r)
  fill_circle(x + w - r - 1, y + r, r)
  fill_circle(x + r, y + h - r - 1, r)
@@ -60,11 +70,31 @@ def rrect(x, y, w, h, r, c):
 def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
  rrect(x, y, w, h, r, c)
  rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def edge(x, y, w, h, r, c, t=2, inner=BLACK):
+ col(c)
+ fr(x + r, y, w - 2 * r, t)
+ fr(x + r, y + h - t, w - 2 * r, t)
+ fr(x, y + r, t, h - 2 * r)
+ fr(x + w - t, y + r, t, h - 2 * r)
+ for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
+  col(c)
+  fill_circle(cx, cy, r)
+  col(inner)
+  fill_circle(cx, cy, max(r - t, 2))
+  ax = cx + 1 if sx > 0 else cx - r
+  ay = y + t if sy > 0 else cy - r
+  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
+  ax = x + t if sx > 0 else cx - r
+  ay = cy + 1 if sy > 0 else cy - r
+  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
  h = n * 18 + 30
  y = (H - h) // 2
  rbox(20, y, 280, h, 8, WHITE)
+ MSG[0], MSG[1] = (y, h)
+ COVER[0] += 1
  yy = y + 24
  if title:
   ctext(yy, title, GOLD)
@@ -118,13 +148,17 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(122, title, GOLD)
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
+  first = True
   while True:
    for i in range(n):
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
-    rect(x, 166, bw, 28, BLACK)
-    rbox(x, 166, bw, 28, 10, c)
+    if first:
+     rbox(x, 166, bw, 28, 10, c)
+    else:
+     edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+   first = False
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -147,8 +181,8 @@ def icons_c_(c):
  set_color(c[0], c[1], c[2])
 def icons_rr(x, y, w, h, r, c):
  icons_c_(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ fill_rect(x + r - 1, y - 1, w - 2 * r + 1, h + 1)
+ fill_rect(x - 1, y + r - 1, w + 1, h - 2 * r + 1)
  for cx in (x + r, x + w - r - 1):
   for cy in (y + r, y + h - r - 1):
    fill_circle(cx, cy, r)
@@ -158,7 +192,7 @@ def icons_digits(x, y, s, c, p=2):
   bits = icons_FONT[ch]
   for n in range(15):
    if bits[n] == '1':
-    fill_rect(x + i * 4 * p + n % 3 * p, y + n // 3 * p, p, p)
+    fill_rect(x + i * 4 * p + n % 3 * p - 1, y + n // 3 * p - 1, p + 1, p + 1)
 def icons_g2048(x, y, c):
  icons_rr(x - 20, y - 12, 41, 28, 4, (200, 160, 30))
  icons_rr(x - 20, y - 14, 41, 28, 4, (237, 194, 46))
@@ -208,9 +242,11 @@ def merge_move(b, d):
   for n in range(4):
    nb[idx[n]] = row[n]
  return (nb, pts)
-def merge_draw(b, score):
+def merge_draw(b, score, old=None, oscore=-1):
  for i in range(16):
   v = b[i]
+  if old and old[i] == v:
+   continue
   x = merge_X0 + i % 4 * merge_S
   y = merge_Y0 + i // 4 * merge_S
   c = merge_TC.get(v, (235, 180, 20))
@@ -224,14 +260,10 @@ def merge_draw(b, score):
     s = s[:2] + 'k' if v >= 10000 else s
    tc = (60, 55, 50) if v < 8 else WHITE
    text(x + merge_S // 2 - len(s) * 5, y + 25, s, tc)
- rect(0, 180, 320, 30, WHITE)
- rrect(110, 182, 100, 24, 6, merge_BOARD)
- ctext(200, 'Score ' + str(score), WHITE)
-def merge_game():
- b = [0] * 16
- merge_add(b)
- merge_add(b)
- score = 0
+ if score != oscore:
+  rrect(95, 182, 130, 24, 6, merge_BOARD)
+  ctext(200, 'Score ' + str(score), WHITE)
+def merge_frame():
  cls(WHITE)
  rrect(12, 34, 64, 64, 8, dk((235, 185, 30), 0.8))
  rrect(12, 32, 64, 64, 8, (235, 185, 30))
@@ -242,6 +274,12 @@ def merge_game():
  text(250, 60, 'Arrows', (120, 110, 100))
  text(250, 78, 'slide', (120, 110, 100))
  rrect(merge_X0 - 4, merge_Y0 - 4, merge_S * 4 + 8, merge_S * 4 + 8, 8, merge_BOARD)
+def merge_game():
+ b = [0] * 16
+ merge_add(b)
+ merge_add(b)
+ score = 0
+ merge_frame()
  merge_draw(b, score)
  won = False
  while True:
@@ -253,15 +291,15 @@ def merge_game():
    continue
   nb, p = merge_move(b, d)
   if nb != b:
+   ob, osc = (b, score)
    b = nb
    score += p
    merge_add(b)
-   merge_draw(b, score)
+   merge_draw(b, score, ob, osc)
    if 2048 in b and (not won):
     won = True
     message(['You made 2048!', 'Keep going?'], 'Amazing!')
-    cls(WHITE)
-    rrect(merge_X0 - 4, merge_Y0 - 4, merge_S * 4 + 8, merge_S * 4 + 8, 8, merge_BOARD)
+    merge_frame()
     merge_draw(b, score)
   stuck = True
   for dd in range(4):

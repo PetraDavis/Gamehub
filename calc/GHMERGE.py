@@ -51,9 +51,12 @@ def move(b, d):
     return nb, pts
 
 
-def draw(b, score):
+def draw(b, score, old=None, oscore=-1):
+    # only tiles that changed are drawn again, so the board doesn't flash
     for i in range(16):
         v = b[i]
+        if old and old[i] == v:
+            continue
         x = X0 + (i % 4) * S
         y = Y0 + (i // 4) * S
         c = TC.get(v, (235, 180, 20))
@@ -67,16 +70,12 @@ def draw(b, score):
                 s = s[:2] + "k" if v >= 10000 else s
             tc = (60, 55, 50) if v < 8 else WHITE
             text(x + S // 2 - len(s) * 5, y + 25, s, tc)
-    rect(0, 180, 320, 30, WHITE)
-    rrect(110, 182, 100, 24, 6, BOARD)
-    ctext(200, "Score " + str(score), WHITE)
+    if score != oscore:
+        rrect(95, 182, 130, 24, 6, BOARD)
+        ctext(200, "Score " + str(score), WHITE)
 
 
-def game():
-    b = [0] * 16
-    add(b)
-    add(b)
-    score = 0
+def frame():
     cls(WHITE)
     rrect(12, 34, 64, 64, 8, dk((235, 185, 30), 0.8))
     rrect(12, 32, 64, 64, 8, (235, 185, 30))
@@ -87,6 +86,14 @@ def game():
     text(250, 60, "Arrows", (120, 110, 100))
     text(250, 78, "slide", (120, 110, 100))
     rrect(X0 - 4, Y0 - 4, S * 4 + 8, S * 4 + 8, 8, BOARD)
+
+
+def game():
+    b = [0] * 16
+    add(b)
+    add(b)
+    score = 0
+    frame()
     draw(b, score)
     won = False
     while True:
@@ -98,15 +105,15 @@ def game():
             continue
         nb, p = move(b, d)
         if nb != b:
+            ob, osc = b, score
             b = nb
             score += p
             add(b)
-            draw(b, score)
+            draw(b, score, ob, osc)
             if 2048 in b and not won:
                 won = True
                 message(["You made 2048!", "Keep going?"], "Amazing!")
-                cls(WHITE)
-                rrect(X0 - 4, Y0 - 4, S * 4 + 8, S * 4 + 8, 8, BOARD)
+                frame()
                 draw(b, score)
         stuck = True
         for dd in range(4):

@@ -14,21 +14,28 @@ POST = (225, 175, 20)
 USED = (190, 190, 190)
 
 
-def letter_box(i, used, sel):
+def letter_box(i, used, sel, full=False):
     x = 4 + (i % 13) * 24
     y = 150 + (i // 13) * 28
     c = GOLD if i == sel else (USED if ABC[i] in used else INK)
-    rect(x, y, 22, 24, WHITE)
-    rbox(x, y, 22, 24, 5, c, 2, WHITE)
+    if full:
+        rbox(x, y, 22, 24, 3, c, 2, WHITE)
+    else:
+        edge(x, y, 22, 24, 3, c, 2, WHITE)
     text(x + 6, y + 18, ABC[i], c)
 
 
-def word_line(w, used):
-    rect(120, 60, 200, 30, WHITE)
-    s = ""
-    for ch in w:
-        s += (ch if ch in used else "_") + " "
-    text(310 - len(s) * 10, 85, s.strip(), INK)
+def word_line(w, used, new=None):
+    # first time: blanks and letters. Later only the guessed letter appears,
+    # writing over its blanks, so the rest of the word stays still
+    x0 = 310 - len(w) * 20
+    for i in range(len(w)):
+        ch = w[i]
+        if new is None:
+            text(x0 + i * 20, 85, ch if ch in used else "_", INK)
+        elif ch == new:
+            text(x0 + i * 20, 85, "_", WHITE)
+            text(x0 + i * 20, 85, ch, INK)
 
 
 def figure(n):
@@ -63,7 +70,7 @@ def game():
     cls(WHITE)
     figure(0)
     for i in range(26):
-        letter_box(i, used, sel)
+        letter_box(i, used, sel, True)
     word_line(w, used)
     while True:
         done = True
@@ -89,12 +96,13 @@ def game():
         elif k == OK and ABC[sel] not in used:
             used += ABC[sel]
             if ABC[sel] in w:
-                word_line(w, used)
+                word_line(w, used, ABC[sel])
             else:
                 bad += 1
                 figure(bad)
-        letter_box(old, used, sel)
-        letter_box(sel, used, sel)
+        if old != sel or k == OK:
+            letter_box(old, used, sel)
+            letter_box(sel, used, sel)
 
 
 RULES = 'Guess the hidden word one letter at a time. Six wrong guesses and the game is over.'

@@ -38,26 +38,30 @@ class Steer:
   self.d = 0
 def wkey():
  return wait_key()
+_C = [None]
 def col(c):
- set_color(c[0], c[1], c[2])
+ if c != _C[0]:
+  _C[0] = c
+  set_color(c[0], c[1], c[2])
+def fr(x, y, w, h):
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
 def rect(x, y, w, h, c):
- if w < 2 or h < 2:
-  if w < 1 or h < 1:
-   return
-  col(c)
-  draw_line(x, y, x + w - 1, y + h - 1)
+ if w < 1 or h < 1:
   return
  col(c)
- fill_rect(x, y, w, h)
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
+COVER = [0]
 def cls(c=BLACK):
+ COVER[0] += 1
  col(c)
- fill_rect(-1, -1, 322, 212)
+ fill_rect(-1, -1, 321, 211)
+TY = 6
 def text(x, y, s, c=WHITE):
  col(c)
- draw_text(x, y, s)
+ draw_text(x, y + TY, s)
 def ctext(y, s, c=WHITE, cx=160):
  col(c)
- draw_text(cx - len(s) * 5, y, s)
+ draw_text(cx - len(s) * 5, y + TY, s)
 def circ(x, y, r, c):
  col(c)
  fill_circle(x, y, r)
@@ -71,19 +75,21 @@ def block(x, y, w, h, c, e=2):
  rect(x, y, e, h, lt(c))
  rect(x, y + h - e, w, e, dk(c))
  rect(x + w - e, y + e, e, h - e, dk(c))
-def ball(x, y, r, c):
- circ(x, y, r, c)
- s = max(1, r // 3)
- circ(x - s, y - s, s, lt(c, 0.6))
 def ring(x, y, r, c, t=2, inner=BLACK):
  col(c)
  fill_circle(x, y, r)
  col(inner)
  fill_circle(x, y, r - t)
 def rrect(x, y, w, h, r, c):
+ if w < 2 * r + 1 or h < 2 * r + 1:
+  r = max(0, min(w, h) // 2 - 1)
  col(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ if w - 2 * r >= 1:
+  fr(x + r, y, w - 2 * r, h)
+ if h - 2 * r >= 1:
+  fr(x, y + r, w, h - 2 * r)
+ if r < 1:
+  return
  fill_circle(x + r, y + r, r)
  fill_circle(x + w - r - 1, y + r, r)
  fill_circle(x + r, y + h - r - 1, r)
@@ -91,13 +97,47 @@ def rrect(x, y, w, h, r, c):
 def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
  rrect(x, y, w, h, r, c)
  rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def edge(x, y, w, h, r, c, t=2, inner=BLACK):
+ col(c)
+ fr(x + r, y, w - 2 * r, t)
+ fr(x + r, y + h - t, w - 2 * r, t)
+ fr(x, y + r, t, h - 2 * r)
+ fr(x + w - t, y + r, t, h - 2 * r)
+ for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
+  col(c)
+  fill_circle(cx, cy, r)
+  col(inner)
+  fill_circle(cx, cy, max(r - t, 2))
+  ax = cx + 1 if sx > 0 else cx - r
+  ay = y + t if sy > 0 else cy - r
+  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
+  ax = x + t if sx > 0 else cx - r
+  ay = cy + 1 if sy > 0 else cy - r
+  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+def vacate(ox, oy, nx, ny, w, h, c):
+ if abs(nx - ox) >= w or abs(ny - oy) >= h:
+  rect(ox, oy, w, h, c)
+  return
+ if ny > oy:
+  rect(ox, oy, w, ny - oy, c)
+ elif ny < oy:
+  rect(ox, ny + h, w, oy - ny, c)
+ y0 = max(oy, ny)
+ y1 = min(oy, ny) + h
+ if nx > ox:
+  rect(ox, y0, nx - ox, y1 - y0, c)
+ elif nx < ox:
+  rect(nx + w, y0, ox - nx, y1 - y0, c)
 def pause(s):
  time.sleep(s)
+MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
  h = n * 18 + 30
  y = (H - h) // 2
  rbox(20, y, 280, h, 8, WHITE)
+ MSG[0], MSG[1] = (y, h)
+ COVER[0] += 1
  yy = y + 24
  if title:
   ctext(yy, title, GOLD)
@@ -151,13 +191,17 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(122, title, GOLD)
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
+  first = True
   while True:
    for i in range(n):
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
-    rect(x, 166, bw, 28, BLACK)
-    rbox(x, 166, bw, 28, 10, c)
+    if first:
+     rbox(x, 166, bw, 28, 10, c)
+    else:
+     edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+   first = False
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -179,7 +223,7 @@ def icons_c_(c):
  set_color(c[0], c[1], c[2])
 def icons_box(x, y, w, h, c):
  icons_c_(c)
- fill_rect(int(x), int(y), max(2, int(w)), max(2, int(h)))
+ fill_rect(int(x) - 1, int(y) - 1, max(1, int(w)) + 1, max(1, int(h)) + 1)
 def icons_hline(x1, x2, y, c, t=1):
  icons_c_(c)
  for o in range(t):
@@ -189,8 +233,8 @@ def icons_circ(x, y, r, c):
  fill_circle(int(x), int(y), int(r))
 def icons_rr(x, y, w, h, r, c):
  icons_c_(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ fill_rect(x + r - 1, y - 1, w - 2 * r + 1, h + 1)
+ fill_rect(x - 1, y + r - 1, w + 1, h - 2 * r + 1)
  for cx in (x + r, x + w - r - 1):
   for cy in (y + r, y + h - r - 1):
    fill_circle(cx, cy, r)
@@ -230,16 +274,33 @@ def break_walls():
  rect(316, 24, 4, 186, (200, 210, 230))
  rect(3, 24, 1, 186, (120, 130, 160))
  rect(316, 24, 1, 186, (120, 130, 160))
-def break_paddle(x, c=WHITE):
- if c == break_BG:
-  rect(x, 192, break_PW, 8, break_BG)
-  return
- rrect(x, 192, break_PW, 8, 3, (230, 120, 60))
- rect(x + 4, 193, break_PW - 8, 2, (255, 200, 150))
+break_PC = (230, 120, 60)
+break_PL = (255, 200, 150)
+def break_paddle(x):
+ rect(x + 1, 192, break_PW - 2, 1, break_PC)
+ rect(x, 193, 4, 2, break_PC)
+ rect(x + 4, 193, break_PW - 8, 2, break_PL)
+ rect(x + break_PW - 4, 193, 4, 2, break_PC)
+ rect(x, 195, break_PW, 4, break_PC)
+ rect(x + 1, 199, break_PW - 2, 1, break_PC)
+ for cx, cy in ((x, 192), (x + break_PW - 1, 192), (x, 199), (x + break_PW - 1, 199)):
+  rect(cx, cy, 1, 1, break_BG)
+def break_puck(x, y):
+ rect(x - 3, y - 3, 6, 6, WHITE)
+ rect(x - 2, y - 2, 2, 2, (200, 220, 255))
+break_HUD = [None, None]
 def break_hud(score, lives):
- rect(0, 0, 320, 22, break_BG)
- text(6, 17, 'Score ' + str(score))
- text(214, 17, 'Balls ' + str(lives), GOLD)
+ a = 'Score ' + str(score)
+ b = 'Balls ' + str(lives)
+ if a != break_HUD[0]:
+  if break_HUD[0]:
+   text(6, 17, break_HUD[0], break_BG)
+  text(6, 17, a)
+ if b != break_HUD[1]:
+  if break_HUD[1]:
+   text(214, 17, break_HUD[1], break_BG)
+  text(214, 17, b, GOLD)
+ break_HUD[0], break_HUD[1] = (a, b)
 def break_game():
  cls(break_BG)
  rect(0, 22, 320, 2, WHITE)
@@ -252,6 +313,7 @@ def break_game():
  score = 0
  lives = 3
  px = 137
+ break_HUD[0] = break_HUD[1] = None
  break_hud(score, lives)
  while lives > 0 and left > 0:
   bx, by = (px + break_PW / 2, 180.0)
@@ -299,16 +361,22 @@ def break_game():
     break_hud(score, lives)
     if left == 0:
      break
-   rect(int(obx) - 3, int(oby) - 3, 7, 7, break_BG)
+   vacate(int(obx) - 3, int(oby) - 3, int(bx) - 3, int(by) - 3, 6, 6, break_BG)
+   if oby < break_BY + break_ROWS * break_BH + 4:
+    for rr in range(max(0, int((oby - 3 - break_BY) // break_BH)), min(break_ROWS, int((oby + 3 - break_BY) // break_BH) + 1)):
+     for cc in range(max(0, int((obx - 3 - 10) // break_BW)), min(break_COLS, int((obx + 3 - 10) // break_BW) + 1)):
+      if b[rr][cc] and abs(rr * break_BH + break_BY + break_BH / 2 - by) + abs(cc * break_BW + 10 + break_BW / 2 - bx) > 0:
+       break_brick(rr, cc, 1)
+   if opx != px:
+    vacate(opx, 192, px, 192, break_PW, 8, break_BG)
    if opx != px or oby > 186:
-    break_paddle(opx, break_BG)
     break_paddle(px)
-   ball(int(bx), int(by), 3, WHITE)
+   break_puck(int(bx), int(by))
    if by > 210:
     lives -= 1
     break_hud(score, lives)
     break
-  rect(int(bx) - 3, int(by) - 3, 7, 7, break_BG)
+  rect(int(bx) - 3, int(by) - 3, 6, 6, break_BG)
   rect(4, 192, 312, 8, break_BG)
  if left == 0:
   message(['Score ' + str(score)], 'All bricks cleared!')

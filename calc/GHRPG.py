@@ -151,20 +151,40 @@ def hero(x, y):
     rect(px + 14, py + 12, 4, 2, GOLD)
 
 
-def draw_map(g):
+def draw_map(g, after_msg=False):
+    # after a message box, only the rows it covered are drawn again
     m = g.m
-    for y in range(10):
+    r0, r1 = 0, 10
+    if after_msg:
+        r0 = max(0, (MSG[0] - 20) // T)
+        r1 = min(10, (MSG[0] + MSG[1] - 20) // T + 1)
+    else:
+        HUD[0] = None
+    for y in range(r0, r1):
         for x in range(16):
             tile(m, x, y, g.maps[m][y][x])
-    hero(g.x, g.y)
+    if r0 <= g.y < r1:
+        hero(g.x, g.y)
     hud(g)
 
 
+HUD = [None]
+
+
 def hud(g):
-    rect(0, 0, 320, 20, BLACK)
-    text(4, 15, NAMES[g.m][:13], GOLD)
-    text(140, 15, "HP" + str(g.hp) + "/" + str(g.mhp))
-    text(240, 15, "LV" + str(g.lv) + " P" + str(g.pot))
+    t = (NAMES[g.m][:13], "HP" + str(g.hp) + "/" + str(g.mhp), "LV" + str(g.lv) + " P" + str(g.pot))
+    if t == HUD[0]:
+        return
+    if HUD[0] is None:
+        rect(0, 0, 320, 20, BLACK)
+        old = ("", "", "")
+    else:
+        old = HUD[0]
+    for i, x, c in ((0, 4, GOLD), (1, 140, WHITE), (2, 240, WHITE)):
+        if t[i] != old[i]:
+            text(x, 15, old[i], BLACK)
+            text(x, 15, t[i], c)
+    HUD[0] = t
 
 
 class Game:
@@ -172,9 +192,12 @@ class Game:
 
 
 def bar(x, y, w, v, mx, c):
-    rect(x, y, w, 6, DARK)
+    # filled part and empty part side by side, so nothing is painted twice
+    f = max(0, min(w, int(w * v / mx))) if v > 0 else 0
     if v > 0:
-        rect(x, y, max(2, int(w * v / mx)), 6, c)
+        f = max(2, f)
+    rect(x, y, f, 6, c)
+    rect(x + f, y, w - f, 6, DARK)
 
 
 def foe_art(f):
@@ -219,18 +242,30 @@ def battle(g, f):
     opts = ["Attack", "Potion", "Run"]
     sel = 0
     log = ""
+    text(12, 56, "You", WHITE)
+    text(12, 86, name[:12], f[5])
+    for i in range(3):
+        c = GOLD if i == sel else WHITE
+        rbox(10 + i * 102, 154, 96, 24, 8, c)
+        text(58 + i * 102 - len(opts[i]) * 5, 172, opts[i], c)
+    was = None
     while True:
-        rect(0, 150, 320, 60, BLACK)
-        rect(10, 40, 130, 100, BLACK)
-        text(12, 56, "You", WHITE)
-        bar(12, 62, 120, g.hp, g.mhp, GREEN)
-        text(12, 86, name[:12], f[5])
-        bar(12, 92, 120, fhp, mx, RED)
-        for i in range(3):
-            c = GOLD if i == sel else WHITE
-            rbox(10 + i * 102, 154, 96, 24, 8, c)
-            text(58 + i * 102 - len(opts[i]) * 5, 172, opts[i], c)
-        text(10, 202, log[:31], GREY)
+        # only what changed: the bars, the gold option, the last line
+        now = (g.hp, fhp, sel, log)
+        if was is None or was[0] != now[0]:
+            bar(12, 62, 120, g.hp, g.mhp, GREEN)
+        if was is None or was[1] != now[1]:
+            bar(12, 92, 120, fhp, mx, RED)
+        if was is not None and was[2] != sel:
+            for i in (was[2], sel):
+                c = GOLD if i == sel else WHITE
+                edge(10 + i * 102, 154, 96, 24, 8, c)
+                text(58 + i * 102 - len(opts[i]) * 5, 172, opts[i], c)
+        if was is None or was[3] != log:
+            if was is not None:
+                text(10, 202, was[3][:31], BLACK)
+            text(10, 202, log[:31], GREY)
+        was = now
         k = wkey()
         if k == LEFT:
             sel = (sel - 1) % 3
@@ -294,13 +329,13 @@ def play():
     cls()
     draw_map(g)
     message(["The Hollow King took", "the village's light.", "Bring it back!"], "TINY QUEST")
-    draw_map(g)
+    draw_map(g, True)
     while True:
         k = wkey()
         if k == CLR:
             if message(["ENTER: quit adventure", "CLEAR: keep going"], "Quit?") == OK:
                 return
-            draw_map(g)
+            draw_map(g, True)
             continue
         dx, dy = {LEFT: (-1, 0), RIGHT: (1, 0), UP: (0, -1), DOWN: (0, 1)}.get(k, (0, 0))
         if dx == 0 and dy == 0:
@@ -319,13 +354,13 @@ def play():
             g.hp = g.mhp
             hud(g)
             message(["You rest by the fire.", "HP restored."], "Cottage")
-            draw_map(g)
+            draw_map(g, True)
             continue
         if ch == "C":
             mp[ny][nx] = "c"
             g.pot += 1
             message(["You found a potion!"], "Chest")
-            draw_map(g)
+            draw_map(g, True)
             continue
         if ch == "B":
             if battle(g, BOSS):
