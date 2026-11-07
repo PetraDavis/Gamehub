@@ -145,6 +145,7 @@ def G_evil(g):
   G_draw_map(g,True)
   return True
  g.dread=0
+ g.book|=1<<25
  if not G_put_egg(g,20,True)and len(g.bag)<5:
   g.bag.append(20)
  message(['The Dread Drake flies','away... and leaves a','strange egg behind!'],'Whoa!')

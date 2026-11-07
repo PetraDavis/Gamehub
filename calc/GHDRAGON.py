@@ -918,7 +918,9 @@ def evil(g):
         message(["You got away...", "but the Dread Drake", "will be back!"], "Escaped")
         draw_map(g, True)
         return True
+    # beaten: it never comes back (remembered in the book's spare bit 25)
     g.dread = 0
+    g.book |= 1 << 25
     if not put_egg(g, 20, True) and len(g.bag) < 5:
         g.bag.append(20)
     message(["The Dread Drake flies", "away... and leaves a", "strange egg behind!"], "Whoa!")
@@ -1051,7 +1053,8 @@ def play():
         # the evil dragon only hunts tamers who own a Rare (or rarer) dragon
         if g.dread > 0:
             g.dread -= 1
-        if (g.dread == 1 or steps > 3 and random.random() < EVIL) and any(DT[d[1]][2] >= 2 for d in g.pen):
+        if (g.dread == 1 or steps > 3 and random.random() < EVIL) and not g.book >> 25 & 1 and \
+                any(DT[d[1]][2] >= 2 for d in g.pen):
             steps = 0
             if not evil(g):
                 return
