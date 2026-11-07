@@ -1,5 +1,6 @@
 # Name Generator: press ENTER for a new made-up name. Left/Right picks what the
-# name is for (a hero, a monster, a pet, a wizard or a planet), Up/Down picks
+# name is for (a hero, a monster, a pet, a wizard,
+# a dragon or a planet), Up/Down picks
 # a female or a male name.
 from GHLIB import *
 import random
@@ -35,6 +36,12 @@ KINDS = (
      ("the Grey", "of the Stars", "Moonweaver", "the Wise", "Spellbinder", "of the Tower", "the Odd"),
      ("the Enchantress", "Witch of the Woods", "Lady of Spells"),
      ("the Enchanter", "Warlock of the Woods", "Lord of Spells")),
+    ("DRAGON", ("Vyr", "Draz", "Ign", "Sca", "Fafn", "Ryn", "Zyth", "Kor", "Ember", "Sil", "Tal", "Aur"),
+     ("ira", "essa", "yx", "andra", "eth", "ara", "ithra", "ona"),
+     ("ax", "gorn", "ion", "rax", "oth", "ius", "drak", "on"),
+     ("the Fierce", "Flamecaller", "of the Peaks", "Skyrender", "the Ancient", "Stormwing", "the Shiny"),
+     ("Queen of Ashes", "Mother of Eggs", "the Sky Empress"),
+     ("King of Ashes", "Father of Eggs", "the Sky Emperor")),
     ("PLANET", ("Zor", "Kep", "Vel", "Astra", "Nyx", "Oro", "Tal", "Xen", "Lumi", "Cyra", "Pol", "Rho"),
      ("ax", "lon", "ia", "us", "tara", "on", "is", "ix", "ara", "eon", "una", "os"),
      (),
