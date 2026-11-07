@@ -4,7 +4,7 @@ from ti_system import*
 import time
 import random
 import math
-SECOND=21
-TY=6
-G_COLS=32
-G_FOV=1.0
+G_LINK1='petradavis.github.io/'
+G_LINK2='Encrypted/?ysolde=1'
+G_CIPHER='LI WKH OLJKWV GLH VKH LV LQ WKH URRP. GRQW UXQ. KLGH LQ WKH FRDW FORVHW. LWV FRGH LV HFKR'
+G_YG=4

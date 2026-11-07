@@ -7,6 +7,7 @@ RIGHT=26
 OK=105
 CLR=45
 DEL=23
+SECOND=21
 BLACK=(0,0,0)
 WHITE=(255,255,255)
 GOLD=(230,180,40)
@@ -32,6 +33,7 @@ def cls(c=BLACK):
  COVER[0]+=1
  col(c)
  fill_rect(-1,-1,321,211)
+TY=6
 def text(x,y,s,c=WHITE):
  col(c)
  draw_text(x,y+TY,s)
@@ -102,14 +104,13 @@ except Exception:
 G_MAP=['#BBBB###SSS###','B....#.......#','B............k','#####G.......#','#....#.......#','T....l.......j','#....#.......C','########PF####']
 G_VW=320
 G_VH=172
+G_COLS=32
 G_CWID=G_VW//G_COLS
+G_FOV=1.0
 G_WALL=(75,95,99)
 G_DOOR=(110,75,45)
 G_FLOOR=(42,36,32)
 G_CEIL=(16,16,18)
-G_LINK1='petradavis.github.io/'
-G_LINK2='Encrypted/?ysolde=1'
-G_CIPHER='LI WKH OLJKWV GLH VKH LV LQ WKH URRP. GRQW UXQ. KLGH LQ WKH FRDW FORVHW. LWV FRGH LV HFKR'
 G_TAPGRID=('ABCDE','FGHIK','LMNOP','QRSTU','VWXYZ')
 G_KNOCKS=((4,1),(4,5),(2,4),(1,5),(4,4))
 class G_St:
@@ -286,7 +287,6 @@ def G__build_ys():
  G__oval(0,0,17,25,0,4)
  for ex,ey in((137.2,41.2),(149.1,48.55)):
   G_YS.append(((ex-2)/256,(ex+2)/256,1-(ey+2)/640,1-(ey-2)/640,4))
-G_YG=4
 G_RIM=((215,215,225),(170,175,190),(250,250,255))
 G_INSIDE=(36,36,44)
 def G_ys_place(g,zb,ca,sa):

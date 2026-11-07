@@ -17,22 +17,6 @@ GREY=(110,110,110)
 H=210
 def key():
  return get_key(0)
-class Steer:
- def __init__(self,keys,stop_on_back=False):
-  self.keys=keys
-  self.back=stop_on_back
-  self.d=0
- def feed(self,k):
-  if k in self.keys:
-   if self.back and self.d and(k!=self.d)and(self.keys.index(k)//2==self.keys.index(self.d)//2):
-    self.d=0
-   else:
-    self.d=k
-  elif k:
-   self.d=0
-  return self.d
- def stop(self):
-  self.d=0
 def wkey():
  return wait_key()
 _C=[None]
@@ -222,7 +206,7 @@ G_AW,G_AH=(16,10)
 G_MAXA=3
 G_FIRE=0.35
 G_SHOT_V=260.0
-G_SHIP_V=160.0
+G_STEP=16
 def G_ship_cuts(x):
  return((x,G_SY,7,5),(x+13,G_SY,7,5))
 def G_alien_cuts(x,y):
@@ -283,7 +267,6 @@ def G_game():
  shots=[]
  wait=1.0
  reload=0.0
- st=Steer((LEFT,RIGHT),True)
  last=G_now()if G_now else 0
  while lives>0:
   k=key()
@@ -307,14 +290,11 @@ def G_game():
    last=t
   else:
    dt=0.15
-  d=st.feed(k)
-  if d==LEFT:
-   sx-=G_SHIP_V*dt
-  elif d==RIGHT:
-   sx+=G_SHIP_V*dt
-  if sx<4 or sx>316-G_SW:
-   sx=max(4.0,min(316.0-G_SW,sx))
-   st.stop()
+  if k==LEFT:
+   sx-=G_STEP
+  elif k==RIGHT:
+   sx+=G_STEP
+  sx=max(4.0,min(316.0-G_SW,sx))
   speed=min(80.0,22.0+score*1.5)
   wait-=dt
   if wait<=0 and len(aliens)<G_MAXA:
@@ -383,8 +363,8 @@ def G_game():
   G_paint(((G_ALIEN,green),(G_SHIP,blue),(G_SHOT,gold),(G_BG,back)))
  pause(0.4)
  message(['You stopped '+str(score)+' aliens.'],'Game over')
-G_RULES='Aliens are drifting down toward the planet. Your ship fires by itself: glide under them and stop them before they reach the bottom. 3 lives.'
-G_KEYS=['Left/Right: glide','Opposite arrow: stop','CLEAR: quit']
+G_RULES='Aliens are drifting down toward the planet. Your ship fires by itself: move under them and stop them before they reach the bottom. 3 lives.'
+G_KEYS=['Left/Right: move a step','CLEAR: quit']
 def G_main():
  while True:
   c=home('GHSTAR','STAR PATROL',G_RULES,G_KEYS,('Play','Back'))
