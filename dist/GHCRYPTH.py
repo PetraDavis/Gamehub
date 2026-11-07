@@ -225,6 +225,21 @@ try:
  from time import monotonic as G_now
 except Exception:
  G_now=None
+G_SPRN=('couch','desk','lamp','phone','rack','table','vase')
+G_SPRD=b'\xa6\x04\x00\xff\x003\x96(-\x14\xeb3\\x\x1e#\x00\x1f3G\x96(-\xe0\xff3G\x96(-\x99\x04\x00\x1a\x00L_A(\xe6\xff\x00L_A(\x00\xffLYxU23\x80Ya\xc8\xbe\x96L\x02s\x8c\x00\x8c\xb4\x96F&\xd9\x8c\xb8\xeb\xdc\xaaL\x04\x00&\x00L_A(\xd9\xff\x00L_A(\x00\xffLWxU2@\xbfWk\x14\x14\x14Y\x03u\x8a\x00\xccP7#&sY\xbf<Fn\x8c\xd9f\xb8n22s\x04\x00\x1f\x00G_A(\xe0\xff\x00G_A(\x00\xffGTxU2L\xb2T^\x8cF\xb4Y\x03\x1a\xe6\x00@_A(Y\xa6@s<x\x8cL\xb2s\x8cZ\x8cF'
+G_SPR={}
+def G__unpack_spr():
+ i=0
+ for name in G_SPRN:
+  w,n=(G_SPRD[i]/255*2,G_SPRD[i+1])
+  i+=2
+  parts=[]
+  for k in range(n):
+   d=G_SPRD[i:i+7]
+   parts.append((d[0]/255,d[1]/255,d[2]/255,d[3]/255,(d[4],d[5],d[6])))
+   i+=7
+  G_SPR[name]=(w,parts)
+G__unpack_spr()
 G_RULES="Explore Ashgrove Manor, solve Ivy's codes and hide from Ysolde when the lights stutter."
 G_KEYS=['Up/Down: start walking','Press the other one to stop','Left/Right: turn a step','ENTER: use  2nd: flashlight','DEL: journal  CLEAR: pause']
 def G_front():
