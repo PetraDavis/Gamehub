@@ -1,6 +1,5 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-BLACK=(0,0,0)
 def fr(x,y,w,h):
  fill_rect(x-1,y-1,w+1,h+1)
 def rect(x,y,w,h,c):
@@ -15,14 +14,15 @@ def cls(c=BLACK):
 def text(x,y,s,c=WHITE):
  col(c)
  draw_text(x,y+TY,s)
+def ctext(y,s,c=WHITE,cx=160):
+ col(c)
+ draw_text(cx-len(s)*5,y+TY,s)
 def lt(c,k=0.35):
  return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
+def dk(c,k=0.65):
+ return(int(c[0]*k),int(c[1]*k),int(c[2]*k))
 def _corners(x,y,w,h,r,t):
  return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
-def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
- edge(x,y,w,h,r,c,t)
- if fill:
-  rect(x+t,y+t,w-2*t,h-2*t,inner)
 def edge(x,y,w,h,r,c,t=2,inner=BLACK):
  col(c)
  for bx,by,bw,bh in _corners(x,y,w,h,r,t):
@@ -32,7 +32,7 @@ G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T..
 G_GROUND=((50,130,60),(85,65,55),(215,225,240))
 G_TALL=((35,100,45),(120,90,60),(170,190,220))
 G_DT=list(zip(('Pyrrak','Smoldedrake','Aquawyrm','Gillwing','Fernling','Lichenwing','Stonewyrm','Volcanox','Ashveil','Glacius','Tempestra','Thornwyrm','Dawnwing','Pearlhorn','Jadewyrm','Petalwyrm','Blazequill','Abyssar','Rootwyrm','Lumora','Quantum'),b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03',b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05',G_cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
-G_GEARC=[None]+G_cl(b'\xfa\x96\xc8(((\x82<\xbe\xe6\xb4(<\xe6\xe6\x00\x00\x00\xfa\x96\xc8\xbe\xc3\xcd\xdc(\x1eZ<\x1e(P\xc8\xbe\xc3\xcd(P\xc8Z\xbeP\xdc(\x1e\xe6\xb4(')
+G_BOSS=('Shadow Wyrm',110,12,0,(90,50,140),3)
 def G_base(m,ch):
  if ch=='~':
   return G_WATER
@@ -82,20 +82,28 @@ def G_hero(g,out):
  py=20+g.y*G_T
  d=g.ride
  if d is not None:
-  c=d[6]
-  out.append((5,lt(c,0.45),2,([px,px+9,px+4],[py+2,py+11,py+14])))
-  out.append((6,c,0,(px+2,py+11,13,7)))
-  out.append((6,c,0,(px+13,py+6,7,7)))
-  out.append((6,c,0,(px,py+15,3,3)))
-  out.append((6,c,0,(px+4,py+18,3,2)))
-  out.append((6,c,0,(px+11,py+18,3,2)))
-  out.append((7,YELLOW if d[1]==19 else BLACK,0,(px+17,py+8,2,2)))
+  c,t=(d[6],d[1])
+  P=G_PAL+[lt(c,0.45),dk(c,0.6),c]+G_PAL2+[lt(c,0.2),dk(c,0.4)]+G_PAL3
+  dc=dk(c,0.6)
+  out.append((5,dc,2,([px,px+5,px+5],[py+17,py+13,py+16])))
+  out.append((5,P[G_ARTW[2*t]],2,([px,px+5,px+12],[py,py+12,py+11])))
+  out.append((5,P[G_ARTW[2*t+1]],2,([px,px+7,px+9],[py,py+11,py+11])))
+  out.append((6,c,0,(px+4,py+11,11,6)))
+  out.append((6,c,0,(px+13,py+6,6,6)))
+  out.append((6,c,0,(px+18,py+8,2,3)))
+  out.append((7,lt(c,0.45),0,(px+6,py+15,8,2)))
+  out.append((7,dc,0,(px+5,py+17,3,3)))
+  out.append((7,dc,0,(px+11,py+17,3,3)))
+  out.append((7,dc,2,([px+13,px+15,px+13],[py+6,py+6,py+2])))
+  out.append((7,YELLOW if t==19 else P[22]if t==20 else BLACK,0,(px+16,py+7,2,2)))
+  if t==19:
+   out.append((8,YELLOW,0,(px+3,py+5,2,2)))
   if d[8]:
-   out.append((7,G_GEARC[d[8]],0,(px+5,py+11,6,3)))
+   out.append((8,G_GEARC[d[8]],0,(px+6,py+11,5,3)))
   if d[7]:
    out.append((8,G_GEARC[d[7]],0,(px+14,py+3,5,3)))
-  out.append((8,(240,200,160),1,(px+8,py+5,3)))
-  out.append((8,(60,120,230),0,(px+6,py+8,5,4)))
+  out.append((8,(240,200,160),1,(px+10,py+5,2)))
+  out.append((8,(60,120,230),0,(px+8,py+7,4,4)))
   return
  out.append((5,(240,200,160),1,(px+10,py+5,4)))
  out.append((6,G_BARK,0,(px+6,py+1,8,3)))
@@ -162,63 +170,3 @@ def G_hud(g):
    text(x,15,old[i],BLACK)
    text(x,15,t[i],c)
  G_HUD[0]=t
-def G_battle(*a):
- import GHDRAGOW
- r=GHDRAGOW.G_battle(*a)
- GHDRAGOW=None
- G__drop('GHDRAGOW')
- return r
-def G_evil(*a):
- import GHDRAGOW
- r=GHDRAGOW.G_evil(*a)
- GHDRAGOW=None
- G__drop('GHDRAGOW')
- return r
-def G_rest(*a):
- import GHDRAGOX
- r=GHDRAGOX.G_rest(*a)
- GHDRAGOX=None
- G__drop('GHDRAGOX')
- return r
-def G_load(*a):
- import GHDRAGOX
- r=GHDRAGOX.G_load(*a)
- GHDRAGOX=None
- G__drop('GHDRAGOX')
- return r
-def G_nest(*a):
- import GHDRAGOX
- r=GHDRAGOX.G_nest(*a)
- GHDRAGOX=None
- G__drop('GHDRAGOX')
- return r
-def G_menu(*a):
- import GHDRAGOX
- r=GHDRAGOX.G_menu(*a)
- GHDRAGOX=None
- G__drop('GHDRAGOX')
- return r
-def G_win(*a):
- import GHDRAGOX
- r=GHDRAGOX.G_win(*a)
- GHDRAGOX=None
- G__drop('GHDRAGOX')
- return r
-def G_backpack(*a):
- import GHDRAGOY
- r=GHDRAGOY.G_backpack(*a)
- GHDRAGOY=None
- G__drop('GHDRAGOY')
- return r
-def G_book(*a):
- import GHDRAGOY
- r=GHDRAGOY.G_book(*a)
- GHDRAGOY=None
- G__drop('GHDRAGOY')
- return r
-def G_hatch(*a):
- import GHDRAGOY
- r=GHDRAGOY.G_hatch(*a)
- GHDRAGOY=None
- G__drop('GHDRAGOY')
- return r
