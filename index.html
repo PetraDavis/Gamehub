@@ -189,7 +189,7 @@
       '<div class="top"><div class="icon"><img alt="" src="site/icons/' + g.mod + '.png"></div>' +
       '<div><div class="cat">' + g.cat + '</div><h3>' + g.name + '</h3></div></div>' +
       '<p>' + g.text + '</p>' +
-      '<img class="shot" loading="lazy" alt="' + g.name + ' on the calculator" src="site/shots/' + g.shot + '.png">' +
+      '<img class="shot" loading="lazy" alt="' + g.name + ' on the calculator" src="site/shots/' + g.shot + '.png?v=2">' +
       '<div class="row"><button class="btn small" type="button">Send this game</button>' +
       '<a class="btn small" href="' + url(g.mod) + '" download>' + (files(g.mod).length > 1 ? 'Download ' + files(g.mod).length + ' files' : 'Download .py') + '</a></div>';
     el.querySelector('button').addEventListener('click', () => send(files(g.mod), g.name, g.mod));
