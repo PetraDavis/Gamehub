@@ -15,7 +15,10 @@ T = 20
 # functions is called and dropped from memory again when it returns.
 SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
         "X": ("rest", "load", "new_quest", "board", "portrait", "pen", "lst", "dress", "shop", "nest",
-              "menu", "win", "shen", "who", "glim"),
+              "menu", "win"),
+        # the merchant has a file of his own, with its own copy of the list, so the
+        # pen and fights don't have to carry his code
+        "Z": ("shen", "who", "glim", "zl", "shen_off"),
         "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
@@ -948,10 +951,6 @@ def shop(g):
             return
 
 
-SHOP = (("Glimmer Stone", 60), ("Power Fruit", 40), ("Mystery Egg", 50), ("Healing Tonic", 20),
-        ("Lucky Charm", 35), ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45))
-
-
 def who(g, title, babies=True):
     # pick one of your dragons (10 to a page); None for Back
     L = [d for d in g.pen if babies or not d[9] & 8]
@@ -959,7 +958,7 @@ def who(g, title, babies=True):
     while L:
         sh = L[pg:pg + 9]
         more = len(L) > 9
-        c = lst(title, [d[0] + " " + DT[d[1]][0][:8] for d in sh] + (["More..."] if more else []) + ["Back"])
+        c = zl(title, [d[0] + " " + DT[d[1]][0][:8] for d in sh] + (["More..."] if more else []) + ["Back"])
         if more and c == len(sh):
             pg = pg + 9 if pg + 9 < len(L) else 0
             continue
@@ -988,8 +987,36 @@ def glim(g):
         q = random.randint(1, 4)
     d[9] = d[9] & 8 | q
     d[6] = DT[d[1]][3]
-    portrait(d)
+    cls(NIGHT)
+    drag(102, 10, 2, d[1], d[6], d[7], d[8], None, 0, q) if not d[9] & 8 else drag(131, 45, 1, d[1], d[6], 0, 0, None, 0, q)
     message([d[0] + " sparkles!", "Now a " + SCH[q][0] + " " + DT[d[1]][0] + "!"], "Shiny!")
+
+
+def zl(title, opts):
+    # the same list as lst(), kept in the merchant's own file
+    cls()
+    ctext(24, title, GOLD)
+    n = len(opts)
+    h = 15 if n > 9 else 17
+    sel = old = 0
+    for i in range(n):
+        text(70, 50 + i * h, opts[i], GOLD if i == 0 else WHITE)
+    while True:
+        if sel != old:
+            for i in (old, sel):
+                rect(0, 50 + i * h - 16, 320, h, BLACK)
+                text(70, 50 + i * h, opts[i], GOLD if i == sel else WHITE)
+        rect(54, 50 + sel * h - 10, 8, 6, GOLD)
+        k = wkey()
+        old = sel
+        if k == UP:
+            sel = (sel - 1) % n
+        elif k == DOWN:
+            sel = (sel + 1) % n
+        elif k == OK:
+            return sel
+        elif k == CLR:
+            return -1
 
 
 def shen(g):
@@ -1016,9 +1043,10 @@ def shen(g):
         pass
     while True:
         # his best customers (10 things bought) see one more item
-        S = SHOP + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
+        S = (("Glimmer Stone", 60), ("Power Fruit", 40), ("Mystery Egg", 50), ("Healing Tonic", 20), ("Lucky Charm", 35),
+             ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
         z = len(S)
-        c = lst("Shady Shen   " + str(g.coins) + " coins", [n + " " + str(p) + "c" for n, p in S] +
+        c = zl("Shady Shen   " + str(g.coins) + " coins", [n + " " + str(p) + "c" for n, p in S] +
                 (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
         if c == z and g.glim:
             glim(g)
@@ -1042,7 +1070,7 @@ def shen(g):
             if not g.bag:
                 message(["You have no eggs to swap."], "Shady Shen")
                 continue
-            e = lst("Swap which egg?", ["Egg " + str(i + 1) for i in range(len(g.bag))] + ["Back"])
+            e = zl("Swap which egg?", ["Egg " + str(i + 1) for i in range(len(g.bag))] + ["Back"])
             if not 0 <= e < len(g.bag):
                 continue
         if c == 7 and g.curse:
@@ -1107,7 +1135,7 @@ def nest(g):
     while True:
         c = choose("The Nest (saved)", ["Dragon pen", "Backpack and book", "Leave the nest"] + (["Glimmer Stones: " + str(g.glim)] if g.glim else []))
         if c == 3:
-            glim(g)
+            return 3
         elif c == 0:
             pen(g)
         elif c == 1:
@@ -1469,7 +1497,8 @@ def play():
             if 0 <= m <= 3:
                 ch = g.maps[m][ny][15 - g.x]
                 if ch != "T" and (ch not in "~L^" or g.ride is not None):
-                    shen_off(g)
+                    if g.shen:
+                        shen_off(g)
                     g.m = m
                     if m < 3:
                         g.seen = max(g.seen, m)
@@ -1536,7 +1565,7 @@ def play():
                 c = nest(g)
                 if not c:
                     break
-                (backpack if c == 1 else book)(g)
+                (backpack if c == 1 else book if c == 2 else glim)(g)
             draw_map(g)
             continue
         cells(g, [(ox, oy), (nx, ny)], True)

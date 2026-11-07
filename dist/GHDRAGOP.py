@@ -3,24 +3,6 @@ from GHDRAGOB import*
 GREY=(110,110,110)
 def pause(s):
  time.sleep(s)
-def message(lines,title=None):
- n=len(lines)+(1 if title else 0)
- h=n*18+30
- y=(H-h)//2
- rbox(20,y,280,h,8,WHITE)
- MSG[0],MSG[1]=(y,h)
- COVER[0]+=1
- yy=y+24
- if title:
-  ctext(yy,title,GOLD)
-  yy+=18
- for s in lines:
-  ctext(yy,s)
-  yy+=18
- while True:
-  k=wkey()
-  if k in(OK,CLR):
-   return k
 def choose(title,opts,sel=0):
  cls()
  ctext(24,title,GOLD)
@@ -48,11 +30,43 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
-G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^C....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
-G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
+G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
+def G_egg_roll(g,t):
+ if g.book&2097151 and random.random()<0.05:
+  t=G_SMALL
+ if random.random()<0.02:
+  r=random.random()
+  return t+32*(1 if r<0.4 else 2 if r<0.7 else 3 if r<0.9 else 4)
+ return t
+def G_grown(g):
+ for d in g.pen:
+  if not d[9]&8:
+   return d
+ return None
+def G_cells(g,todo,with_hero):
+ mp=g.maps[g.m]
+ ops=[]
+ rows={}
+ for x,y in todo:
+  rows.setdefault(y,[]).append(x)
+ for y in rows:
+  xs=sorted(rows[y])
+  i=0
+  while i<len(xs):
+   c=G_base(g.m,mp[y][xs[i]])
+   j=i+1
+   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
+    j+=1
+   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
+   i=j
+ for x,y in todo:
+  G_shapes(g.m,x,y,mp[y][x],ops)
+ if with_hero:
+  G_hero(g,ops)
+ G_paint(ops)
 def G_draw_map(g,after_msg=False):
  r0,r1=(0,9)
  if after_msg:
@@ -186,7 +200,8 @@ def G_play():
    if 0<=m<=3:
     ch=g.maps[m][ny][15-g.x]
     if ch!='T'and(ch not in '~L^'or g.ride is not None):
-     G_shen_off(g)
+     if g.shen:
+      G_shen_off(g)
      g.m=m
      if m<3:
       g.seen=max(g.seen,m)
@@ -251,7 +266,7 @@ def G_play():
     c=G_nest(g)
     if not c:
      break
-    (G_backpack if c==1 else G_book)(g)
+    (G_backpack if c==1 else G_book if c==2 else G_glim)(g)
    G_draw_map(g)
    continue
   G_cells(g,[(ox,oy),(nx,ny)],True)
