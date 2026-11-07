@@ -453,16 +453,26 @@ def drop(names):
    del sys.modules[k]
   except Exception:
    pass
-while True:
+# memory meter: prints how much memory is free at each step, so if this
+# stops with a memory error the last lines say where
+def free(step):
  gc.collect()
+ try:
+  print(step,gc.mem_free())
+ except Exception:
+  print(step)
+while True:
+ free("start")
  import {h}
+ free("home loaded")
  c={h}.G_front()
  {h}=None
  drop(["{h}"])
- gc.collect()
+ free("home dropped")
  if c<0:
   break
  import {p}
+ free("game loaded")
  {p}.G_back()
  {p}=None
  drop(["{p}"]+["{g7}"+c for c in "BCDEF"])
