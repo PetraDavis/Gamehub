@@ -65,10 +65,17 @@ def body():
 
 
 def score(n):
-    rect(0, 0, 320, 22, BLACK)
+    # rub out only the old number, by writing it in the background colour
+    if n:
+        text(6, 17, "Score " + str(n - 1), BLACK)
+    else:
+        text(204, 17, "CLEAR quit", GREY)
     text(6, 17, "Score " + str(n))
-    text(204, 17, "CLEAR quit", GREY)
-    circ(CX, CY, RI - 6, (25, 25, 28))
+    if n:
+        s = str(n - 1)
+        text(CX - len(s) * 5, CY + 7, s, (25, 25, 28))
+    else:
+        circ(CX, CY, RI - 6, (25, 25, 28))
     s = str(n)
     text(CX - len(s) * 5, CY + 7, s, WHITE)
 

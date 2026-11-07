@@ -3,7 +3,6 @@
 # Up/Down in a column chooses how many cards to pick up.
 # 2nd sends the card under the cursor to the top row if it fits.
 from GHLIB import *
-import random
 
 CW = 40
 CHT = 30
@@ -19,51 +18,68 @@ def cx(c):
     return 6 + c * 44
 
 
-def suit(x, y, s):
-    if s == 0:  # heart
-        col(RED)
-        fill_circle(x - 2, y - 1, 3)
-        fill_circle(x + 2, y - 1, 3)
-        fill_poly([x - 5, x + 5, x], [y, y, y + 5])
-    elif s == 1:  # diamond
-        col(RED)
-        fill_poly([x, x + 4, x, x - 4], [y - 5, y, y + 5, y])
-    elif s == 2:  # spade
-        col(BLACK)
-        fill_circle(x - 2, y + 1, 3)
-        fill_circle(x + 2, y + 1, 3)
-        fill_poly([x - 5, x + 5, x], [y, y, y - 5])
-        fill_rect(x - 1, y + 2, 2, 4)
-    else:  # club
-        col(BLACK)
-        fill_circle(x, y - 3, 2)
-        fill_circle(x - 3, y + 1, 2)
-        fill_circle(x + 3, y + 1, 2)
-        fill_rect(x - 1, y + 2, 2, 4)
+# the four suits as 7x7 pictures: heart, diamond, spade, club
+PICS = (
+    (".##.##.", "#######", "#######", "#######", ".#####.", "..###..", "...#..."),
+    ("...#...", "..###..", ".#####.", "#######", ".#####.", "..###..", "...#..."),
+    ("...#...", "..###..", ".#####.", "#######", "#######", "..#.#..", ".#####."),
+    ("..###..", "..###..", "##.#.##", "#######", "##.#.##", "...#...", ".#####."),
+)
 
 
-def card(x, y, cd, h=CHT, sel=False):
+def _runs(pic):
+    # the picture as rectangles: runs of # in a row, joined with the same run below
+    out = []
+    for r in range(7):
+        row = pic[r]
+        c = 0
+        while c < 7:
+            if row[c] == "#":
+                e = c
+                while e < 7 and row[e] == "#":
+                    e += 1
+                for k in range(len(out)):
+                    a = out[k]
+                    if a[0] == c and a[2] == e - c and a[1] + a[3] == r:
+                        out[k] = (a[0], a[1], a[2], a[3] + 1)
+                        break
+                else:
+                    out.append((c, r, e - c, 1))
+                c = e
+            else:
+                c += 1
+    return out
+
+
+SUITS = [_runs(p) for p in PICS]
+
+
+def suit(x, y, s, k=1):
+    # suit s with its top left corner at x, y, k pixels per dot
+    c = RED if s < 2 else BLACK
+    for a, b, w, h in SUITS[s]:
+        rect(x + a * k, y + b * k, w * k, h * k, c)
+
+
+def card(x, y, cd, h=CHT):
     if cd is None:
-        rbox(x, y, CW, CHT, 4, GOLD if sel else (60, 110, 80), 2 if sel else 1, FELT)
+        rbox(x, y, CW, CHT, 4, (60, 110, 80), 1, FELT)
         return
     r, s, up = cd
-    edge = GOLD if sel else BLACK
-    e = 2 if sel else 1
-    rrect(x, y, CW, h, 4, edge)
+    rrect(x, y, CW, h, 4, BLACK)
     if not up:
-        rrect(x + e, y + e, CW - 2 * e, h - 2 * e, 3, BACK)
-        rect(x + 3, y + 3, CW - 6, 1, lt(BACK, 0.5))
+        rrect(x + 1, y + 1, CW - 2, h - 2, 3, BACK)
         if h >= 12:
             rect(x + 4, y + 4, CW - 8, h - 8, lt(BACK, 0.15))
-            for i in range(x + 6, x + CW - 6, 6):
+            for i in range(x + 7, x + CW - 6, 6):
                 rect(i, y + 6, 2, h - 12, BACK)
         return
-    rrect(x + e, y + e, CW - 2 * e, h - 2 * e, 3, CARD)
-    t = RANKS[r]
-    text(x + 3, y + 15, t, RED if s < 2 else BLACK)
-    suit(x + 31 - (5 if len(t) > 1 else 0) + (5 if len(t) > 1 else 0), y + 9, s)
+    rrect(x + 1, y + 1, CW - 2, h - 2, 3, CARD)
+    if h >= 14:
+        text(x + 3, y + 14, RANKS[r], RED if s < 2 else BLACK)
+        suit(x + CW - 11, y + 4, s)
     if h >= CHT:
-        suit(x + CW // 2, y + 22, s)
+        suit(x + 13, y + 15, s, 2)
 
 
 class G:
@@ -85,52 +101,88 @@ def new():
     return g
 
 
-def gap(pile):
-    n = len(pile)
-    up = 12
-    while n > 1 and TABY + (n - 1) * up + CHT > 208 and up > 5:
-        up -= 1
-    return up
+def layout(pile):
+    # where each card of a column starts: hidden cards overlap more, and the
+    # face-up ones leave room to read their corner. Tighter when it's long.
+    dn, fu = 5, 15
+    while True:
+        ys = []
+        y = TABY
+        for cd in pile:
+            ys.append(y)
+            y += fu if cd[2] else dn
+        if not pile or ys[-1] + CHT <= 208 or fu <= 8:
+            return ys
+        fu -= 1
+        if fu < 12:
+            dn = 3
 
 
-def draw_col(g, c, cur, depth, held):
-    x = cx(c)
-    rect(x, TABY, CW + 1, 210 - TABY, FELT)
+def draw_col(g, c, drawn):
+    # draw only the cards of column c that changed since last time
     pile = g.tab[c]
+    x = cx(c)
+    ys = layout(pile)
+    n = len(pile)
+    d = drawn[c]
+    start = 0
+    if d is not None and n:
+        old = d[0]
+        while start < min(len(old), n) and old[start] == ys[start]:
+            start += 1
+        start = min(start, max(0, min(len(old), n) - 1))
     if not pile:
-        card(x, TABY, None, CHT, cur == 7 + c)
-    up = gap(pile)
-    for i in range(len(pile)):
-        cd = pile[i]
-        sel = (cur == 7 + c and i >= len(pile) - depth) or (held and held[0] == 7 + c and i >= len(pile) - held[1])
-        last = i == len(pile) - 1
-        card(x, TABY + i * up, cd, CHT if last else max(up + 4, 10), sel)
+        card(x, TABY, None)
+        bottom = TABY + CHT
+    else:
+        bottom = ys[-1] + CHT
+        if d is not None and n < len(d[0]) and start == n - 1:
+            # the card under the ones taken away shows in full again
+            rect(x, bottom - 6, CW, 6, FELT)
+        for i in range(start, n):
+            card(x, ys[i], pile[i], CHT if i == n - 1 else ys[i + 1] - ys[i] + 4)
+    if d is None or bottom < d[1]:
+        rect(x, bottom, CW, 210 - bottom, FELT)
+    drawn[c] = (ys, bottom)
 
 
-def draw_top(g, cur, held):
-    rect(0, 0, 320, TABY - 2, FELT)
-    x = cx(0)
-    if g.stock:
-        card(x, TOPY, [1, 0, False], CHT, cur == 0)
-    else:
-        card(x, TOPY, None)
-        if cur == 0:
-            rbox(x, TOPY, CW, CHT, 4, GOLD, 2, FELT)
-    x = cx(1)
-    if g.waste:
-        card(x, TOPY, g.waste[-1], CHT, cur == 1 or (held and held[0] == 1))
-    else:
-        card(x, TOPY, None, CHT, cur == 1)
-    for f in range(4):
-        x = cx(3 + f)
-        p = g.found[f]
-        if p:
-            card(x, TOPY, p[-1], CHT, cur == 3 + f)
-        else:
-            card(x, TOPY, None)
-            if cur == 3 + f:
-                rbox(x, TOPY, CW, CHT, 4, GOLD, 2, FELT)
-            suit(x + 20, TOPY + 15, f)
+def top_state(g, s):
+    if s == 0:
+        return len(g.stock) > 0
+    p = g.waste if s == 1 else g.found[s - 3]
+    return tuple(p[-1]) if p else None
+
+
+def draw_slot(g, s):
+    x = cx(s)
+    if s == 0:
+        card(x, TOPY, [1, 0, False] if g.stock else None)
+        return
+    p = g.waste if s == 1 else g.found[s - 3]
+    card(x, TOPY, p[-1] if p else None)
+    if s > 1 and not p:
+        suit(x + 13, TOPY + 8, s - 3, 2)
+
+
+def frame(x, y, h, top=True):
+    # a 2-pixel outline just outside a card, in the felt between the columns
+    t = 2 if top else 0
+    r = [(x - 2, y - t, 2, h + t + 2), (x + CW, y - t, 2, h + t + 2), (x, y + h, CW, 2)]
+    if top:
+        r.append((x, y - 2, CW, 2))
+    return r
+
+
+def marks(g, s, n):
+    # the outline around slot s, or around the last n cards of a column
+    if s < 7:
+        return frame(cx(s), TOPY, CHT)
+    p = g.tab[s - 7]
+    if not p:
+        return frame(cx(s - 7), TABY, CHT)
+    ys = layout(p)
+    i = max(0, len(p) - n)
+    return frame(cx(s - 7), ys[i], ys[-1] + CHT - ys[i], i == 0)
 
 
 def fits_found(cd, f, pile):
@@ -191,15 +243,35 @@ def game():
     cur = 7
     depth = 1
     held = None
-    redraw = list(range(7))
-    top = True
+    cols = [None] * 7
+    tops = [-1] * 7
+    shown = []
     while True:
-        if top:
-            draw_top(g, cur, held)
-        for c in redraw:
-            draw_col(g, c, cur, depth if held is None else 0, held)
-        redraw = []
-        top = False
+        # what the outlines should be now: white for the held cards, gold for the cursor
+        want = []
+        if held:
+            want += [(r, WHITE) for r in marks(g, held[0], held[1])]
+        want += [(r, GOLD) for r in marks(g, cur, depth if held is None else 1)]
+        busy = want != shown
+        for r, c in shown:
+            if (r, c) not in want:
+                rect(r[0], r[1], r[2], r[3], FELT)
+        for s in (0, 1, 3, 4, 5, 6):
+            st = top_state(g, s)
+            if st != tops[s]:
+                draw_slot(g, s)
+                tops[s] = st
+                busy = True
+        for c in range(7):
+            p = g.tab[c]
+            if cols[c] is None or cols[c][2] != [tuple(cd) for cd in p]:
+                draw_col(g, c, cols)
+                cols[c] = cols[c] + ([tuple(cd) for cd in p],)
+                busy = True
+        if busy:
+            for r, c in want:
+                rect(r[0], r[1], r[2], r[3], c)
+            shown = want
         if sum(len(f) for f in g.found) == 52:
             message(["All 52 cards are home."], "You win!")
             return
@@ -208,14 +280,13 @@ def game():
         if k == CLR:
             if held:
                 held = None
-                redraw = list(range(7))
-                top = True
                 continue
             if message(["ENTER: quit this game", "CLEAR: keep playing"], "Quit?") == OK:
                 return
             cls(FELT)
-            redraw = list(range(7))
-            top = True
+            cols = [None] * 7
+            tops = [-1] * 7
+            shown = []
             continue
         if k == LEFT:
             cur = cur - 1 if cur not in (0, 7) else cur + 6
@@ -226,7 +297,7 @@ def game():
             if cur == 2:
                 cur = 3
         elif k == DOWN and cur < 7:
-            cur = 7 + (cur if cur != 1 else 1)
+            cur = 7 + cur
         elif k == UP and cur >= 7:
             if depth < faceup(g, cur - 7) and held is None:
                 depth += 1
@@ -246,36 +317,24 @@ def game():
                         for cd in g.stock:
                             cd[2] = False
                         g.waste = []
-                    top = True
                 elif cur == 1 and g.waste:
                     held = (1, 1)
-                    top = True
                 elif cur >= 7 and g.tab[cur - 7] and faceup(g, cur - 7) >= depth:
                     held = (cur, depth)
-                    redraw.append(cur - 7)
             else:
                 src, n = held
                 held = None
                 try_move(g, src, n, cur)
-                redraw = list(range(7))
-                top = True
         elif k == SECOND and held is None:
             src = cur if (cur == 1 or cur >= 7) else -1
             if src >= 0 and (src == 1 and g.waste or src >= 7 and g.tab[src - 7]):
                 for f in range(4):
                     if try_move(g, src, 1, 3 + f):
                         break
-                redraw = list(range(7))
-                top = True
         if cur != old:
             depth = 1
-            top = True
-            if old >= 7:
-                redraw.append(old - 7)
-            if cur >= 7:
-                redraw.append(cur - 7)
-        elif k in (UP, DOWN) and cur >= 7:
-            redraw.append(cur - 7)
+        if cur >= 7 and depth > max(1, faceup(g, cur - 7)):
+            depth = max(1, faceup(g, cur - 7))
 
 
 RULES = 'Build four piles from Ace to King, one per suit. In the columns, stack cards down in alternating colors.'

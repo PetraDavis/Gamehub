@@ -74,34 +74,54 @@ def wkey():
     return wait_key()
 
 
+_C = [None]
+
+
 def col(c):
-    set_color(c[0], c[1], c[2])
+    # changing the colour is slow on the calculator, so skip it when it's the same
+    if c != _C[0]:
+        _C[0] = c
+        set_color(c[0], c[1], c[2])
+
+
+def fr(x, y, w, h):
+    # The calculator's fill_rect(x, y, w, h) skips the box's 1-pixel border,
+    # so it covers x+1..x+w-1. This fills exactly x..x+w-1, y..y+h-1, and
+    # works for 1-pixel lines too.
+    fill_rect(x - 1, y - 1, w + 1, h + 1)
 
 
 def rect(x, y, w, h, c):
-    if w < 2 or h < 2:
-        if w < 1 or h < 1:
-            return
-        col(c)
-        draw_line(x, y, x + w - 1, y + h - 1)
+    if w < 1 or h < 1:
         return
     col(c)
-    fill_rect(x, y, w, h)
+    fill_rect(x - 1, y - 1, w + 1, h + 1)
+
+
+# counts screen clears and message boxes, so a game that only draws what
+# changed knows when everything has to be drawn again
+COVER = [0]
 
 
 def cls(c=BLACK):
+    COVER[0] += 1
     col(c)
-    fill_rect(-1, -1, 322, 212)
+    fill_rect(-1, -1, 321, 211)
+
+
+# The calculator draws text in the rows y-17..y-3. Our layouts put the
+# capital letters' bottom on y, so text is moved down by 6.
+TY = 6
 
 
 def text(x, y, s, c=WHITE):
     col(c)
-    draw_text(x, y, s)
+    draw_text(x, y + TY, s)
 
 
 def ctext(y, s, c=WHITE, cx=160):
     col(c)
-    draw_text(cx - len(s) * 5, y, s)
+    draw_text(cx - len(s) * 5, y + TY, s)
 
 
 def circ(x, y, r, c):
@@ -144,9 +164,15 @@ def ring(x, y, r, c, t=2, inner=BLACK):
 
 def rrect(x, y, w, h, r, c):
     # filled rectangle with round corners
+    if w < 2 * r + 1 or h < 2 * r + 1:
+        r = max(0, min(w, h) // 2 - 1)
     col(c)
-    fill_rect(x + r, y, w - 2 * r, h)
-    fill_rect(x, y + r, w, h - 2 * r)
+    if w - 2 * r >= 1:
+        fr(x + r, y, w - 2 * r, h)
+    if h - 2 * r >= 1:
+        fr(x, y + r, w, h - 2 * r)
+    if r < 1:
+        return
     fill_circle(x + r, y + r, r)
     fill_circle(x + w - r - 1, y + r, r)
     fill_circle(x + r, y + h - r - 1, r)
@@ -159,8 +185,60 @@ def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
     rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
 
 
+def edge(x, y, w, h, r, c, t=2, inner=BLACK):
+    # recolour the outline of an rbox without touching what's inside it, so
+    # moving a highlight doesn't make the box flash
+    col(c)
+    fr(x + r, y, w - 2 * r, t)
+    fr(x + r, y + h - t, w - 2 * r, t)
+    fr(x, y + r, t, h - 2 * r)
+    fr(x + w - t, y + r, t, h - 2 * r)
+    for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1),
+                           (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
+        col(c)
+        fill_circle(cx, cy, r)
+        col(inner)
+        fill_circle(cx, cy, max(r - t, 2))
+        # the coloured disc also spilled inwards; paint those parts back
+        ax = cx + 1 if sx > 0 else cx - r
+        ay = y + t if sy > 0 else cy - r
+        fr(ax, ay, r, (cy + r + 1 - ay) if sy > 0 else (y + h - t - ay))
+        ax = x + t if sx > 0 else cx - r
+        ay = cy + 1 if sy > 0 else cy - r
+        fr(ax, ay, (cx + r + 1 - ax) if sx > 0 else (x + w - t - ax), r)
+
+
+def vacate(ox, oy, nx, ny, w, h, c):
+    # paint colour c where a w x h box was (ox, oy) but no longer is (nx, ny),
+    # so a moving thing is never erased and drawn again in the same place
+    if abs(nx - ox) >= w or abs(ny - oy) >= h:
+        rect(ox, oy, w, h, c)
+        return
+    if ny > oy:
+        rect(ox, oy, w, ny - oy, c)
+    elif ny < oy:
+        rect(ox, ny + h, w, oy - ny, c)
+    y0 = max(oy, ny)
+    y1 = min(oy, ny) + h
+    if nx > ox:
+        rect(ox, y0, nx - ox, y1 - y0, c)
+    elif nx < ox:
+        rect(nx + w, y0, ox - nx, y1 - y0, c)
+
+
+def halo(x, y, r, c, t=2):
+    # a round outline of thickness t made of 1-pixel circles, so it can be
+    # recoloured without touching the inside
+    col(c)
+    for i in range(t):
+        draw_circle(x, y, r - i)
+
+
 def pause(s):
     time.sleep(s)
+
+
+MSG = [0, 0]  # where the last message box was: y, height
 
 
 def message(lines, title=None):
@@ -169,6 +247,8 @@ def message(lines, title=None):
     h = n * 18 + 30
     y = (H - h) // 2
     rbox(20, y, 280, h, 8, WHITE)
+    MSG[0], MSG[1] = y, h
+    COVER[0] += 1
     yy = y + 24
     if title:
         ctext(yy, title, GOLD)
@@ -187,13 +267,14 @@ def choose(title, opts, sel=0):
     cls()
     ctext(24, title, GOLD)
     n = len(opts)
+    for i in range(n):
+        y = 40 + i * 30
+        c = GOLD if i == sel else WHITE
+        rbox(60, y, 200, 24, 8, c)
+        ctext(y + 18, opts[i], c)
     while True:
-        for i in range(n):
-            y = 40 + i * 30
-            c = GOLD if i == sel else WHITE
-            rbox(60, y, 200, 24, 8, c)
-            ctext(y + 18, opts[i], c)
         k = wkey()
+        old = sel
         if k == UP:
             sel = (sel - 1) % n
         elif k == DOWN:
@@ -202,6 +283,11 @@ def choose(title, opts, sel=0):
             return sel
         elif k == CLR:
             return -1
+        for i in (old, sel):
+            y = 40 + i * 30
+            c = GOLD if i == sel else WHITE
+            edge(60, y, 200, 24, 8, c)
+            ctext(y + 18, opts[i], c)
 
 
 def _wrap(s, n=30):
@@ -252,13 +338,17 @@ def home(mod, title, rules, buttons, opts=("Play", "Back"), sel=0):
         ctext(122, title, GOLD)
         ctext(146, "Up/Down: how to play", GREY)
         bw = (300 - (n - 1) * 8) // n
+        first = True
         while True:
             for i in range(n):
                 x = 10 + i * (bw + 8)
                 c = GOLD if i == sel else WHITE
-                rect(x, 166, bw, 28, BLACK)
-                rbox(x, 166, bw, 28, 10, c)
+                if first:
+                    rbox(x, 166, bw, 28, 10, c)
+                else:
+                    edge(x, 166, bw, 28, 10, c)
                 text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+            first = False
             k = wkey()
             if k == LEFT:
                 sel = (sel - 1) % n

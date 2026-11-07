@@ -17,26 +17,30 @@ GREY = (110, 110, 110)
 H = 210
 def wkey():
  return wait_key()
+_C = [None]
 def col(c):
- set_color(c[0], c[1], c[2])
+ if c != _C[0]:
+  _C[0] = c
+  set_color(c[0], c[1], c[2])
+def fr(x, y, w, h):
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
 def rect(x, y, w, h, c):
- if w < 2 or h < 2:
-  if w < 1 or h < 1:
-   return
-  col(c)
-  draw_line(x, y, x + w - 1, y + h - 1)
+ if w < 1 or h < 1:
   return
  col(c)
- fill_rect(x, y, w, h)
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
+COVER = [0]
 def cls(c=BLACK):
+ COVER[0] += 1
  col(c)
- fill_rect(-1, -1, 322, 212)
+ fill_rect(-1, -1, 321, 211)
+TY = 6
 def text(x, y, s, c=WHITE):
  col(c)
- draw_text(x, y, s)
+ draw_text(x, y + TY, s)
 def ctext(y, s, c=WHITE, cx=160):
  col(c)
- draw_text(cx - len(s) * 5, y, s)
+ draw_text(cx - len(s) * 5, y + TY, s)
 def circ(x, y, r, c):
  col(c)
  fill_circle(x, y, r)
@@ -48,9 +52,15 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  col(inner)
  fill_circle(x, y, r - t)
 def rrect(x, y, w, h, r, c):
+ if w < 2 * r + 1 or h < 2 * r + 1:
+  r = max(0, min(w, h) // 2 - 1)
  col(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ if w - 2 * r >= 1:
+  fr(x + r, y, w - 2 * r, h)
+ if h - 2 * r >= 1:
+  fr(x, y + r, w, h - 2 * r)
+ if r < 1:
+  return
  fill_circle(x + r, y + r, r)
  fill_circle(x + w - r - 1, y + r, r)
  fill_circle(x + r, y + h - r - 1, r)
@@ -58,11 +68,31 @@ def rrect(x, y, w, h, r, c):
 def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
  rrect(x, y, w, h, r, c)
  rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def edge(x, y, w, h, r, c, t=2, inner=BLACK):
+ col(c)
+ fr(x + r, y, w - 2 * r, t)
+ fr(x + r, y + h - t, w - 2 * r, t)
+ fr(x, y + r, t, h - 2 * r)
+ fr(x + w - t, y + r, t, h - 2 * r)
+ for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
+  col(c)
+  fill_circle(cx, cy, r)
+  col(inner)
+  fill_circle(cx, cy, max(r - t, 2))
+  ax = cx + 1 if sx > 0 else cx - r
+  ay = y + t if sy > 0 else cy - r
+  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
+  ax = x + t if sx > 0 else cx - r
+  ay = cy + 1 if sy > 0 else cy - r
+  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
  h = n * 18 + 30
  y = (H - h) // 2
  rbox(20, y, 280, h, 8, WHITE)
+ MSG[0], MSG[1] = (y, h)
+ COVER[0] += 1
  yy = y + 24
  if title:
   ctext(yy, title, GOLD)
@@ -116,13 +146,17 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(122, title, GOLD)
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
+  first = True
   while True:
    for i in range(n):
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
-    rect(x, 166, bw, 28, BLACK)
-    rbox(x, 166, bw, 28, 10, c)
+    if first:
+     rbox(x, 166, bw, 28, 10, c)
+    else:
+     edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+   first = False
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -145,7 +179,7 @@ def icons_c_(c):
  set_color(c[0], c[1], c[2])
 def icons_box(x, y, w, h, c):
  icons_c_(c)
- fill_rect(int(x), int(y), max(2, int(w)), max(2, int(h)))
+ fill_rect(int(x) - 1, int(y) - 1, max(1, int(w)) + 1, max(1, int(h)) + 1)
 def icons_line(x1, y1, x2, y2, c, t=1):
  icons_c_(c)
  for o in range(t):
@@ -178,19 +212,24 @@ hang_ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 hang_INK = (20, 20, 20)
 hang_POST = (225, 175, 20)
 hang_USED = (190, 190, 190)
-def hang_letter_box(i, used, sel):
+def hang_letter_box(i, used, sel, full=False):
  x = 4 + i % 13 * 24
  y = 150 + i // 13 * 28
  c = GOLD if i == sel else hang_USED if hang_ABC[i] in used else hang_INK
- rect(x, y, 22, 24, WHITE)
- rbox(x, y, 22, 24, 5, c, 2, WHITE)
+ if full:
+  rbox(x, y, 22, 24, 3, c, 2, WHITE)
+ else:
+  edge(x, y, 22, 24, 3, c, 2, WHITE)
  text(x + 6, y + 18, hang_ABC[i], c)
-def hang_word_line(w, used):
- rect(120, 60, 200, 30, WHITE)
- s = ''
- for ch in w:
-  s += (ch if ch in used else '_') + ' '
- text(310 - len(s) * 10, 85, s.strip(), hang_INK)
+def hang_word_line(w, used, new=None):
+ x0 = 310 - len(w) * 20
+ for i in range(len(w)):
+  ch = w[i]
+  if new is None:
+   text(x0 + i * 20, 85, ch if ch in used else '_', hang_INK)
+  elif ch == new:
+   text(x0 + i * 20, 85, '_', WHITE)
+   text(x0 + i * 20, 85, ch, hang_INK)
 def hang_figure(n):
  if n == 0:
   rrect(0, 136, 120, 12, 5, (110, 180, 90))
@@ -221,7 +260,7 @@ def hang_game():
  cls(WHITE)
  hang_figure(0)
  for i in range(26):
-  hang_letter_box(i, used, sel)
+  hang_letter_box(i, used, sel, True)
  hang_word_line(w, used)
  while True:
   done = True
@@ -247,12 +286,13 @@ def hang_game():
   elif k == OK and hang_ABC[sel] not in used:
    used += hang_ABC[sel]
    if hang_ABC[sel] in w:
-    hang_word_line(w, used)
+    hang_word_line(w, used, hang_ABC[sel])
    else:
     bad += 1
     hang_figure(bad)
-  hang_letter_box(old, used, sel)
-  hang_letter_box(sel, used, sel)
+  if old != sel or k == OK:
+   hang_letter_box(old, used, sel)
+   hang_letter_box(sel, used, sel)
 hang_RULES = 'Guess the hidden word one letter at a time. Six wrong guesses and the game is over.'
 hang_KEYS = ['Arrows: pick a letter', 'ENTER: guess it', 'CLEAR: quit']
 def hang_main():

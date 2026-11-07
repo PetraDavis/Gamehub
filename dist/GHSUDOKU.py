@@ -28,26 +28,30 @@ def sample(seq, k):
  return a[:k]
 def wkey():
  return wait_key()
+_C = [None]
 def col(c):
- set_color(c[0], c[1], c[2])
+ if c != _C[0]:
+  _C[0] = c
+  set_color(c[0], c[1], c[2])
+def fr(x, y, w, h):
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
 def rect(x, y, w, h, c):
- if w < 2 or h < 2:
-  if w < 1 or h < 1:
-   return
-  col(c)
-  draw_line(x, y, x + w - 1, y + h - 1)
+ if w < 1 or h < 1:
   return
  col(c)
- fill_rect(x, y, w, h)
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
+COVER = [0]
 def cls(c=BLACK):
+ COVER[0] += 1
  col(c)
- fill_rect(-1, -1, 322, 212)
+ fill_rect(-1, -1, 321, 211)
+TY = 6
 def text(x, y, s, c=WHITE):
  col(c)
- draw_text(x, y, s)
+ draw_text(x, y + TY, s)
 def ctext(y, s, c=WHITE, cx=160):
  col(c)
- draw_text(cx - len(s) * 5, y, s)
+ draw_text(cx - len(s) * 5, y + TY, s)
 def circ(x, y, r, c):
  col(c)
  fill_circle(x, y, r)
@@ -57,9 +61,15 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  col(inner)
  fill_circle(x, y, r - t)
 def rrect(x, y, w, h, r, c):
+ if w < 2 * r + 1 or h < 2 * r + 1:
+  r = max(0, min(w, h) // 2 - 1)
  col(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ if w - 2 * r >= 1:
+  fr(x + r, y, w - 2 * r, h)
+ if h - 2 * r >= 1:
+  fr(x, y + r, w, h - 2 * r)
+ if r < 1:
+  return
  fill_circle(x + r, y + r, r)
  fill_circle(x + w - r - 1, y + r, r)
  fill_circle(x + r, y + h - r - 1, r)
@@ -67,11 +77,31 @@ def rrect(x, y, w, h, r, c):
 def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
  rrect(x, y, w, h, r, c)
  rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def edge(x, y, w, h, r, c, t=2, inner=BLACK):
+ col(c)
+ fr(x + r, y, w - 2 * r, t)
+ fr(x + r, y + h - t, w - 2 * r, t)
+ fr(x, y + r, t, h - 2 * r)
+ fr(x + w - t, y + r, t, h - 2 * r)
+ for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
+  col(c)
+  fill_circle(cx, cy, r)
+  col(inner)
+  fill_circle(cx, cy, max(r - t, 2))
+  ax = cx + 1 if sx > 0 else cx - r
+  ay = y + t if sy > 0 else cy - r
+  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
+  ax = x + t if sx > 0 else cx - r
+  ay = cy + 1 if sy > 0 else cy - r
+  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
  h = n * 18 + 30
  y = (H - h) // 2
  rbox(20, y, 280, h, 8, WHITE)
+ MSG[0], MSG[1] = (y, h)
+ COVER[0] += 1
  yy = y + 24
  if title:
   ctext(yy, title, GOLD)
@@ -125,13 +155,17 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(122, title, GOLD)
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
+  first = True
   while True:
    for i in range(n):
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
-    rect(x, 166, bw, 28, BLACK)
-    rbox(x, 166, bw, 28, 10, c)
+    if first:
+     rbox(x, 166, bw, 28, 10, c)
+    else:
+     edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+   first = False
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -154,7 +188,7 @@ def icons_c_(c):
  set_color(c[0], c[1], c[2])
 def icons_box(x, y, w, h, c):
  icons_c_(c)
- fill_rect(int(x), int(y), max(2, int(w)), max(2, int(h)))
+ fill_rect(int(x) - 1, int(y) - 1, max(1, int(w)) + 1, max(1, int(h)) + 1)
 def icons_line(x1, y1, x2, y2, c, t=1):
  icons_c_(c)
  for o in range(t):
@@ -195,7 +229,7 @@ def icons_sudoku(x, y, c):
   icons_hline(x0, x0 + 3 * s, y0 + i * s, icons_INK)
  icons_c_(icons_INK)
  for o in (0, 1):
-  draw_rect(x0 - o, y0 - o, 3 * s + 2 * o, 3 * s + 2 * o)
+  draw_rect(x0 - o - 1, y0 - o - 1, 3 * s + 2 * o + 1, 3 * s + 2 * o + 1)
 icons_ICONS = {'GHSUDOKU': icons_sudoku}
 def icons_bg(mod):
  return icons_BG.get(mod, icons_BLACK)
@@ -240,15 +274,27 @@ def sudoku_clash(b, i):
    if j // 9 == r or j % 9 == c or (j // 27 == i // 27 and j % 9 // 3 == c // 3):
     return True
  return False
+sudoku_SHOWN = {}
 def sudoku_cell(b, fixed, i, cur):
  x = sudoku_X0 + i % 9 * sudoku_S
  y = sudoku_Y0 + i // 9 * sudoku_S
- bg = (250, 225, 140) if i == cur else (236, 238, 246) if fixed[i] else WHITE
- rect(x + 1, y + 1, sudoku_S - 2, sudoku_S - 2, bg)
+ bg = (236, 238, 246) if fixed[i] else WHITE
  v = b[i]
- if v:
-  c = sudoku_INK if fixed[i] else RED if sudoku_clash(b, i) else sudoku_PEN
-  text(x + 5, y + 17, str(v), c)
+ c = (sudoku_INK if fixed[i] else RED if sudoku_clash(b, i) else sudoku_PEN) if v else None
+ on = i == cur
+ old = sudoku_SHOWN.get(i)
+ if old is None or old[0] != v:
+  rect(x + 1, y + 1, sudoku_S - 2, sudoku_S - 2, bg)
+  old = None
+ if v and (old is None or old[1] != c):
+  text(x + 5, y + 16, str(v), c)
+ if old is None or old[2] != on:
+  k = GOLD if on else bg
+  rect(x + 1, y + 1, sudoku_S - 2, 2, k)
+  rect(x + 1, y + sudoku_S - 3, sudoku_S - 2, 2, k)
+  rect(x + 1, y + 3, 2, sudoku_S - 6, k)
+  rect(x + sudoku_S - 3, y + 3, 2, sudoku_S - 6, k)
+ sudoku_SHOWN[i] = (v, c, on)
 def sudoku_grid():
  for i in range(10):
   c = sudoku_INK if i % 3 == 0 else (150, 150, 150)
@@ -271,6 +317,7 @@ def sudoku_game(holes):
  text(214, 90, 'ENTER +1', GREY)
  text(214, 110, 'DEL erase', GREY)
  text(214, 130, 'CLEAR quit', GREY)
+ sudoku_SHOWN.clear()
  cur = 0
  while fixed[cur]:
   cur += 1
@@ -300,7 +347,7 @@ def sudoku_game(holes):
    if v >= 0:
     b[cur] = v
     for i in range(81):
-     if not fixed[i] and b[i]:
+     if not fixed[i]:
       sudoku_cell(b, fixed, i, cur)
     if 0 not in b and sudoku_valid(b):
      message(['Every row, column and', 'box is complete.'], 'Solved!')

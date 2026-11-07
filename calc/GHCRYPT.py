@@ -163,7 +163,14 @@ def colour(t):
     return WALL
 
 
-def render(g):
+def render(g, full=False):
+    # g.cols remembers what each screen column shows
+    if full or not hasattr(g, 'cols') or g.cover != COVER[0]:
+        g.cover = COVER[0]
+        g.cols = [None] * COLS
+        g.spr = [False] * COLS
+    shown = g.cols
+    spr = g.spr
     zb = [0] * COLS
     ca = math.cos(g.a)
     sa = math.sin(g.a)
@@ -213,23 +220,40 @@ def render(g):
         top = (VH - h) // 2
         x = i * CWID
         k = light(g, i, d) * (0.8 if side else 1.0)
+        # a column that looks the same as last frame isn't drawn again
+        key = (top, h, t, int(u * 32), int(k * 64))
+        if key == shown[i] and not spr[i]:
+            continue
+        shown[i] = key
         if top > 0:
-            # ceiling and floor fade darker toward the far wall
-            m = top // 2
-            rect(x, 0, CWID, top, shade(CEIL, max(k, .3)))
+            # ceiling and floor fade darker toward the far wall; the bands sit
+            # side by side so no pixel is painted twice
+            m = top // 2 if top >= 4 else 0
+            rect(x, 0, CWID, top - m, shade(CEIL, max(k, .3)))
+            rect(x, top - m, CWID, m, shade(CEIL, max(k, .3) * .8))
+            fy = top + h
+            rest = VH - fy
             if m >= 2:
-                rect(x, top - m, CWID, m, shade(CEIL, max(k, .3) * .8))
-            rect(x, top + h, CWID, VH - top - h, shade(FLOOR, max(k, .25)))
-            if m >= 2:
-                rect(x, top + h, CWID, m, shade(FLOOR, max(k, .25) * .75))
+                rect(x, fy, CWID, m, shade(FLOOR, max(k, .25) * .75))
                 if m >= 6:
-                    rect(x, top + h + m + m // 2, CWID, 1, shade(FLOOR, max(k, .25) * .85))
+                    ly = fy + m + m // 2
+                    rect(x, fy + m, CWID, ly - fy - m, shade(FLOOR, max(k, .25)))
+                    rect(x, ly, CWID, 1, shade(FLOOR, max(k, .25) * .85))
+                    rect(x, ly + 1, CWID, VH - ly - 1, shade(FLOOR, max(k, .25)))
+                else:
+                    rect(x, fy + m, CWID, rest - m, shade(FLOOR, max(k, .25)))
+            else:
+                rect(x, fy, CWID, rest, shade(FLOOR, max(k, .25)))
         rect(x, max(0, top), CWID, min(VH, top + h) - max(0, top), shade(colour(t), k))
         wall_detail(g, t, u, top, h, x, k)
-    sprites(g, zb, ca, sa)
+    used = sprites(g, zb, ca, sa)
+    # columns with a sprite in them are drawn again next frame too
+    for i in range(COLS):
+        spr[i] = i in used
 
 
 def sprites(g, zb, ca, sa):
+    used = {}
     lst = []
     for sx, sy, kind in SPRITES:
         lst.append((sx, sy, kind))
@@ -258,6 +282,7 @@ def sprites(g, zb, ca, sa):
         for i in range(max(0, c0), min(COLS, c1)):
             if zb[i] < fwd:
                 continue
+            used[i] = 1
             u = (i + 0.5 - (scol - half)) / (2 * half) if half > 0 else .5
             if u < 0 or u > 1:
                 continue
@@ -271,6 +296,7 @@ def sprites(g, zb, ca, sa):
                     y1 = int(top + h * (1 - v0))
                     if y1 - y0 >= 2 and y0 < VH:
                         rect(x, max(0, y0), CWID, min(VH, y1) - max(0, y0), shade(c, k))
+    return used
 
 
 def bottom(g, prompt):
@@ -459,6 +485,7 @@ def page(title, body, color=WHITE):
 
 
 def toast(g, lines):
+    COVER[0] += 1
     rbox(10, 50, 300, 30 + 18 * len(lines), 8, WHITE)
     y = 72
     for ln in lines:

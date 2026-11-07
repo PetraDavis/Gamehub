@@ -20,26 +20,30 @@ def key():
  return get_key(0)
 def wkey():
  return wait_key()
+_C = [None]
 def col(c):
- set_color(c[0], c[1], c[2])
+ if c != _C[0]:
+  _C[0] = c
+  set_color(c[0], c[1], c[2])
+def fr(x, y, w, h):
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
 def rect(x, y, w, h, c):
- if w < 2 or h < 2:
-  if w < 1 or h < 1:
-   return
-  col(c)
-  draw_line(x, y, x + w - 1, y + h - 1)
+ if w < 1 or h < 1:
   return
  col(c)
- fill_rect(x, y, w, h)
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
+COVER = [0]
 def cls(c=BLACK):
+ COVER[0] += 1
  col(c)
- fill_rect(-1, -1, 322, 212)
+ fill_rect(-1, -1, 321, 211)
+TY = 6
 def text(x, y, s, c=WHITE):
  col(c)
- draw_text(x, y, s)
+ draw_text(x, y + TY, s)
 def ctext(y, s, c=WHITE, cx=160):
  col(c)
- draw_text(cx - len(s) * 5, y, s)
+ draw_text(cx - len(s) * 5, y + TY, s)
 def circ(x, y, r, c):
  col(c)
  fill_circle(x, y, r)
@@ -53,9 +57,15 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  col(inner)
  fill_circle(x, y, r - t)
 def rrect(x, y, w, h, r, c):
+ if w < 2 * r + 1 or h < 2 * r + 1:
+  r = max(0, min(w, h) // 2 - 1)
  col(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ if w - 2 * r >= 1:
+  fr(x + r, y, w - 2 * r, h)
+ if h - 2 * r >= 1:
+  fr(x, y + r, w, h - 2 * r)
+ if r < 1:
+  return
  fill_circle(x + r, y + r, r)
  fill_circle(x + w - r - 1, y + r, r)
  fill_circle(x + r, y + h - r - 1, r)
@@ -63,13 +73,33 @@ def rrect(x, y, w, h, r, c):
 def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
  rrect(x, y, w, h, r, c)
  rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def edge(x, y, w, h, r, c, t=2, inner=BLACK):
+ col(c)
+ fr(x + r, y, w - 2 * r, t)
+ fr(x + r, y + h - t, w - 2 * r, t)
+ fr(x, y + r, t, h - 2 * r)
+ fr(x + w - t, y + r, t, h - 2 * r)
+ for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
+  col(c)
+  fill_circle(cx, cy, r)
+  col(inner)
+  fill_circle(cx, cy, max(r - t, 2))
+  ax = cx + 1 if sx > 0 else cx - r
+  ay = y + t if sy > 0 else cy - r
+  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
+  ax = x + t if sx > 0 else cx - r
+  ay = cy + 1 if sy > 0 else cy - r
+  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
 def pause(s):
  time.sleep(s)
+MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
  h = n * 18 + 30
  y = (H - h) // 2
  rbox(20, y, 280, h, 8, WHITE)
+ MSG[0], MSG[1] = (y, h)
+ COVER[0] += 1
  yy = y + 24
  if title:
   ctext(yy, title, GOLD)
@@ -123,13 +153,17 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(122, title, GOLD)
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
+  first = True
   while True:
    for i in range(n):
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
-    rect(x, 166, bw, 28, BLACK)
-    rbox(x, 166, bw, 28, 10, c)
+    if first:
+     rbox(x, 166, bw, 28, 10, c)
+    else:
+     edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+   first = False
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -150,7 +184,7 @@ def icons_c_(c):
  set_color(c[0], c[1], c[2])
 def icons_box(x, y, w, h, c):
  icons_c_(c)
- fill_rect(int(x), int(y), max(2, int(w)), max(2, int(h)))
+ fill_rect(int(x) - 1, int(y) - 1, max(1, int(w)) + 1, max(1, int(h)) + 1)
 def icons_line(x1, y1, x2, y2, c, t=1):
  icons_c_(c)
  for o in range(t):
@@ -228,34 +262,61 @@ def blocks_sq(x, y, c):
   rect(px, py, blocks_C - 1, 2, lt(c, 0.45))
   rect(px, py, 2, blocks_C - 1, lt(c, 0.45))
   rect(px + 3, py + 3, 2, 2, lt(c, 0.7))
-def blocks_draw_piece(p, c=None):
- for x, y in blocks_get(p):
-  blocks_sq(x, y, blocks_COLS[p[0]] if c is None else c)
-def blocks_board(b):
- for y in range(blocks_CH):
-  for x in range(blocks_CW):
-   v = b[y][x]
+class blocks_Well:
+
+ def __init__(self):
+  self.s = [[-1] * blocks_CW for i in range(blocks_CH)]
+  self.last = []
+
+ def put(self, x, y, v):
+  if 0 <= y and self.s[y][x] != v:
+   self.s[y][x] = v
    blocks_sq(x, y, blocks_COLS[v - 1] if v else blocks_WELL)
-def blocks_side(score, lines, nxt):
- for y, h in ((26, 64), (96, 40), (142, 40)):
-  rbox(226, y, 88, h, 6, (150, 110, 190), 2, blocks_PANEL)
- text(234, 44, 'NEXT', (200, 185, 230))
- for x, y in blocks_get((nxt, 0, 0, 0)):
-  c = blocks_COLS[nxt]
-  rect(244 + x * 9, 54 + y * 9, 9, 9, dk(c, 0.55))
-  rect(244 + x * 9, 54 + y * 9, 8, 8, c)
-  rect(245 + x * 9, 55 + y * 9, 2, 2, lt(c, 0.7))
- text(234, 114, 'SCORE', (200, 185, 230))
- text(234, 131, str(score))
- text(234, 160, 'LINES', (200, 185, 230))
- text(234, 177, str(lines))
+
+ def show(self, b, p, full=False):
+  new = [c for c in blocks_get(p) if c[1] >= 0] if p else []
+  if full:
+   cells = [(x, y) for y in range(blocks_CH) for x in range(blocks_CW)]
+  else:
+   cells = self.last + new
+  self.last = new
+  v = p[0] + 1 if p else 0
+  want = [(v if c in new else b[c[1]][c[0]], c) for c in cells]
+  want.sort()
+  for w, c in want:
+   self.put(c[0], c[1], w)
+def blocks_side(score, lines, nxt, old):
+ if old is None:
+  for y, h in ((26, 64), (96, 40), (142, 40)):
+   rbox(226, y, 88, h, 6, (150, 110, 190), 2, blocks_PANEL)
+  text(234, 44, 'NEXT', (200, 185, 230))
+  text(234, 114, 'SCORE', (200, 185, 230))
+  text(234, 160, 'LINES', (200, 185, 230))
+  old = (None, None, None)
+ if nxt != old[2]:
+  rect(240, 50, 40, 22, blocks_PANEL)
+  for x, y in blocks_get((nxt, 0, 0, 0)):
+   c = blocks_COLS[nxt]
+   rect(244 + x * 9, 54 + y * 9, 9, 9, dk(c, 0.55))
+   rect(244 + x * 9, 54 + y * 9, 8, 8, c)
+   rect(245 + x * 9, 55 + y * 9, 2, 2, lt(c, 0.7))
+ if score != old[0]:
+  if old[0] is not None:
+   text(234, 131, str(old[0]), blocks_PANEL)
+  text(234, 131, str(score))
+ if lines != old[1]:
+  if old[1] is not None:
+   text(234, 177, str(old[1]), blocks_PANEL)
+  text(234, 177, str(lines))
+ return (score, lines, nxt)
 def blocks_game():
  b = [[0] * blocks_CW for i in range(blocks_CH)]
  cls(blocks_OUT)
  for i in range(0, 210, 30):
   rect(0, i, 320, 15, (58, 25, 80))
  rbox(blocks_X0 - 4, blocks_Y0 - 4, blocks_CW * blocks_C + 8, blocks_CH * blocks_C + 8, 4, WHITE, 2, blocks_WELL)
- blocks_board(b)
+ well = blocks_Well()
+ well.show(b, None, True)
  rbox(4, 26, 96, 56, 6, GOLD, 2, blocks_PANEL)
  text(14, 48, 'STACK', GOLD)
  text(14, 68, 'DROP', GOLD)
@@ -272,16 +333,16 @@ def blocks_game():
  t = 0
  held = 0
  hc = 0
- blocks_side(score, lines, nxt)
+ sd = blocks_side(score, lines, nxt, None)
  while True:
   if p is None:
    p = [nxt, 0, 3, -1]
    nxt = random.randint(0, 6)
-   blocks_side(score, lines, nxt)
+   sd = blocks_side(score, lines, nxt, sd)
    if not blocks_ok(b, p):
     message(['Score ' + str(score), 'Lines ' + str(lines)], 'Stacked to the top')
     return
-   blocks_draw_piece(p)
+   well.show(b, p)
   k = key()
   if k == CLR:
    return
@@ -312,16 +373,14 @@ def blocks_game():
   t += 1
   fall = t >= speed
   if q != p and blocks_ok(b, q):
-   blocks_draw_piece(p, blocks_WELL)
    p = q
-   blocks_draw_piece(p)
+   well.show(b, p)
   if fall:
    t = 0
    q = [p[0], p[1], p[2], p[3] + 1]
    if blocks_ok(b, q):
-    blocks_draw_piece(p, blocks_WELL)
     p = q
-    blocks_draw_piece(p)
+    well.show(b, p)
    else:
     for x, y in blocks_get(p):
      if y >= 0:
@@ -333,7 +392,8 @@ def blocks_game():
       b.insert(0, [0] * blocks_CW)
      lines += len(full)
      score += (0, 100, 300, 500, 800)[len(full)]
-     blocks_board(b)
+     well.show(b, None, True)
+     sd = blocks_side(score, lines, nxt, sd)
     p = None
   pause(0.02)
 blocks_RULES = "Shapes fall from the top. Fit them together to fill whole rows, which then clear. Don't let the stack reach the top."

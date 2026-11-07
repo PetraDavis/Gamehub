@@ -32,12 +32,13 @@ def cpu(b):
     return random.choice(free)
 
 
-def cell(b, i, cur):
+def cell(b, i, cur, full=True):
+    # full: the whole cell. Otherwise only the cursor outline changes colour
     x = X0 + (i % 3) * S
     y = Y0 + (i // 3) * S
-    rect(x + 3, y + 3, S - 6, S - 6, WHITE)
-    if i == cur:
-        rbox(x + 3, y + 3, S - 6, S - 6, 6, GOLD, 3, WHITE)
+    if full:
+        rect(x + 3, y + 3, S - 6, S - 6, WHITE)
+    edge(x + 3, y + 3, S - 6, S - 6, 4, GOLD if i == cur else WHITE, 3, WHITE)
     m = b[i]
     if m == 1:
         col(INK)
@@ -54,14 +55,21 @@ def grid():
         rect(X0, Y0 + i * S - 1, S * 3, 3, INK)
 
 
+SHOWN = [""]
+
+
 def status(s):
-    rect(0, 186, 320, 24, WHITE)
-    ctext(203, s, INK)
+    # rub out the old words by writing them in the background colour
+    if s != SHOWN[0]:
+        ctext(203, SHOWN[0], WHITE)
+        ctext(203, s, INK)
+        SHOWN[0] = s
 
 
 def game(vs_cpu):
     b = [0] * 9
     cls(WHITE)
+    SHOWN[0] = ""
     grid()
     cur = 4
     turn = 1
@@ -99,8 +107,10 @@ def game(vs_cpu):
         elif k == OK and b[cur] == 0:
             b[cur] = turn
             turn = 3 - turn
-        cell(b, old, cur)
-        cell(b, cur, cur)
+            cell(b, cur, cur)
+        if cur != old:
+            cell(b, old, cur, False)
+            cell(b, cur, cur, False)
 
 
 RULES = 'Get three in a row (across, down or diagonal) before the other player. Play the calculator or pass to a friend.'

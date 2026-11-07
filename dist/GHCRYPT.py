@@ -39,26 +39,30 @@ class Steer:
   self.d = 0
 def wkey():
  return wait_key()
+_C = [None]
 def col(c):
- set_color(c[0], c[1], c[2])
+ if c != _C[0]:
+  _C[0] = c
+  set_color(c[0], c[1], c[2])
+def fr(x, y, w, h):
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
 def rect(x, y, w, h, c):
- if w < 2 or h < 2:
-  if w < 1 or h < 1:
-   return
-  col(c)
-  draw_line(x, y, x + w - 1, y + h - 1)
+ if w < 1 or h < 1:
   return
  col(c)
- fill_rect(x, y, w, h)
+ fill_rect(x - 1, y - 1, w + 1, h + 1)
+COVER = [0]
 def cls(c=BLACK):
+ COVER[0] += 1
  col(c)
- fill_rect(-1, -1, 322, 212)
+ fill_rect(-1, -1, 321, 211)
+TY = 6
 def text(x, y, s, c=WHITE):
  col(c)
- draw_text(x, y, s)
+ draw_text(x, y + TY, s)
 def ctext(y, s, c=WHITE, cx=160):
  col(c)
- draw_text(cx - len(s) * 5, y, s)
+ draw_text(cx - len(s) * 5, y + TY, s)
 def circ(x, y, r, c):
  col(c)
  fill_circle(x, y, r)
@@ -68,9 +72,15 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  col(inner)
  fill_circle(x, y, r - t)
 def rrect(x, y, w, h, r, c):
+ if w < 2 * r + 1 or h < 2 * r + 1:
+  r = max(0, min(w, h) // 2 - 1)
  col(c)
- fill_rect(x + r, y, w - 2 * r, h)
- fill_rect(x, y + r, w, h - 2 * r)
+ if w - 2 * r >= 1:
+  fr(x + r, y, w - 2 * r, h)
+ if h - 2 * r >= 1:
+  fr(x, y + r, w, h - 2 * r)
+ if r < 1:
+  return
  fill_circle(x + r, y + r, r)
  fill_circle(x + w - r - 1, y + r, r)
  fill_circle(x + r, y + h - r - 1, r)
@@ -78,19 +88,37 @@ def rrect(x, y, w, h, r, c):
 def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
  rrect(x, y, w, h, r, c)
  rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def edge(x, y, w, h, r, c, t=2, inner=BLACK):
+ col(c)
+ fr(x + r, y, w - 2 * r, t)
+ fr(x + r, y + h - t, w - 2 * r, t)
+ fr(x, y + r, t, h - 2 * r)
+ fr(x + w - t, y + r, t, h - 2 * r)
+ for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
+  col(c)
+  fill_circle(cx, cy, r)
+  col(inner)
+  fill_circle(cx, cy, max(r - t, 2))
+  ax = cx + 1 if sx > 0 else cx - r
+  ay = y + t if sy > 0 else cy - r
+  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
+  ax = x + t if sx > 0 else cx - r
+  ay = cy + 1 if sy > 0 else cy - r
+  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
 def pause(s):
  time.sleep(s)
 def choose(title, opts, sel=0):
  cls()
  ctext(24, title, GOLD)
  n = len(opts)
+ for i in range(n):
+  y = 40 + i * 30
+  c = GOLD if i == sel else WHITE
+  rbox(60, y, 200, 24, 8, c)
+  ctext(y + 18, opts[i], c)
  while True:
-  for i in range(n):
-   y = 40 + i * 30
-   c = GOLD if i == sel else WHITE
-   rbox(60, y, 200, 24, 8, c)
-   ctext(y + 18, opts[i], c)
   k = wkey()
+  old = sel
   if k == UP:
    sel = (sel - 1) % n
   elif k == DOWN:
@@ -99,6 +127,11 @@ def choose(title, opts, sel=0):
    return sel
   elif k == CLR:
    return -1
+  for i in (old, sel):
+   y = 40 + i * 30
+   c = GOLD if i == sel else WHITE
+   edge(60, y, 200, 24, 8, c)
+   ctext(y + 18, opts[i], c)
 def _wrap(s, n=30):
  out = []
  line = ''
@@ -141,13 +174,17 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(122, title, GOLD)
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
+  first = True
   while True:
    for i in range(n):
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
-    rect(x, 166, bw, 28, BLACK)
-    rbox(x, 166, bw, 28, 10, c)
+    if first:
+     rbox(x, 166, bw, 28, 10, c)
+    else:
+     edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+   first = False
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -357,7 +394,13 @@ def crypt_colour(t):
  if t == 'B':
   return (90, 60, 35)
  return crypt_WALL
-def crypt_render(g):
+def crypt_render(g, full=False):
+ if full or not hasattr(g, 'cols') or g.cover != COVER[0]:
+  g.cover = COVER[0]
+  g.cols = [None] * crypt_COLS
+  g.spr = [False] * crypt_COLS
+ shown = g.cols
+ spr = g.spr
  zb = [0] * crypt_COLS
  ca = math.cos(g.a)
  sa = math.sin(g.a)
@@ -407,20 +450,34 @@ def crypt_render(g):
   top = (crypt_VH - h) // 2
   x = i * crypt_CWID
   k = crypt_light(g, i, d) * (0.8 if side else 1.0)
+  key = (top, h, t, int(u * 32), int(k * 64))
+  if key == shown[i] and (not spr[i]):
+   continue
+  shown[i] = key
   if top > 0:
-   m = top // 2
-   rect(x, 0, crypt_CWID, top, crypt_shade(crypt_CEIL, max(k, 0.3)))
+   m = top // 2 if top >= 4 else 0
+   rect(x, 0, crypt_CWID, top - m, crypt_shade(crypt_CEIL, max(k, 0.3)))
+   rect(x, top - m, crypt_CWID, m, crypt_shade(crypt_CEIL, max(k, 0.3) * 0.8))
+   fy = top + h
+   rest = crypt_VH - fy
    if m >= 2:
-    rect(x, top - m, crypt_CWID, m, crypt_shade(crypt_CEIL, max(k, 0.3) * 0.8))
-   rect(x, top + h, crypt_CWID, crypt_VH - top - h, crypt_shade(crypt_FLOOR, max(k, 0.25)))
-   if m >= 2:
-    rect(x, top + h, crypt_CWID, m, crypt_shade(crypt_FLOOR, max(k, 0.25) * 0.75))
+    rect(x, fy, crypt_CWID, m, crypt_shade(crypt_FLOOR, max(k, 0.25) * 0.75))
     if m >= 6:
-     rect(x, top + h + m + m // 2, crypt_CWID, 1, crypt_shade(crypt_FLOOR, max(k, 0.25) * 0.85))
+     ly = fy + m + m // 2
+     rect(x, fy + m, crypt_CWID, ly - fy - m, crypt_shade(crypt_FLOOR, max(k, 0.25)))
+     rect(x, ly, crypt_CWID, 1, crypt_shade(crypt_FLOOR, max(k, 0.25) * 0.85))
+     rect(x, ly + 1, crypt_CWID, crypt_VH - ly - 1, crypt_shade(crypt_FLOOR, max(k, 0.25)))
+    else:
+     rect(x, fy + m, crypt_CWID, rest - m, crypt_shade(crypt_FLOOR, max(k, 0.25)))
+   else:
+    rect(x, fy, crypt_CWID, rest, crypt_shade(crypt_FLOOR, max(k, 0.25)))
   rect(x, max(0, top), crypt_CWID, min(crypt_VH, top + h) - max(0, top), crypt_shade(crypt_colour(t), k))
   crypt_wall_detail(g, t, u, top, h, x, k)
- crypt_sprites(g, zb, ca, sa)
+ used = crypt_sprites(g, zb, ca, sa)
+ for i in range(crypt_COLS):
+  spr[i] = i in used
 def crypt_sprites(g, zb, ca, sa):
+ used = {}
  lst = []
  for sx, sy, kind in crypt_SPRITES:
   lst.append((sx, sy, kind))
@@ -449,6 +506,7 @@ def crypt_sprites(g, zb, ca, sa):
   for i in range(max(0, c0), min(crypt_COLS, c1)):
    if zb[i] < fwd:
     continue
+   used[i] = 1
    u = (i + 0.5 - (scol - half)) / (2 * half) if half > 0 else 0.5
    if u < 0 or u > 1:
     continue
@@ -462,6 +520,7 @@ def crypt_sprites(g, zb, ca, sa):
      y1 = int(top + h * (1 - v0))
      if y1 - y0 >= 2 and y0 < crypt_VH:
       rect(x, max(0, y0), crypt_CWID, min(crypt_VH, y1) - max(0, y0), crypt_shade(c, k))
+ return used
 def crypt_bottom(g, prompt):
  if prompt == g.shown:
   return
@@ -618,6 +677,7 @@ def crypt_page(title, body, color=WHITE):
   if k == CLR:
    return
 def crypt_toast(g, lines):
+ COVER[0] += 1
  rbox(10, 50, 300, 30 + 18 * len(lines), 8, WHITE)
  y = 72
  for ln in lines:

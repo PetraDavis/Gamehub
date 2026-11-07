@@ -151,6 +151,9 @@ def used(s):
 
 
 # ---------- drawing ----------
+# Nothing is cleared and drawn again: s.shown keeps what each canvas cell
+# shows now, and only cells that differ are painted, joined into rows of one
+# colour. Words are updated letter by letter. So the screen never flashes.
 def want(s, i):
     v = s.cur[i]
     if v == 0 and s.onion and s.ci > 0 and s.prv[i]:
@@ -162,19 +165,58 @@ def paint(s, i, v):
     x = CX + (i % CWD) * P
     y = CY + (i // CWD) * P
     if v >= 16:
+        # a faint copy of the last frame: white rim, pale middle
         c = PAL[v - 16]
-        rect(x, y, P, P, PAL[0])
+        w = PAL[0]
+        rect(x, y, P, 1, w)
+        rect(x, y + P - 1, P, 1, w)
+        rect(x, y + 1, 1, P - 2, w)
+        rect(x + P - 1, y + 1, 1, P - 2, w)
         rect(x + 1, y + 1, P - 2, P - 2, ((c[0] + 510) // 3, (c[1] + 510) // 3, (c[2] + 510) // 3))
     else:
         rect(x, y, P, P, PAL[v])
     s.shown[i] = v
 
 
-def refresh(s):
-    for i in range(N):
-        v = want(s, i)
-        if s.shown[i] != v:
-            paint(s, i, v)
+def refresh(s, src=None):
+    # paint the cells that differ from s.shown; src is a frame (for playback),
+    # or None for the frame being edited with its onion skin
+    runs = {}
+    onion = []
+    hide = s.hide
+    for r in range(CHG):
+        base = r * CWD
+        c = 0
+        while c < CWD:
+            i = base + c
+            v = src[i] if src is not None else want(s, i)
+            if v >= 16 or (i == hide and s.shown[i] == v):
+                if s.shown[i] != v:
+                    onion.append((i, v))
+                c += 1
+                continue
+            e = c
+            dirty = False
+            while e < CWD:
+                j = base + e
+                w = src[j] if src is not None else want(s, j)
+                if w != v or (j == hide and s.shown[j] == v):
+                    break
+                if s.shown[j] != v:
+                    dirty = True
+                    s.shown[j] = v
+                e += 1
+            if dirty:
+                if v in runs:
+                    runs[v].append((c, r, e - c))
+                else:
+                    runs[v] = [(c, r, e - c)]
+            c = e
+    for v in runs:
+        for c, r, n in runs[v]:
+            rect(CX + c * P, CY + r * P, n * P, P, PAL[v])
+    for i, v in onion:
+        paint(s, i, v)
 
 
 def cursor(s):
@@ -182,55 +224,115 @@ def cursor(s):
     y = CY + s.cy * P
     v = s.cur[s.cy * CWD + s.cx]
     col(BLACK if v in (0, 3, 6, 15) else WHITE)
-    draw_rect(x + 1, y + 1, P - 3, P - 3)
+    draw_rect(x, y, P - 2, P - 2)
+    s.hide = s.cy * CWD + s.cx
 
 
 def uncursor(s):
+    # painting the cell again in its own colour only removes the outline
     i = s.cy * CWD + s.cx
+    s.hide = -1
     paint(s, i, want(s, i))
 
 
-def palette(s, sel=-1):
+def label(s, key, x, y, t, c, bg=WHITE):
+    # write t at x, y; if something was written there before, change only
+    # the letters that differ
+    old = s.lab.get(key)
+    s.lab[key] = (t, c)
+    if old is None:
+        text(x, y, t, c)
+        return
+    o, oc = old
+    for k in range(max(len(o), len(t))):
+        a = o[k] if k < len(o) else " "
+        b = t[k] if k < len(t) else " "
+        if a != b:
+            if a != " ":
+                rect(x + k * 10, y - 12, 10, 16, bg)
+            if b != " ":
+                text(x + k * 10, y, b, c)
+        elif oc != c and b != " ":
+            # same letter, new colour: drawing over it is enough
+            text(x + k * 10, y, b, c)
+
+
+def swatch(s, c, sel=-1):
+    # the outline around colour c: dark while choosing, gold for the pen colour
+    x = 210 + (c % 4) * 26
+    y = 30 + (c // 4) * 26
+    e = INK if c == sel else (GOLD if c == s.col else WHITE)
+    rect(x - 2, y - 2, 26, 2, e)
+    rect(x - 2, y + 22, 26, 2, e)
+    rect(x - 2, y, 2, 22, e)
+    rect(x + 22, y, 2, 22, e)
+
+
+def palette(s):
     for c in range(16):
         x = 210 + (c % 4) * 26
         y = 30 + (c // 4) * 26
-        rect(x - 2, y - 2, 26, 26, WHITE)
-        if c == s.col:
-            rbox(x - 2, y - 2, 26, 26, 5, GOLD, 2, WHITE)
-        if c == sel:
-            rbox(x - 2, y - 2, 26, 26, 5, INK, 2, WHITE)
         rect(x + 1, y + 1, 20, 20, PAL[c])
         if c == 0:
             col(GREY)
-            draw_rect(x + 1, y + 1, 19, 19)
+            draw_rect(x, y, 20, 20)
+        swatch(s, c)
 
 
 def topbar(s):
-    rect(0, 0, 320, 22, WHITE)
-    text(4, 17, "Frame " + str(s.ci + 1) + "/" + str(len(s.F)), INK)
-    text(160, 17, str(s.fps) + "fps", GREY)
     pct = used(s) * 100 // MAXB
-    text(236, 17, "Mem " + str(pct) + "%", RED if pct > 90 else GREY)
+    label(s, "fr", 4, 17, "Frame " + str(s.ci + 1) + "/" + str(len(s.F)), INK)
+    label(s, "fps", 160, 17, str(s.fps) + "fps", GREY)
+    label(s, "mem", 236, 17, "Mem " + str(pct) + "%", RED if pct > 90 else GREY)
 
 
-def botbar(s):
-    rect(0, 176, 320, 34, WHITE)
-    m = ("Pen up", "PEN DOWN", "ERASER")[s.pen]
-    text(6, 190, m, HI if s.pen else INK)
-    text(6, 205, "ENTER pen DEL eraser 2nd menu", GREY)
+def botbar(s, a=None, b=None):
+    if a is None:
+        a = ("Pen up", "PEN DOWN", "ERASER")[s.pen]
+        ca = HI if s.pen else INK
+    else:
+        ca = HI
+    label(s, "b1", 6, 190, a, ca)
+    label(s, "b2", 6, 206, b or "ENTER pen DEL eraser 2nd menu", GREY)
+
+
+def side(s):
+    # the right-hand panel: colours, onion skin and save slot
+    rect(MX, 22, 320 - MX, 154, WHITE)
+    s.lab.pop("on", None)
+    s.lab.pop("sv", None)
+    palette(s)
+    sidetext(s)
+
+
+def sidetext(s):
+    label(s, "on", 210, 150, "Onion " + ("on" if s.onion else "off"), GREY)
+    label(s, "sv", 210, 168, "Saved " + (str(s.slot) if s.slot else "-"), GREY)
 
 
 def full(s):
     cls(WHITE)
-    rect(CX - 2, CY - 2, CWD * P + 4, CHG * P + 4, DARK)
-    s.shown = bytearray([255] * N)
+    rect(CX - 2, CY - 2, CWD * P + 4, 2, DARK)
+    rect(CX - 2, CY + CHG * P, CWD * P + 4, 2, DARK)
+    rect(CX - 2, CY, 2, CHG * P, DARK)
+    rect(CX + CWD * P, CY, 2, CHG * P, DARK)
+    s.shown = bytearray(N)
+    s.hide = -1
+    s.lab = {}
     refresh(s)
-    palette(s)
+    side(s)
     topbar(s)
     botbar(s)
-    rect(208, 136, 104, 36, WHITE)
-    text(210, 150, "Onion " + ("on" if s.onion else "off"), GREY)
-    text(210, 168, "Saved " + (str(s.slot) if s.slot else "-"), GREY)
+    cursor(s)
+
+
+def update(s):
+    # after an edit or a frame change: only what changed is painted
+    uncursor(s)
+    refresh(s)
+    topbar(s)
+    sidetext(s)
+    botbar(s)
     cursor(s)
 
 
@@ -286,6 +388,7 @@ def go(s, j):
 def add_frame(s, blank):
     if used(s) > MAXB:
         message(["Memory is full.", "Save, or delete frames."], "Can't add")
+        s.broke = True
         return
     commit(s)
     i = s.ci
@@ -324,23 +427,16 @@ def del_frame(s):
 # ---------- play ----------
 def play(s):
     commit(s)
-    onion = s.onion
-    s.onion = False
-    rect(0, 176, 320, 34, WHITE)
-    text(6, 190, "Playing. Up/Down: speed", HI)
-    text(6, 205, "Any other key stops", GREY)
+    uncursor(s)
+    botbar(s, "Playing. Up/Down: speed", "Any other key stops")
     i = 0
     fr = bytearray(N)
     while True:
         if s.F[i][0] == 1 or i == 0:
             fr = bytearray(N)
         apply(fr, s.F[i])
-        for p in range(N):
-            if s.shown[p] != fr[p]:
-                paint(s, p, fr[p])
-        rect(0, 0, 150, 22, WHITE)
-        text(4, 17, "Frame " + str(i + 1) + "/" + str(len(s.F)), INK)
-        t = 0
+        refresh(s, fr)
+        label(s, "fr", 4, 17, "Frame " + str(i + 1) + "/" + str(len(s.F)), INK)
         steps = max(1, 12 // s.fps)
         stop = False
         for q in range(steps):
@@ -360,30 +456,56 @@ def play(s):
         i = (i + 1) % len(s.F)
     while key():
         pass
-    s.onion = onion
     s.cur = dec(s, s.ci)
-    full(s)
+    update(s)
 
 
 # ---------- menus ----------
 ITEMS = ("Color", "Fill area", "Undo", "Clear frame",
          "Next frame", "Prev frame", "Add copy", "Add blank",
-         "Delete frame", "Play", "Speed", "Onion skin",
+         "Del frame", "Play", "Speed", "Onion skin",
          "Save", "Load", "New", "Quit")
+MX = 202
+MY = 24
+MH = 25
+MV = 6
 
 
-def menu(sel):
-    cls()
-    ctext(18, "STUDIO MENU", GOLD)
+def mbox(x, y, w, h, c):
+    # an outline with stepped corners, made only of rectangles, so it can be
+    # recoloured without touching the inside
+    rect(x + 4, y, w - 8, 2, c)
+    rect(x + 4, y + h - 2, w - 8, 2, c)
+    rect(x, y + 4, 2, h - 8, c)
+    rect(x + w - 2, y + 4, 2, h - 8, c)
+    rect(x + 2, y + 2, 2, 2, c)
+    rect(x + w - 4, y + 2, 2, 2, c)
+    rect(x + 2, y + h - 4, 2, 2, c)
+    rect(x + w - 4, y + h - 4, 2, 2, c)
+
+
+def mrow(s, r, i, on):
+    y = MY + r * MH
+    c = GOLD if on else WHITE
+    if s.lab.get(("mb", r)) != c:
+        mbox(MX + 1, y, 116, 22, c)
+        s.lab[("mb", r)] = c
+    label(s, ("m", r), MX + 5, y + 16, ITEMS[i], c, BLACK)
+
+
+def menu(s, sel):
+    # the menu opens over the colour panel, so the drawing stays on screen
+    rect(MX, 22, 320 - MX, 154, BLACK)
+    for r in range(MV):
+        s.lab.pop(("mb", r), None)
+        s.lab.pop(("m", r), None)
+    botbar(s, "MENU  Up/Down: pick", "ENTER: do it  2nd: close")
+    top = min(max(0, sel - 2), 16 - MV)
+    for r in range(MV):
+        mrow(s, r, top + r, top + r == sel)
     while True:
-        for i in range(16):
-            x = 8 + (i // 8) * 156
-            y = 26 + (i % 8) * 23
-            c = GOLD if i == sel else WHITE
-            rect(x, y, 150, 21, BLACK)
-            rbox(x, y, 148, 21, 8, c)
-            text(x + 74 - len(ITEMS[i]) * 5, y + 16, ITEMS[i], c)
         k = wkey()
+        old = sel
         if k == UP:
             sel = (sel - 1) % 16
         elif k == DOWN:
@@ -391,16 +513,30 @@ def menu(sel):
         elif k in (LEFT, RIGHT):
             sel = (sel + 8) % 16
         elif k == OK:
-            return sel
+            break
         elif k in (CLR, SECOND):
-            return -1
+            sel = -1
+            break
+        nt = top
+        if sel < top:
+            nt = sel
+        elif sel >= top + MV:
+            nt = sel - MV + 1
+        top = nt
+        for r in range(MV):
+            mrow(s, r, top + r, top + r == sel)
+    side(s)
+    botbar(s)
+    return sel
 
 
 def pick_color(s):
     sel = s.col
+    swatch(s, sel, sel)
+    botbar(s, "Arrows: pick a colour", "ENTER: use it  CLEAR: back")
     while True:
-        palette(s, sel)
         k = wkey()
+        old = sel
         if k == LEFT:
             sel = (sel - 1) % 16
         elif k == RIGHT:
@@ -410,20 +546,28 @@ def pick_color(s):
         elif k == DOWN:
             sel = (sel + 4) % 16
         elif k == OK:
+            old = s.col
             s.col = sel
+            swatch(s, old)
             break
         elif k == CLR:
             break
-    palette(s)
+        if sel != old:
+            swatch(s, old, sel)
+            swatch(s, sel, sel)
+    swatch(s, sel)
+    swatch(s, s.col)
+    botbar(s)
 
 
 def pick_speed(s):
     cls()
+    ctext(80, "PLAYBACK SPEED", GOLD)
+    ctext(140, "ENTER done", GREY)
+    s.lab = {}
     while True:
-        rect(0, 60, 320, 80, BLACK)
-        ctext(80, "PLAYBACK SPEED", GOLD)
-        ctext(110, "< " + str(s.fps) + " frames a second >")
-        ctext(140, "ENTER done", GREY)
+        t = "< " + str(s.fps) + " frames a second >"
+        label(s, "sp", 160 - len(t) * 5, 110, t, WHITE, BLACK)
         k = wkey()
         if k == LEFT and s.fps > 1:
             s.fps -= 1
@@ -516,6 +660,8 @@ def studio():
     s.pen = 0
     s.onion = True
     s.shown = bytearray([255] * N)
+    s.hide = -1
+    s.lab = {}
     msel = 0
     full(s)
     held = 0
@@ -555,8 +701,9 @@ def studio():
             if s.pen:
                 i = s.cy * CWD + s.cx
                 set_px(s, i, s.col if s.pen == 1 else 0)
-                paint(s, i, want(s, i))
-                cursor(s)
+                if s.shown[i] != want(s, i):
+                    uncursor(s)
+                    cursor(s)
             botbar(s)
             topbar(s)
             continue
@@ -565,12 +712,12 @@ def studio():
             botbar(s)
             continue
         if k == SECOND or k == CLR:
-            c = menu(msel)
+            s.pen = 0
+            c = menu(s, msel)
             if c >= 0:
                 msel = c
-            s.pen = 0
+            s.broke = False
             if c == 0:
-                full(s)
                 pick_color(s)
             elif c == 1:
                 fill(s)
@@ -597,24 +744,32 @@ def studio():
             elif c == 8:
                 del_frame(s)
             elif c == 9:
-                full(s)
                 play(s)
             elif c == 10:
                 pick_speed(s)
+                s.broke = True
             elif c == 11:
                 s.onion = not s.onion
             elif c == 12:
                 do_save(s)
+                s.broke = True
             elif c == 13:
                 do_load(s)
+                s.broke = True
             elif c == 14:
+                if s.changed:
+                    s.broke = True
                 if not s.changed or message(["Unsaved changes will", "be lost. ENTER: new", "CLEAR: cancel"], "New?") == OK:
                     reset(s, [enc_key(bytearray(N))], 6)
             elif c == 15:
                 if not s.changed or message(["Unsaved changes will", "be lost. ENTER: quit", "CLEAR: cancel"], "Quit?") == OK:
                     return
-            if c != 0:
+                s.broke = True
+            if s.broke:
                 full(s)
+            elif c != 9:
+                update(s)
+
 
 RULES = 'Draw a picture, add frames, and play them back. Saves stay on the calculator.'
 KEYS = ['Arrows: move  ENTER: pen', 'DEL: eraser  2nd: menu', 'Menu: colors, frames, play,', 'speed, save and load']

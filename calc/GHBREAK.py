@@ -26,18 +26,43 @@ def walls():
     rect(316, 24, 1, 186, (120, 130, 160))
 
 
-def paddle(x, c=WHITE):
-    if c == BG:
-        rect(x, 192, PW, 8, BG)
-        return
-    rrect(x, 192, PW, 8, 3, (230, 120, 60))
-    rect(x + 4, 193, PW - 8, 2, (255, 200, 150))
+PC = (230, 120, 60)
+PL = (255, 200, 150)
+
+
+def paddle(x):
+    # pieces that never overlap, so drawing it again where it is can't flash
+    rect(x + 1, 192, PW - 2, 1, PC)
+    rect(x, 193, 4, 2, PC)
+    rect(x + 4, 193, PW - 8, 2, PL)
+    rect(x + PW - 4, 193, 4, 2, PC)
+    rect(x, 195, PW, 4, PC)
+    rect(x + 1, 199, PW - 2, 1, PC)
+    for cx, cy in ((x, 192), (x + PW - 1, 192), (x, 199), (x + PW - 1, 199)):
+        rect(cx, cy, 1, 1, BG)
+
+
+def puck(x, y):
+    rect(x - 3, y - 3, 6, 6, WHITE)
+    rect(x - 2, y - 2, 2, 2, (200, 220, 255))
+
+
+HUD = [None, None]
 
 
 def hud(score, lives):
-    rect(0, 0, 320, 22, BG)
-    text(6, 17, "Score " + str(score))
-    text(214, 17, "Balls " + str(lives), GOLD)
+    # rub out only the old words, by writing them in the background colour
+    a = "Score " + str(score)
+    b = "Balls " + str(lives)
+    if a != HUD[0]:
+        if HUD[0]:
+            text(6, 17, HUD[0], BG)
+        text(6, 17, a)
+    if b != HUD[1]:
+        if HUD[1]:
+            text(214, 17, HUD[1], BG)
+        text(214, 17, b, GOLD)
+    HUD[0], HUD[1] = a, b
 
 
 def game():
@@ -52,6 +77,7 @@ def game():
     score = 0
     lives = 3
     px = 137
+    HUD[0] = HUD[1] = None
     hud(score, lives)
     while lives > 0 and left > 0:
         bx, by = px + PW / 2, 180.0
@@ -99,16 +125,23 @@ def game():
                 hud(score, lives)
                 if left == 0:
                     break
-            rect(int(obx) - 3, int(oby) - 3, 7, 7, BG)
+            vacate(int(obx) - 3, int(oby) - 3, int(bx) - 3, int(by) - 3, 6, 6, BG)
+            if oby < BY + ROWS * BH + 4:
+                # mend any brick the ball's old spot touched
+                for rr in range(max(0, int((oby - 3 - BY) // BH)), min(ROWS, int((oby + 3 - BY) // BH) + 1)):
+                    for cc in range(max(0, int((obx - 3 - 10) // BW)), min(COLS, int((obx + 3 - 10) // BW) + 1)):
+                        if b[rr][cc] and abs(rr * BH + BY + BH / 2 - by) + abs(cc * BW + 10 + BW / 2 - bx) > 0:
+                            brick(rr, cc, 1)
+            if opx != px:
+                vacate(opx, 192, px, 192, PW, 8, BG)
             if opx != px or oby > 186:
-                paddle(opx, BG)
                 paddle(px)
-            ball(int(bx), int(by), 3, WHITE)
+            puck(int(bx), int(by))
             if by > 210:
                 lives -= 1
                 hud(score, lives)
                 break
-        rect(int(bx) - 3, int(by) - 3, 7, 7, BG)
+        rect(int(bx) - 3, int(by) - 3, 6, 6, BG)
         rect(4, 192, 312, 8, BG)
     if left == 0:
         message(["Score " + str(score)], "All bricks cleared!")

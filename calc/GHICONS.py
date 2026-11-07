@@ -26,7 +26,7 @@ def c_(c):
 
 def box(x, y, w, h, c):
     c_(c)
-    fill_rect(int(x), int(y), max(2, int(w)), max(2, int(h)))
+    fill_rect(int(x) - 1, int(y) - 1, max(1, int(w)) + 1, max(1, int(h)) + 1)
 
 
 def line(x1, y1, x2, y2, c, t=1):
@@ -54,8 +54,8 @@ def poly(xs, ys, c):
 def rr(x, y, w, h, r, c):
     # rounded rectangle
     c_(c)
-    fill_rect(x + r, y, w - 2 * r, h)
-    fill_rect(x, y + r, w, h - 2 * r)
+    fill_rect(x + r - 1, y - 1, w - 2 * r + 1, h + 1)
+    fill_rect(x - 1, y + r - 1, w + 1, h - 2 * r + 1)
     for cx in (x + r, x + w - r - 1):
         for cy in (y + r, y + h - r - 1):
             fill_circle(cx, cy, r)
@@ -90,7 +90,7 @@ def digits(x, y, s, c, p=2):
         bits = FONT[ch]
         for n in range(15):
             if bits[n] == "1":
-                fill_rect(x + i * 4 * p + (n % 3) * p, y + (n // 3) * p, p, p)
+                fill_rect(x + i * 4 * p + (n % 3) * p - 1, y + (n // 3) * p - 1, p + 1, p + 1)
 
 
 def bevel(x, y, s, c):
@@ -173,7 +173,7 @@ def sudoku(x, y, c):
         hline(x0, x0 + 3 * s, y0 + i * s, INK)
     c_(INK)
     for o in (0, 1):
-        draw_rect(x0 - o, y0 - o, 3 * s + 2 * o, 3 * s + 2 * o)
+        draw_rect(x0 - o - 1, y0 - o - 1, 3 * s + 2 * o + 1, 3 * s + 2 * o + 1)
 
 
 def anim(x, y, c):
@@ -225,7 +225,7 @@ def g2048(x, y, c):
 
 def pong(x, y, c):
     c_(WHITE)
-    draw_rect(x - 21, y - 15, 43, 31)
+    draw_rect(x - 22, y - 16, 44, 32)
     hline(x - 21, x + 21, y, (200, 210, 230))
     for i in range(6):
         box(x, y - 15 + i * 6, 2, 3, WHITE)
@@ -406,7 +406,7 @@ def wipe(x, y, c):
 def about(x, y, c):
     c_(c)
     fill_circle(x, y - 10, 3)
-    fill_rect(x - 2, y - 4, 5, 18)
+    fill_rect(x - 3, y - 5, 6, 19)
 
 
 ICONS = {"GHSOLI": solitaire, "GHBLOCKS": blocks, "GHSUDOKU": sudoku, "GHANIM": anim,
