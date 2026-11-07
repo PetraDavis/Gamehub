@@ -12,7 +12,6 @@ CLR=45
 DEL=23
 SECOND=21
 BLACK=(0,0,0)
-WHITE=(255,255,255)
 GOLD=(230,180,40)
 GREY=(110,110,110)
 def key():
@@ -138,5 +137,6 @@ def G_lq(k):
  return int(k*5+0.5)/5
 G_YS=[]
 G_YG=4
+G_INSIDE=(36,36,44)
 G_RULES="Explore Ashgrove Manor, solve Ivy's codes and hide from Ysolde when the lights stutter."
 G_KEYS=['Up/Down: start walking','Press the other one to stop','Left/Right: turn a step','ENTER: use  2nd: flashlight','DEL: journal  CLEAR: pause']

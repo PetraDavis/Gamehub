@@ -12,7 +12,8 @@ GOLD = (230, 180, 40)
 
 BG = {"GHSOLI": (25, 110, 55), "GHBLOCKS": (40, 30, 90), "GHSUDOKU": WHITE, "GHANIM": WHITE,
       "GHFLAP": (110, 195, 240), "GHTTT": WHITE, "GHMERGE": (187, 173, 160), "GHPONG": (30, 85, 165),
-      "GHBREAK": (30, 70, 170), "GHHANG": WHITE, "GHSPACE": (15, 20, 50), "GHFORTUN": (55, 25, 85), "GHNAMES": (20, 60, 70)}
+      "GHBREAK": (30, 70, 170), "GHHANG": WHITE, "GHSPACE": (15, 20, 50), "GHFORTUN": (55, 25, 85), "GHNAMES": (20, 60, 70),
+      "GHSTAR": (8, 10, 32), "GHMATCH": (30, 90, 80)}
 
 # 3x5 digits, read row by row
 FONT = {"0": "111101101101111", "1": "010110010010111", "2": "111001111100111",
@@ -434,6 +435,28 @@ def names(x, y, c):
     box(x - 8, y + 2, 11, 3, INK)
 
 
+def star(x, y, c):
+    # a ship firing up at an alien
+    box(x - 7, y - 15, 14, 9, (120, 230, 90))
+    box(x - 7, y - 15, 3, 3, (8, 10, 32))
+    box(x + 4, y - 15, 3, 3, (8, 10, 32))
+    box(x - 4, y - 11, 8, 2, (8, 10, 32))
+    box(x - 1, y - 3, 2, 6, (255, 230, 90))
+    box(x - 10, y + 7, 20, 10, (90, 200, 255))
+    box(x - 10, y + 7, 7, 4, (8, 10, 32))
+    box(x + 3, y + 7, 7, 4, (8, 10, 32))
+
+
+def match(x, y, c):
+    # two cards: one face down, one showing a heart
+    box(x - 19, y - 12, 17, 24, (200, 70, 90))
+    box(x - 15, y - 8, 9, 16, (225, 120, 135))
+    box(x + 2, y - 12, 17, 24, (250, 245, 230))
+    circ(x + 8, y - 2, 3, RED)
+    circ(x + 13, y - 2, 3, RED)
+    poly([x + 4, x + 17, x + 10], [y - 1, y - 1, y + 6], RED)
+
+
 def about(x, y, c):
     c_(c)
     fill_circle(x, y - 10, 3)
@@ -442,7 +465,7 @@ def about(x, y, c):
 
 ICONS = {"GHSOLI": solitaire, "GHBLOCKS": blocks, "GHSUDOKU": sudoku, "GHANIM": anim,
          "GHFLAP": flap, "GHTTT": ttt, "GHMERGE": g2048, "GHPONG": pong, "GHBREAK": breakout,
-         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHCRYPT": crypt, "GHSPACE": space, "GHFORTUN": fortune, "GHNAMES": names,
+         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHCRYPT": crypt, "GHSPACE": space, "GHFORTUN": fortune, "GHNAMES": names, "GHSTAR": star, "GHMATCH": match,
          "*keys": keys, "*wipe": wipe, "*about": about}
 
 
