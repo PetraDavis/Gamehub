@@ -221,14 +221,13 @@ def blocks_sq(x, y, c):
  py = blocks_Y0 + y * blocks_C
  if c == blocks_WELL:
   rect(px, py, blocks_C, blocks_C, blocks_WELL)
-  rect(px + 4, py + 4, 1, 1, blocks_DOT)
+  rect(px + 4, py + 4, 2, 2, blocks_DOT)
  else:
   rect(px, py, blocks_C, blocks_C, dk(c, 0.55))
   rect(px, py, blocks_C - 1, blocks_C - 1, c)
-  col(lt(c, 0.45))
-  draw_line(px, py, px + blocks_C - 2, py)
-  draw_line(px, py, px, py + blocks_C - 2)
-  rect(px + 2, py + 2, 2, 2, lt(c, 0.7))
+  rect(px, py, blocks_C - 1, 2, lt(c, 0.45))
+  rect(px, py, 2, blocks_C - 1, lt(c, 0.45))
+  rect(px + 3, py + 3, 2, 2, lt(c, 0.7))
 def blocks_draw_piece(p, c=None):
  for x, y in blocks_get(p):
   blocks_sq(x, y, blocks_COLS[p[0]] if c is None else c)

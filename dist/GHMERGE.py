@@ -208,9 +208,11 @@ def merge_move(b, d):
   for n in range(4):
    nb[idx[n]] = row[n]
  return (nb, pts)
-def merge_draw(b, score):
+def merge_draw(b, score, old=None, oscore=-1):
  for i in range(16):
   v = b[i]
+  if old and old[i] == v:
+   continue
   x = merge_X0 + i % 4 * merge_S
   y = merge_Y0 + i // 4 * merge_S
   c = merge_TC.get(v, (235, 180, 20))
@@ -224,14 +226,10 @@ def merge_draw(b, score):
     s = s[:2] + 'k' if v >= 10000 else s
    tc = (60, 55, 50) if v < 8 else WHITE
    text(x + merge_S // 2 - len(s) * 5, y + 25, s, tc)
- rect(0, 180, 320, 30, WHITE)
- rrect(110, 182, 100, 24, 6, merge_BOARD)
- ctext(200, 'Score ' + str(score), WHITE)
-def merge_game():
- b = [0] * 16
- merge_add(b)
- merge_add(b)
- score = 0
+ if score != oscore:
+  rrect(95, 182, 130, 24, 6, merge_BOARD)
+  ctext(200, 'Score ' + str(score), WHITE)
+def merge_frame():
  cls(WHITE)
  rrect(12, 34, 64, 64, 8, dk((235, 185, 30), 0.8))
  rrect(12, 32, 64, 64, 8, (235, 185, 30))
@@ -242,6 +240,12 @@ def merge_game():
  text(250, 60, 'Arrows', (120, 110, 100))
  text(250, 78, 'slide', (120, 110, 100))
  rrect(merge_X0 - 4, merge_Y0 - 4, merge_S * 4 + 8, merge_S * 4 + 8, 8, merge_BOARD)
+def merge_game():
+ b = [0] * 16
+ merge_add(b)
+ merge_add(b)
+ score = 0
+ merge_frame()
  merge_draw(b, score)
  won = False
  while True:
@@ -253,15 +257,15 @@ def merge_game():
    continue
   nb, p = merge_move(b, d)
   if nb != b:
+   ob, osc = (b, score)
    b = nb
    score += p
    merge_add(b)
-   merge_draw(b, score)
+   merge_draw(b, score, ob, osc)
    if 2048 in b and (not won):
     won = True
     message(['You made 2048!', 'Keep going?'], 'Amazing!')
-    cls(WHITE)
-    rrect(merge_X0 - 4, merge_Y0 - 4, merge_S * 4 + 8, merge_S * 4 + 8, 8, merge_BOARD)
+    merge_frame()
     merge_draw(b, score)
   stuck = True
   for dd in range(4):

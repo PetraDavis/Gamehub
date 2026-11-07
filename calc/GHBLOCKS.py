@@ -62,16 +62,17 @@ def sq(x, y, c):
         return
     px = X0 + x * C
     py = Y0 + y * C
+    # only filled rectangles that stay inside the cell, so erasing a cell
+    # with one WELL square leaves nothing behind (lines can bleed outside)
     if c == WELL:
         rect(px, py, C, C, WELL)
-        rect(px + 4, py + 4, 1, 1, DOT)
+        rect(px + 4, py + 4, 2, 2, DOT)
     else:
         rect(px, py, C, C, dk(c, 0.55))
         rect(px, py, C - 1, C - 1, c)
-        col(lt(c, 0.45))
-        draw_line(px, py, px + C - 2, py)
-        draw_line(px, py, px, py + C - 2)
-        rect(px + 2, py + 2, 2, 2, lt(c, 0.7))
+        rect(px, py, C - 1, 2, lt(c, 0.45))
+        rect(px, py, 2, C - 1, lt(c, 0.45))
+        rect(px + 3, py + 3, 2, 2, lt(c, 0.7))
 
 
 def draw_piece(p, c=None):
