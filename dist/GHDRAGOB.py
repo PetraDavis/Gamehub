@@ -1,7 +1,6 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^^....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
-G_DT=list(zip(('Pyrrak','Smoldedrake','Aquawyrm','Gillwing','Fernling','Lichenwing','Stonewyrm','Volcanox','Ashveil','Glacius','Tempestra','Thornwyrm','Dawnwing','Pearlhorn','Jadewyrm','Petalwyrm','Blazequill','Abyssar','Rootwyrm','Lumora','Quantum'),b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03',b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05',G_cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
+YELLOW=(240,220,60)
 def G_egg_type(m):
  r=random.randint(0,999)
  rar=4 if r<4+2*m else 3 if r<30+10*m else 2 if r<110+25*m else 1 if r<330+40*m else 0
@@ -48,8 +47,11 @@ def G_drag(x,y,s,t,c,head=0,body=0,out=None,f=0,sp=0):
    Q.append(l if v>200 else a if max(q)-min(q)>110 else l if v>165 else dk(k,0.5)if v<40 else l if v>bl else k)
   P=Q
   P[15],P[16],P[17],P[24],P[25]=(l,k,c,l,k)
+  if t==21:
+   P[2],P[5],P[6],P[19]=(l,c,l,a)
  w,b=(G_ARTW[2*t],G_ARTW[2*t+1])
- for a in(G_ARTB,G_ARTF[t],bytes((2,w,24,26,40,10,37,28,2,b,40,10,28,27,30,27,2,b,40,10,33,28,35,28,2,17,23,26,40,9,26,26,1,17,26,27,3,0,0,0,2,1,40,9,42,7,41,11)),G_ARTL,G_ARTO[t],G_ARTG[body]if body else b'',G_ARTG[head]if head else b'',bytes((0,1,17,31,5,1,0,0,0,1,19,29,1,5,0,0,0,1,34,14,5,1,0,0,0,1,36,12,1,5,0,0,0,1,41,32,5,1,0,0,0,1,43,30,1,5,0,0))if sp else b''):
+ r=G_DT[t][2]if t<len(G_DT)else 0
+ for a in(G_ARTB,G_ARTF[t],G_ARTU[r],bytes((2,w,24,26,40,10,37,28,2,b,40,10,28,27,30,27,2,b,40,10,33,28,35,28,2,17,23,26,40,9,26,26,1,17,26,27,3,0,0,0,2,1,40,9,42,7,41,11)),G_ARTL,G_ARTT[r],G_ARTO[t],G_ARTG[body]if body else b'',G_ARTG[head]if head else b'',bytes((0,1,17,31,5,1,0,0,0,1,19,29,1,5,0,0,0,1,34,14,5,1,0,0,0,1,36,12,1,5,0,0,0,1,41,32,5,1,0,0,0,1,43,30,1,5,0,0))if sp else b''):
   G_art(a,x,y,s,P,out,f)
 def G_shapes(m,x,y,ch,out):
  px=x*G_T
@@ -65,9 +67,12 @@ def G_shapes(m,x,y,ch,out):
   c=G_GROUND[m]
   for o in(3,9,15):
    out.append((0,c,0,(px+o,py+6+o%4,2,8)))
- elif ch=='^':
+ elif ch in '^C':
   out.append((0,G_ROCK,2,([px,px+10,px+20],[py+20,py+1,py+20])))
   out.append((1,WHITE,2,([px+6,px+10,px+14],[py+8,py+1,py+8])))
+  if ch=='C'and G_CAVE[0]:
+   out.append((2,(20,18,25),1,(px+10,py+17,5)))
+   out.append((3,YELLOW,0,(px+8,py+9,5,1)))
  elif ch in 'QS':
   out.append((0,(235,215,170),0,(px+3,py+9,14,11)))
   out.append((1,(200,50,40)if ch=='Q'else(50,90,200),2,([px,px+10,px+20],[py+10,py,py+10])))
@@ -90,8 +95,8 @@ def G_shapes(m,x,y,ch,out):
   v=G_EGGS.get((m,x,y),0)
   q,k=(v//32,v%32)
   r=G_DT[k%G_SMALL][2]
-  sh=G_SCH[q][2]if q else(25,25,35)if r==4 else G_CYAN if r==5 else(245,235,210)
-  sp=G_SCH[q][3]if q else G_MAG if r==5 else YELLOW if r==4 else G_RCOL[r]if r else(200,170,120)
+  sh=G_SCH[q][2]if q else(25,25,35)if r==4 else G_CYAN if r==5 else G_ROCK if r==6 else(245,235,210)
+  sp=G_SCH[q][3]if q else G_MAG if r==5 else YELLOW if r>=4 else G_RCOL[r]if r else(200,170,120)
   out.append((0,G_BARK,0,(px+3,py+15,14,4)))
   out.append((1,sh,1,(px+10,py+10,4 if k==G_SMALL else 6)))
   out.append((2,sp,0,(px+7,py+8,3,3)))

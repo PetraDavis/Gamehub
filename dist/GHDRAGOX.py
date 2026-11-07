@@ -41,7 +41,7 @@ def G_load(g):
   else:
    nm,t=(G_NAMES[s[i]//32],s[i]%32)
   lv=s[i+1]
-  mh=20+6*min(4,G_DT[t][2])+6*(lv-1)+6*(t==20)
+  mh=20+6*min(4,G_DT[t][2])+6*(lv-1)+6*(t==20)+16*(t==21)
   x=s[i+3]%4000
   p=x//200
   g.pen.append([nm,t,lv,mh,mh,s[i+2],G_PAINT[p-1]if p else G_DT[t][3],x//20%10,x%20,s[i+3]//4000])

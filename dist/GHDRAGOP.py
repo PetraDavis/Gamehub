@@ -1,28 +1,9 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
+UP=25
 GREY=(110,110,110)
-def wkey():
- return wait_key()
 def pause(s):
  time.sleep(s)
-def message(lines,title=None):
- n=len(lines)+(1 if title else 0)
- h=n*18+30
- y=(H-h)//2
- rbox(20,y,280,h,8,WHITE)
- MSG[0],MSG[1]=(y,h)
- COVER[0]+=1
- yy=y+24
- if title:
-  ctext(yy,title,GOLD)
-  yy+=18
- for s in lines:
-  ctext(yy,s)
-  yy+=18
- while True:
-  k=wkey()
-  if k in(OK,CLR):
-   return k
 def choose(title,opts,sel=0):
  cls()
  ctext(24,title,GOLD)
@@ -50,10 +31,18 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
+G_EVIL=0.12 if G_TEST else 0.004
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
+def G_egg_roll(g,t):
+ if g.book&2097151 and random.random()<0.05:
+  t=G_SMALL
+ if random.random()<0.02:
+  r=random.random()
+  return t+32*(1 if r<0.4 else 2 if r<0.7 else 3 if r<0.9 else 4)
+ return t
 def G_paint(ops):
  ops.sort(key=lambda o:(o[0],o[1],o[2],o[3][1]if o[2]==0 else 0,o[3][0]))
  last=None
@@ -105,10 +94,9 @@ def G_draw_map(g,after_msg=False):
  else:
   cls()
   G_HUD[0]=None
+ G_CAVE[0]=not g.book>>26&1 and any((d[1]==20 and(not d[9]&8)for d in g.pen))
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
-class G_Game:
- pass
 def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
  b=[1]
@@ -218,7 +206,11 @@ def G_play():
    continue
   mp=g.maps[g.m]
   ch=mp[ny][nx]
-  if ch in 'TW'or(ch in '~L^'and g.ride is None):
+  if ch=='C'and G_CAVE[0]:
+   if not G_titan(g):
+    return
+   continue
+  if ch in 'TW'or(ch in '~L^C'and g.ride is None):
    continue
   if ch=='B':
    if G_battle(g,G_BOSS):
