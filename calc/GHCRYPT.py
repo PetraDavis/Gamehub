@@ -867,8 +867,10 @@ def play():
     page("enCRYPTed", "Ashgrove Manor. Bought at government auction. Power off since the accident.\n\nIt is pitch dark. Find the power switch by the front door.")
     last = clock()
     dirty = True
+    st = Steer((UP, DOWN, LEFT, RIGHT), True)
     while not g.won:
         k = key()
+        d = st.feed(k)
         t = clock()
         dt = (t - last) if now else 0.25
         last = t
@@ -889,21 +891,24 @@ def play():
             dirty = True
             while key() == SECOND:
                 pass
-        if k == LEFT:
-            g.a -= 2.0 * dt
+        if d == LEFT:
+            g.a -= 1.6 * dt
             moved = True
-        elif k == RIGHT:
-            g.a += 2.0 * dt
+        elif d == RIGHT:
+            g.a += 1.6 * dt
             moved = True
-        elif k == UP or k == DOWN:
-            s = (1.6 if k == UP else -1.0) * dt
+        elif d == UP or d == DOWN:
+            s = (1.6 if d == UP else -1.0) * dt
             nx = g.x + math.cos(g.a) * s
             ny = g.y + math.sin(g.a) * s
             r = 0.22 if s > 0 else -0.22
+            ox, oy = g.x, g.y
             if not solid(g, nx + math.cos(g.a) * r, g.y):
                 g.x = nx
             if not solid(g, g.x, ny + math.sin(g.a) * r):
                 g.y = ny
+            if abs(g.x - ox) + abs(g.y - oy) < 0.001:
+                st.stop()
             moved = True
         elif k == OK:
             f = facing(g)
@@ -917,6 +922,7 @@ def play():
             diff = (look - g.a + math.pi) % (2 * math.pi) - math.pi
             if abs(diff) < 0.35:
                 sighting(g)
+                st.stop()
                 dirty = True
         before = g.ys_vis or g.blackout
         ys_update(g, dt)
@@ -930,7 +936,7 @@ def play():
     ending()
 
 RULES = "Explore Ashgrove Manor, solve Ivy's codes and hide from Ysolde when the lights stutter."
-KEYS = ['Up/Down: walk  Left/Right: turn', 'ENTER: use  2nd: flashlight', 'DEL: journal  CLEAR: pause']
+KEYS = ['Arrows: start walking/turning', 'Same arrow keeps going,', 'opposite arrow stops', 'ENTER: use  2nd: flashlight', 'DEL: journal  CLEAR: pause']
 
 
 def main():
