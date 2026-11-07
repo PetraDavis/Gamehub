@@ -1,4 +1,4 @@
-# Builds the download page assets: app icons and the one-file builds in dist/.
+# Builds the download page assets: app icons, the calculator files in dist/ and gamehub.zip.
 # Run from the repo root: python3 tools/build.py
 import sys, os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,5 +18,10 @@ for mod in I.ICONS:
     im.save(os.path.join(ROOT, 'site', 'icons', mod + '.png'))
 
 # the one-file builds the site sends: dist/GAMEHUB.py and one file per game
-import runpy
+import runpy, zipfile
 runpy.run_path(os.path.join(ROOT, 'tools', 'bundle.py'), run_name='__main__')
+D = os.path.join(ROOT, 'dist')
+with zipfile.ZipFile(os.path.join(ROOT, 'gamehub.zip'), 'w', zipfile.ZIP_DEFLATED) as z:
+    for f in sorted(os.listdir(D)):
+        if f.endswith('.py'):
+            z.write(os.path.join(D, f), 'GAMEHUB/' + f)

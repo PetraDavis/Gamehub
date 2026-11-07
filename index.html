@@ -84,7 +84,7 @@
         <button class="btn big" id="sendAll">Send GAMEHUB to my calculator</button>
       </div>
       <div class="actions">
-        <a class="btn small" href="dist/GAMEHUB.py" download>Download GAMEHUB.py</a>
+        <a class="btn small" href="gamehub.zip" download>Download all (.zip)</a>
         <a class="btn small" href="#install">How to install</a>
       </div>
       <p class="note" id="support"></p>
@@ -105,7 +105,7 @@
     <li>Use <b>Chrome or Edge on a computer</b> (Windows, Mac, Chromebook or Linux). Phones and Safari can't send to a calculator.</li>
     <li>Plug the calculator in with a USB cable that can <b>share data</b> (some cables only charge). Turn the calculator on and leave it on the home screen.</li>
     <li>Press <b>Send GAMEHUB to my calculator</b>. Your browser asks which device to use: pick the <b>TI-84 Evo</b> and press Connect.</li>
-    <li>Wait until it says Done. GAMEHUB is one file, so it all arrives together. Don't unplug the calculator while it sends.</li>
+    <li>Wait until it says Done. One press sends the menu and every game. Don't unplug the calculator while it sends.</li>
   </ol>
 
   <div class="two" style="margin-top:18px">
@@ -114,7 +114,7 @@
       <ul>
         <li>Close TI Connect Evo and any other tab that's talking to the calculator, then try again.</li>
         <li>Try a different cable or USB port.</li>
-        <li>Or do it by hand: press <b>Download GAMEHUB.py</b> and drag that one file onto your calculator with <a href="https://connectevo.ti.com" target="_blank" rel="noopener">TI Connect Evo</a>.</li>
+        <li>Or do it by hand: press <b>Download all (.zip)</b>, unzip it, and drag every <b>.py</b> file onto your calculator with <a href="https://connectevo.ti.com" target="_blank" rel="noopener">TI Connect Evo</a>.</li>
         <li>If the calculator says it's out of memory, delete some programs you don't use and send again.</li>
       </ul>
     </div>
@@ -125,7 +125,7 @@
         <li>Arrows move, <kbd>enter</kbd> picks, <kbd>clear</kbd> goes back.</li>
         <li>On a game's home screen, press up or down to read how to play.</li>
         <li>If a button does nothing, open <b>Settings &gt; Key Test</b> in GAMEHUB and tell us which key code it shows.</li>
-        <li>GAMEHUB is a single file with every game inside. Each game's own Send and Download buttons give you just that game as one file that runs on its own.</li>
+        <li>GAMEHUB is the menu, and each game is its own file that GAMEHUB opens when you pick it. That keeps memory free on the calculator. Each game's own Send and Download buttons give you just that game, and it runs on its own.</li>
       </ul>
     </div>
   </div>
@@ -180,11 +180,11 @@
     grid.appendChild(el);
   }
 
-  $('sendAll').addEventListener('click', () => send(['GAMEHUB'], 'GAMEHUB'));
+  $('sendAll').addEventListener('click', () => send(['GAMEHUB'].concat(GAMES.map(g => g.mod)), 'GAMEHUB'));
 
   const ok = window.EvoSend && EvoSend.supported();
   if (!ok) {
-    $('support').textContent = 'This browser can\'t talk to a calculator. Open this page in Chrome or Edge on a computer, or use Download GAMEHUB.py.';
+    $('support').textContent = 'This browser can\'t talk to a calculator. Open this page in Chrome or Edge on a computer, or use Download all.';
     document.querySelectorAll('button.btn').forEach(b => { b.disabled = true; });
   }
 
@@ -205,7 +205,7 @@
       await EvoSend.sendFiles(files, (i, state) => {
         const done = state === 'done' ? i + 1 : i;
         fill.style.width = Math.round(done / files.length * 100) + '%';
-        msg.textContent = 'Sending ' + label + '...';
+        msg.textContent = 'Sending ' + label + '... ' + done + ' of ' + files.length;
         sub.textContent = '';
       });
       msg.className = 'msg ok';
@@ -218,7 +218,7 @@
         sub.textContent = 'Plug it in, turn it on, and press the button again.';
       } else {
         msg.textContent = 'Sending stopped.';
-        sub.textContent = ((e && e.message) || String(e)) + ' Check the tips under How to install, or use Download GAMEHUB.py.';
+        sub.textContent = ((e && e.message) || String(e)) + ' Check the tips under How to install, or use Download all.';
       }
     } finally {
       busy = false;

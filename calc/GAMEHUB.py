@@ -112,7 +112,9 @@ def run_app(mod):
     gc.collect()
     try:
         m = __import__(mod)
-        m.main()
+        # a one-file game runs itself when loaded and sets RAN
+        if not getattr(m, 'RAN', False):
+            m.main()
     except Exception as e:
         cls()
         message([str(e)[:26], "Is " + mod + " on the", "calculator?"], "Could not run")
