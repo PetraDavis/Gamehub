@@ -517,6 +517,25 @@ def mehub_app_screen(ci, sel=0):
    mehub_draw_app(apps[old], old, False)
    mehub_draw_app(apps[sel], sel, True)
    mehub_show_title(apps[sel][0], apps[old][0])
+mehub_ALPH = ''.join((chr(c) for c in range(35, 127) if c not in (39, 92, 96)))
+def mehub_unpack(s):
+ out = bytearray()
+ i = 0
+ n = len(s)
+ nb = len(mehub_ALPH)
+ while i < n:
+  j = s.find('`', i)
+  if j < 0:
+   j = n
+  out.extend(s[i:j].encode())
+  i = j
+  if i < n:
+   o = mehub_ALPH.find(s[i + 1]) * nb + mehub_ALPH.find(s[i + 2]) + 1
+   st = len(out) - o
+   for k in range(mehub_ALPH.find(s[i + 3]) + 4):
+    out.append(out[st + k])
+   i += 4
+ return bytes(out).decode()
 def mehub_run_app(mod):
  if mod == '*keys':
   return mehub_key_test()
@@ -534,6 +553,8 @@ def mehub_run_app(mod):
  if src:
   try:
    ns = dict(globals())
+   src = mehub_unpack(src)
+   gc.collect()
    exec(src, ns)
   except Exception as e:
    cls()

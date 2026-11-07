@@ -7,6 +7,8 @@
 # "import GHICONS" / "GHICONS.draw" become plain names. No exec, no imports.
 # Run from the repo root: python3 tools/bundle.py
 import ast, os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from lzpack import pack, unpack, minify
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CALC = os.path.join(ROOT, 'calc')
 DIST = os.path.join(ROOT, 'dist')
@@ -268,25 +270,34 @@ def build_game(g):
 
 def build_single():
     # GHONE: the whole game center in ONE file. The menu and helpers are code;
-    # each game is kept as text and only turned into code when it is picked,
-    # because text takes far less calculator memory than ready-to-run code.
-    mods = mods_map(GAMES)
+    # each game is kept as squeezed text (tools/lzpack.py) and only unpacked
+    # and turned into code when it is picked, because the calculator can't
+    # load a file holding every game as code.
+    # short name prefixes, since every letter counts here
+    mods = {'GHLIB': '', 'GHICONS': 'I_', 'GHSAVE': 'S_', 'GAMEHUB': 'H_'}
+    for i, g in enumerate(GAMES):
+        mods[g] = chr(97 + i) + '_'
     hub = [convert(LIB, mods), convert('GHICONS', mods), convert('GHSAVE', mods), convert('GAMEHUB', mods)]
     games = [convert(g, mods) for g in GAMES]
     for g, t in zip(GAMES, games):
         t.body.append(ast.parse(mods[g] + 'main()').body[0])
     # keep every helper any game uses, then hand only the menu over as code
     shake(hub + games)
-    src = emit(hub, '# GHONE - all of GAMEHUB in one file (test). Run this file.')
+    src = '# GHONE - all of GAMEHUB in one file (test). Run this file.\n' + minify(emit(hub, ''))
     # the menu's own main() call sits at the end; put the games before it
     lines = src.rstrip('\n').split('\n')
     call = lines.pop()
-    out = ['GAMESRC = {}']
+    out = ['GAMESRC={}']
     for g, t in zip(GAMES, games):
-        code = emit([t], '').strip('\n')
-        assert "'''" not in code and not code.endswith('\\')
-        out.append("GAMESRC[%r] = r'''%s'''" % (g, code))
+        code = minify(emit([t], '')).strip('\n')
+        z = pack(code)
+        assert unpack(z) == code
+        assert Q3 not in z and not z.endswith('\\') and '\r' not in z
+        out.append('GAMESRC[%r]=r%s%s%s' % (g, Q3, z, Q3))
     return '\n'.join(lines + out + [call]) + '\n'
+
+
+Q3 = "'" * 3
 
 
 if __name__ == '__main__':

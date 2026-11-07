@@ -107,6 +107,31 @@ def app_screen(ci, sel=0):
             show_title(apps[sel][0], apps[old][0])
 
 
+# For the one-file build: undo tools/lzpack.py's squeezing. "`" + 2 letters
+# of distance + 1 of length copies earlier text; everything else is as is.
+ALPH = "".join(chr(c) for c in range(35, 127) if c not in (39, 92, 96))
+
+
+def unpack(s):
+    out = bytearray()
+    i = 0
+    n = len(s)
+    nb = len(ALPH)
+    while i < n:
+        j = s.find("`", i)
+        if j < 0:
+            j = n
+        out.extend(s[i:j].encode())
+        i = j
+        if i < n:
+            o = ALPH.find(s[i + 1]) * nb + ALPH.find(s[i + 2]) + 1
+            st = len(out) - o
+            for k in range(ALPH.find(s[i + 3]) + 4):
+                out.append(out[st + k])
+            i += 4
+    return bytes(out).decode()
+
+
 def run_app(mod):
     if mod == "*keys":
         return key_test()
@@ -126,6 +151,8 @@ def run_app(mod):
     if src:
         try:
             ns = dict(globals())
+            src = unpack(src)
+            gc.collect()
             exec(src, ns)
         except Exception as e:
             cls()
