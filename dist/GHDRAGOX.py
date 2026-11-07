@@ -185,11 +185,22 @@ def G_nest(g):
    return 0
 def G_menu(g):
  d=g.pick
- if g.ride is not None:
-  first='Get off '+d[0]
+ opts=['Backpack','Dragon book','Save game','Keep exploring']
+ if d is None:
+  c=choose('Dragon Tamer',opts)
+  c=c+1 if c>=0 else 4
  else:
-  first='Ride '+d[0]+(''if d[3]>0 else ' (tired)')
- c=choose(d[0]+' the '+G_DT[d[1]][0],[first,'Backpack','Dragon book','Keep exploring'])
+  if g.ride is not None:
+   first='Get off '+d[0]
+  else:
+   first='Ride '+d[0]+(''if d[3]>0 else ' (tired)')
+  c=choose(d[0]+' the '+G_DT[d[1]][0],[first]+opts)
+ if c==3:
+  G_save(g)
+  G_draw_map(g)
+  message(['Your dragons, coins and','eggs are saved.'],'Saved!')
+  G_draw_map(g,True)
+  return 0
  if c==0:
   if g.ride is not None:
    if g.maps[g.m][g.y][g.x]in '~L^':

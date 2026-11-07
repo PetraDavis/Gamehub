@@ -566,7 +566,7 @@ def battle(g, f):
             if g.hp <= 0:
                 cls()
                 ctext(60, "YOU DIED", RED)
-                message(["The " + name + " won.", "Back to your last save", "at the nest."], "Game over")
+                message(["The " + name + " won.", "Back to your last save."], "Game over")
                 return False
 
 
@@ -949,13 +949,24 @@ def hatch(g):
 
 
 def menu(g):
-    # ENTER on the map: ride or get off your partner
+    # ENTER on the map: ride or get off your partner, look in your things, or save
     d = g.pick
-    if g.ride is not None:
-        first = "Get off " + d[0]
+    opts = ["Backpack", "Dragon book", "Save game", "Keep exploring"]
+    if d is None:
+        c = choose("Dragon Tamer", opts)
+        c = c + 1 if c >= 0 else 4
     else:
-        first = "Ride " + d[0] + ("" if d[3] > 0 else " (tired)")
-    c = choose(d[0] + " the " + DT[d[1]][0], [first, "Backpack", "Dragon book", "Keep exploring"])
+        if g.ride is not None:
+            first = "Get off " + d[0]
+        else:
+            first = "Ride " + d[0] + ("" if d[3] > 0 else " (tired)")
+        c = choose(d[0] + " the " + DT[d[1]][0], [first] + opts)
+    if c == 3:
+        save(g)
+        draw_map(g)
+        message(["Your dragons, coins and", "eggs are saved."], "Saved!")
+        draw_map(g, True)
+        return 0
     if c == 0:
         if g.ride is not None:
             if g.maps[g.m][g.y][g.x] in "~L^":
@@ -1071,7 +1082,7 @@ def play():
             draw_map(g, True)
             continue
         if k in (OK, SECOND):
-            c = menu(g) if g.pick is not None else 1
+            c = menu(g)
             if c:
                 (backpack if c == 1 else book)(g)
                 draw_map(g)
@@ -1159,8 +1170,8 @@ def play():
             draw_map(g)
 
 
-RULES = "Find eggs (new ones keep turning up), walk to hatch them and name your dragons. 20 kinds, Common to Legendary. Ride over water, lava and mountains. The nest saves your game and has your pen, quests for coins and a shop. If you lose all your HP, you die!"
-KEYS = ["Arrows: walk or fly", "ENTER: ride, get off, backpack", "Fights: Left/Right + ENTER", "CLEAR: save and quit"]
+RULES = "Find eggs (new ones keep turning up), walk to hatch them and name your dragons. 20 kinds, Common to Legendary. Ride over water, lava and mountains. Save any time from the ENTER menu. The nest has your pen, quests for coins and a shop. If you lose all your HP, you die!"
+KEYS = ["Arrows: walk or fly", "ENTER: ride, backpack, save", "Fights: Left/Right + ENTER", "CLEAR: save and quit"]
 
 
 def main():

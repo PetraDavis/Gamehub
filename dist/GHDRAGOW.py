@@ -129,7 +129,7 @@ def G_battle(g,f):
    if g.hp<=0:
     cls()
     ctext(60,'YOU DIED',RED)
-    message(['The '+name+' won.','Back to your last save','at the nest.'],'Game over')
+    message(['The '+name+' won.','Back to your last save.'],'Game over')
     return False
 def G_evil(g):
  cls()
