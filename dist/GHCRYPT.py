@@ -986,10 +986,10 @@ def crypt_play():
     crypt_page('enCRYPTed', 'Ashgrove Manor. Bought at government auction. Power off since the accident.\n\nIt is pitch dark. Find the power switch by the front door.')
     last = crypt_clock()
     dirty = True
-    st = Steer((UP, DOWN, LEFT, RIGHT), True)
+    st = Steer((UP, DOWN), True)
     while not g.won:
         k = key()
-        d = st.feed(k)
+        d = st.feed(k) if k not in (LEFT, RIGHT) else st.d
         t = crypt_clock()
         dt = t - last if crypt_now else 0.25
         last = t
@@ -1010,13 +1010,13 @@ def crypt_play():
             dirty = True
             while key() == SECOND:
                 pass
-        if d == LEFT:
-            g.a -= 1.6 * dt
+        if k == LEFT:
+            g.a -= 2.0 * max(dt, 0.25)
             moved = True
-        elif d == RIGHT:
-            g.a += 1.6 * dt
+        elif k == RIGHT:
+            g.a += 2.0 * max(dt, 0.25)
             moved = True
-        elif d == UP or d == DOWN:
+        if d == UP or d == DOWN:
             s = (1.6 if d == UP else -1.0) * dt
             nx = g.x + math.cos(g.a) * s
             ny = g.y + math.sin(g.a) * s
@@ -1054,7 +1054,7 @@ def crypt_play():
             pause(0.03)
     crypt_ending()
 crypt_RULES = "Explore Ashgrove Manor, solve Ivy's codes and hide from Ysolde when the lights stutter."
-crypt_KEYS = ['Arrows: start walking/turning', 'Same arrow keeps going,', 'opposite arrow stops', 'ENTER: use  2nd: flashlight', 'DEL: journal  CLEAR: pause']
+crypt_KEYS = ['Up/Down: start walking', 'Press the other one to stop', 'Left/Right: turn a step', 'ENTER: use  2nd: flashlight', 'DEL: journal  CLEAR: pause']
 def crypt_main():
     while True:
         c = home('GHCRYPT', 'enCRYPTed DEMO', crypt_RULES, crypt_KEYS, ('Start', 'Back'))
