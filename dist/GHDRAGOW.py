@@ -116,8 +116,9 @@ def G_battle(g,f,lv=0):
       dd[3]=dd[4]
       msg.append(dd[0]+' is now level '+str(dd[2])+'!')
    if lv>=5:
-    g.coins+=lv
-    msg=['+'+str(lv)+' coins!']+msg
+    c=lv*(1+g.curse)
+    g.coins+=c
+    msg=['+'+str(c)+' coins!']+msg
    message(msg[:3]or['You won!'],who+' beaten')
    if f is not G_BOSS:
     G_quest_step(g,0,name)
