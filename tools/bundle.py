@@ -1,6 +1,8 @@
-# Joins the calculator sources into single files for sending:
-#   dist/GAMEHUB.py         everything (menu, helpers, icons, saves, every game)
-#   dist/<GAME>.py          one game on its own, with the helpers and icons built in
+# Joins the calculator sources into the files the site sends:
+#   dist/GAMEHUB.py         the menu, with the helpers, icons and saves built in
+#   dist/<GAME>.py          one game with the helpers and its icon built in. It runs
+#                           on its own, and GAMEHUB loads it only when it is picked,
+#                           because the calculator can't hold every game at once.
 # Each module's own top-level names get a prefix so they can't clash, and
 # "import GHICONS" / "GHICONS.draw" become plain names. No exec, no imports.
 # Run from the repo root: python3 tools/bundle.py
@@ -191,7 +193,12 @@ def emit(parts, head):
                     body.insert(len(imports) - 1, s)
                 continue
             body.append(ast.unparse(n))
-    return src + '\n'.join(body) + '\n'
+    out = []
+    for ln in '\n'.join(body).split('\n'):
+        # one space per indent level instead of four, to save calculator memory
+        n = len(ln) - len(ln.lstrip(' '))
+        out.append(' ' * (n // 4) + ln[n:])
+    return src + '\n'.join(out) + '\n'
 
 
 def mods_map(extra):
@@ -202,17 +209,10 @@ def mods_map(extra):
 
 
 def build_hub():
-    mods = mods_map(GAMES)
-    parts = [convert(LIB, mods), convert('GHICONS', mods), convert('GHSAVE', mods)]
-    for g in GAMES:
-        parts.append(convert(g, mods))
-    glue = ast.parse('class _GameMod:\n    def __init__(self, f):\n        self.main = f\nGAMES = {' +
-                     ', '.join('%r: %smain' % (g, mods[g]) for g in GAMES) + '}')
-    parts.append(glue)
-    hub = hub_loader(convert('GAMEHUB', mods), GAMES)
-    # GAMEHUB's own names keep no prefix
-    parts.append(hub)
-    return emit(parts, '# GAMEHUB - game center for the TI-84 Evo. One file: run it.')
+    mods = mods_map([])
+    parts = [convert(LIB, mods), convert('GHICONS', mods), convert('GHSAVE', mods), convert('GAMEHUB', mods)]
+    shake(parts)
+    return emit(parts, '# GAMEHUB - game center for the TI-84 Evo. Run this file.')
 
 
 def keep_only(tree, var, key):
@@ -262,6 +262,7 @@ def build_game(g):
     parts.append(convert(g, mods))
     parts.append(ast.parse(mods[g] + 'main()'))
     shake(parts)
+    parts.append(ast.parse('RAN = True'))
     return emit(parts, '# %s from GAMEHUB, on its own. Run it.' % g)
 
 

@@ -5,6 +5,7 @@ import simstate as S, ti_system
 from ti_system import SimDone
 import time; time.sleep = lambda s: None
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dist')
+sys.path.insert(0, D)
 names = sys.argv[1:] or sorted(f[:-3] for f in os.listdir(D) if f.endswith('.py'))
 pool = [25, 34, 24, 26, 105, 105, 21, 23, 92, 93, 45, 0, 0]
 bad = 0

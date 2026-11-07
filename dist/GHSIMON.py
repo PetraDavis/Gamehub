@@ -16,162 +16,162 @@ GOLD = (230, 180, 40)
 GREY = (110, 110, 110)
 H = 210
 def wkey():
-    return wait_key()
+ return wait_key()
 def col(c):
-    set_color(c[0], c[1], c[2])
+ set_color(c[0], c[1], c[2])
 def rect(x, y, w, h, c):
-    if w < 2 or h < 2:
-        if w < 1 or h < 1:
-            return
-        col(c)
-        draw_line(x, y, x + w - 1, y + h - 1)
-        return
-    col(c)
-    fill_rect(x, y, w, h)
+ if w < 2 or h < 2:
+  if w < 1 or h < 1:
+   return
+  col(c)
+  draw_line(x, y, x + w - 1, y + h - 1)
+  return
+ col(c)
+ fill_rect(x, y, w, h)
 def cls(c=BLACK):
-    col(c)
-    fill_rect(-1, -1, 322, 212)
+ col(c)
+ fill_rect(-1, -1, 322, 212)
 def text(x, y, s, c=WHITE):
-    col(c)
-    draw_text(x, y, s)
+ col(c)
+ draw_text(x, y, s)
 def ctext(y, s, c=WHITE, cx=160):
-    col(c)
-    draw_text(cx - len(s) * 5, y, s)
+ col(c)
+ draw_text(cx - len(s) * 5, y, s)
 def circ(x, y, r, c):
-    col(c)
-    fill_circle(x, y, r)
+ col(c)
+ fill_circle(x, y, r)
 def ring(x, y, r, c, t=2, inner=BLACK):
-    col(c)
-    fill_circle(x, y, r)
-    col(inner)
-    fill_circle(x, y, r - t)
+ col(c)
+ fill_circle(x, y, r)
+ col(inner)
+ fill_circle(x, y, r - t)
 def rrect(x, y, w, h, r, c):
-    col(c)
-    fill_rect(x + r, y, w - 2 * r, h)
-    fill_rect(x, y + r, w, h - 2 * r)
-    fill_circle(x + r, y + r, r)
-    fill_circle(x + w - r - 1, y + r, r)
-    fill_circle(x + r, y + h - r - 1, r)
-    fill_circle(x + w - r - 1, y + h - r - 1, r)
+ col(c)
+ fill_rect(x + r, y, w - 2 * r, h)
+ fill_rect(x, y + r, w, h - 2 * r)
+ fill_circle(x + r, y + r, r)
+ fill_circle(x + w - r - 1, y + r, r)
+ fill_circle(x + r, y + h - r - 1, r)
+ fill_circle(x + w - r - 1, y + h - r - 1, r)
 def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
-    rrect(x, y, w, h, r, c)
-    rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+ rrect(x, y, w, h, r, c)
+ rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
 def pause(s):
-    time.sleep(s)
+ time.sleep(s)
 def message(lines, title=None):
-    n = len(lines) + (1 if title else 0)
-    h = n * 18 + 30
-    y = (H - h) // 2
-    rbox(20, y, 280, h, 8, WHITE)
-    yy = y + 24
-    if title:
-        ctext(yy, title, GOLD)
-        yy += 18
-    for s in lines:
-        ctext(yy, s)
-        yy += 18
-    while True:
-        k = wkey()
-        if k in (OK, CLR):
-            return k
+ n = len(lines) + (1 if title else 0)
+ h = n * 18 + 30
+ y = (H - h) // 2
+ rbox(20, y, 280, h, 8, WHITE)
+ yy = y + 24
+ if title:
+  ctext(yy, title, GOLD)
+  yy += 18
+ for s in lines:
+  ctext(yy, s)
+  yy += 18
+ while True:
+  k = wkey()
+  if k in (OK, CLR):
+   return k
 def _wrap(s, n=30):
-    out = []
-    line = ''
-    for w in s.split(' '):
-        if len(line) + len(w) + 1 > n:
-            out.append(line)
-            line = w
-        else:
-            line = (line + ' ' + w).strip()
-    if line:
-        out.append(line)
-    return out
+ out = []
+ line = ''
+ for w in s.split(' '):
+  if len(line) + len(w) + 1 > n:
+   out.append(line)
+   line = w
+  else:
+   line = (line + ' ' + w).strip()
+ if line:
+  out.append(line)
+ return out
 def how_to(title, rules, buttons):
-    cls()
-    ctext(20, 'HOW TO PLAY', GOLD)
-    ctext(38, title, GREY)
-    y = 60
-    for ln in _wrap(rules):
-        text(8, y, ln)
-        y += 16
-    y += 6
-    text(8, y, 'BUTTONS', GOLD)
-    y += 17
-    for b in buttons:
-        text(8, y, b)
-        y += 16
-    text(8, 206, 'ENTER: back', GREY)
-    while wkey() not in (OK, CLR, UP, DOWN):
-        pass
+ cls()
+ ctext(20, 'HOW TO PLAY', GOLD)
+ ctext(38, title, GREY)
+ y = 60
+ for ln in _wrap(rules):
+  text(8, y, ln)
+  y += 16
+ y += 6
+ text(8, y, 'BUTTONS', GOLD)
+ y += 17
+ for b in buttons:
+  text(8, y, b)
+  y += 16
+ text(8, 206, 'ENTER: back', GREY)
+ while wkey() not in (OK, CLR, UP, DOWN):
+  pass
 def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
-    n = len(opts)
-    while True:
-        cls()
-        ring(160, 58, 36, GOLD, 3)
-        try:
-            circ(160, 58, 33, icons_bg(mod))
-            icons_draw(mod, 160, 58, WHITE)
-        except Exception:
-            pass
-        ctext(122, title, GOLD)
-        ctext(146, 'Up/Down: how to play', GREY)
-        bw = (300 - (n - 1) * 8) // n
-        while True:
-            for i in range(n):
-                x = 10 + i * (bw + 8)
-                c = GOLD if i == sel else WHITE
-                rect(x, 166, bw, 28, BLACK)
-                rbox(x, 166, bw, 28, 10, c)
-                text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
-            k = wkey()
-            if k == LEFT:
-                sel = (sel - 1) % n
-            elif k == RIGHT:
-                sel = (sel + 1) % n
-            elif k in (UP, DOWN):
-                how_to(title, rules, buttons)
-                break
-            elif k == CLR:
-                return -1
-            elif k == OK:
-                if opts[sel] == 'Back':
-                    return -1
-                return sel
+ n = len(opts)
+ while True:
+  cls()
+  ring(160, 58, 36, GOLD, 3)
+  try:
+   circ(160, 58, 33, icons_bg(mod))
+   icons_draw(mod, 160, 58, WHITE)
+  except Exception:
+   pass
+  ctext(122, title, GOLD)
+  ctext(146, 'Up/Down: how to play', GREY)
+  bw = (300 - (n - 1) * 8) // n
+  while True:
+   for i in range(n):
+    x = 10 + i * (bw + 8)
+    c = GOLD if i == sel else WHITE
+    rect(x, 166, bw, 28, BLACK)
+    rbox(x, 166, bw, 28, 10, c)
+    text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
+   k = wkey()
+   if k == LEFT:
+    sel = (sel - 1) % n
+   elif k == RIGHT:
+    sel = (sel + 1) % n
+   elif k in (UP, DOWN):
+    how_to(title, rules, buttons)
+    break
+   elif k == CLR:
+    return -1
+   elif k == OK:
+    if opts[sel] == 'Back':
+     return -1
+    return sel
 icons_BLACK = (0, 0, 0)
 icons_BG = {}
 def icons_c_(c):
-    set_color(c[0], c[1], c[2])
+ set_color(c[0], c[1], c[2])
 def icons_box(x, y, w, h, c):
-    icons_c_(c)
-    fill_rect(int(x), int(y), max(2, int(w)), max(2, int(h)))
+ icons_c_(c)
+ fill_rect(int(x), int(y), max(2, int(w)), max(2, int(h)))
 def icons_circ(x, y, r, c):
-    icons_c_(c)
-    fill_circle(int(x), int(y), int(r))
+ icons_c_(c)
+ fill_circle(int(x), int(y), int(r))
 def icons_poly(xs, ys, c):
-    icons_c_(c)
-    fill_poly([int(v) for v in xs], [int(v) for v in ys])
+ icons_c_(c)
+ fill_poly([int(v) for v in xs], [int(v) for v in ys])
 def icons_simon(x, y, c):
-    r = 18
-    cols = ((40, 170, 60), (200, 40, 40), (40, 80, 200), (220, 180, 30))
-    for q in range(4):
-        a0 = -math.pi / 2 + q * math.pi / 2
-        xs = [x]
-        ys = [y]
-        for i in range(6):
-            a = a0 + math.pi / 2 * i / 5
-            xs.append(x + r * math.cos(a))
-            ys.append(y + r * math.sin(a))
-        icons_poly(xs, ys, cols[q])
-    icons_circ(x, y, 5, icons_BLACK)
-    icons_box(x - 1, y - r, 2, 2 * r, icons_BLACK)
-    icons_box(x - r, y - 1, 2 * r, 2, icons_BLACK)
+ r = 18
+ cols = ((40, 170, 60), (200, 40, 40), (40, 80, 200), (220, 180, 30))
+ for q in range(4):
+  a0 = -math.pi / 2 + q * math.pi / 2
+  xs = [x]
+  ys = [y]
+  for i in range(6):
+   a = a0 + math.pi / 2 * i / 5
+   xs.append(x + r * math.cos(a))
+   ys.append(y + r * math.sin(a))
+  icons_poly(xs, ys, cols[q])
+ icons_circ(x, y, 5, icons_BLACK)
+ icons_box(x - 1, y - r, 2, 2 * r, icons_BLACK)
+ icons_box(x - r, y - 1, 2 * r, 2, icons_BLACK)
 icons_ICONS = {'GHSIMON': icons_simon}
 def icons_bg(mod):
-    return icons_BG.get(mod, icons_BLACK)
+ return icons_BG.get(mod, icons_BLACK)
 def icons_draw(mod, x, y, c):
-    f = icons_ICONS.get(mod)
-    if f:
-        f(x, y, c)
+ f = icons_ICONS.get(mod)
+ if f:
+  f(x, y, c)
 simon_CX = 160
 simon_CY = 116
 simon_RO = 84
@@ -179,87 +179,88 @@ simon_RI = 36
 simon_PADS = ((UP, 2, (30, 130, 50), (110, 255, 130)), (RIGHT, 3, (150, 30, 30), (255, 110, 110)), (DOWN, 0, (30, 60, 150), (120, 170, 255)), (LEFT, 1, (160, 130, 20), (255, 235, 100)))
 simon_SHAPE = []
 def simon_shapes():
-    for q in range(4):
-        xs = []
-        ys = []
-        for i in range(9):
-            a = math.pi / 2 * (q + i / 8)
-            xs.append(int(simon_CX + simon_RO * math.cos(a)))
-            ys.append(int(simon_CY + simon_RO * math.sin(a)))
-        for i in range(8, -1, -1):
-            a = math.pi / 2 * (q + i / 8)
-            xs.append(int(simon_CX + simon_RI * math.cos(a)))
-            ys.append(int(simon_CY + simon_RI * math.sin(a)))
-        simon_SHAPE.append((xs, ys))
+ for q in range(4):
+  xs = []
+  ys = []
+  for i in range(9):
+   a = math.pi / 2 * (q + i / 8)
+   xs.append(int(simon_CX + simon_RO * math.cos(a)))
+   ys.append(int(simon_CY + simon_RO * math.sin(a)))
+  for i in range(8, -1, -1):
+   a = math.pi / 2 * (q + i / 8)
+   xs.append(int(simon_CX + simon_RI * math.cos(a)))
+   ys.append(int(simon_CY + simon_RI * math.sin(a)))
+  simon_SHAPE.append((xs, ys))
 def simon_gaps():
-    d = (15, 15, 15)
-    rect(simon_CX - 4, simon_CY - simon_RO - 1, 8, simon_RO - simon_RI + 1, d)
-    rect(simon_CX - 4, simon_CY + simon_RI, 8, simon_RO - simon_RI + 1, d)
-    rect(simon_CX - simon_RO - 1, simon_CY - 4, simon_RO - simon_RI + 1, 8, d)
-    rect(simon_CX + simon_RI, simon_CY - 4, simon_RO - simon_RI + 1, 8, d)
-    col(d)
-    for r in (simon_RI, simon_RI + 1, simon_RI + 2):
-        draw_circle(simon_CX, simon_CY, r)
+ d = (15, 15, 15)
+ rect(simon_CX - 4, simon_CY - simon_RO - 1, 8, simon_RO - simon_RI + 1, d)
+ rect(simon_CX - 4, simon_CY + simon_RI, 8, simon_RO - simon_RI + 1, d)
+ rect(simon_CX - simon_RO - 1, simon_CY - 4, simon_RO - simon_RI + 1, 8, d)
+ rect(simon_CX + simon_RI, simon_CY - 4, simon_RO - simon_RI + 1, 8, d)
+ col(d)
+ for r in (simon_RI, simon_RI + 1, simon_RI + 2):
+  draw_circle(simon_CX, simon_CY, r)
 def simon_pad(i, lit):
-    k, q, dim, bright = simon_PADS[i]
-    col(bright if lit else dim)
-    xs, ys = simon_SHAPE[q]
-    fill_poly(xs, ys)
-    simon_gaps()
+ k, q, dim, bright = simon_PADS[i]
+ col(bright if lit else dim)
+ xs, ys = simon_SHAPE[q]
+ fill_poly(xs, ys)
+ simon_gaps()
 def simon_body():
-    if not simon_SHAPE:
-        simon_shapes()
-    circ(simon_CX, simon_CY, simon_RO + 8, (60, 60, 65))
-    circ(simon_CX, simon_CY, simon_RO + 5, (15, 15, 15))
-    for i in range(4):
-        simon_pad(i, False)
-    ring(simon_CX, simon_CY, simon_RI, (15, 15, 15), 3, (70, 70, 75))
+ if not simon_SHAPE:
+  simon_shapes()
+ circ(simon_CX, simon_CY, simon_RO + 8, (60, 60, 65))
+ circ(simon_CX, simon_CY, simon_RO + 5, (15, 15, 15))
+ for i in range(4):
+  simon_pad(i, False)
+ ring(simon_CX, simon_CY, simon_RI, (15, 15, 15), 3, (70, 70, 75))
 def simon_score(n):
-    rect(0, 0, 320, 22, BLACK)
-    text(6, 17, 'Score ' + str(n))
-    text(204, 17, 'CLEAR quit', GREY)
-    circ(simon_CX, simon_CY, simon_RI - 6, (25, 25, 28))
-    s = str(n)
-    text(simon_CX - len(s) * 5, simon_CY + 7, s, WHITE)
+ rect(0, 0, 320, 22, BLACK)
+ text(6, 17, 'Score ' + str(n))
+ text(204, 17, 'CLEAR quit', GREY)
+ circ(simon_CX, simon_CY, simon_RI - 6, (25, 25, 28))
+ s = str(n)
+ text(simon_CX - len(s) * 5, simon_CY + 7, s, WHITE)
 def simon_flash(i, t):
-    simon_pad(i, True)
-    pause(t)
-    simon_pad(i, False)
-    pause(0.12)
+ simon_pad(i, True)
+ pause(t)
+ simon_pad(i, False)
+ pause(0.12)
 def simon_game():
-    cls()
-    simon_body()
-    seq = []
-    while True:
-        simon_score(len(seq))
-        seq.append(random.randint(0, 3))
-        pause(0.5)
-        t = max(0.18, 0.5 - len(seq) * 0.02)
-        for i in seq:
-            simon_flash(i, t)
-        for want in seq:
-            k = wkey()
-            if k == CLR:
-                return
-            got = -1
-            for i in range(4):
-                if simon_PADS[i][0] == k:
-                    got = i
-            if got < 0:
-                got = -2
-            if got >= 0:
-                simon_flash(got, 0.15)
-            if got != want:
-                if got >= 0:
-                    pass
-                message(['You got ' + str(len(seq) - 1) + ' in a row.'], 'Wrong color!')
-                return
+ cls()
+ simon_body()
+ seq = []
+ while True:
+  simon_score(len(seq))
+  seq.append(random.randint(0, 3))
+  pause(0.5)
+  t = max(0.18, 0.5 - len(seq) * 0.02)
+  for i in seq:
+   simon_flash(i, t)
+  for want in seq:
+   k = wkey()
+   if k == CLR:
+    return
+   got = -1
+   for i in range(4):
+    if simon_PADS[i][0] == k:
+     got = i
+   if got < 0:
+    got = -2
+   if got >= 0:
+    simon_flash(got, 0.15)
+   if got != want:
+    if got >= 0:
+     pass
+    message(['You got ' + str(len(seq) - 1) + ' in a row.'], 'Wrong color!')
+    return
 simon_RULES = 'Watch the colors light up, then repeat them in the same order. Each round adds one more.'
 simon_KEYS = ['Up: green   Right: red', 'Down: blue  Left: yellow', 'CLEAR: quit']
 def simon_main():
-    while True:
-        c = home('GHSIMON', 'SIMON', simon_RULES, simon_KEYS, ('Play', 'Back'))
-        if c < 0:
-            return
-        simon_game()
+ while True:
+  c = home('GHSIMON', 'SIMON', simon_RULES, simon_KEYS, ('Play', 'Back'))
+  if c < 0:
+   return
+  simon_game()
 simon_main()
+RAN = True
