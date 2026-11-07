@@ -362,16 +362,13 @@ def crypt(x, y, c):
     # bright static outline: everything bright first, then the dark inside
     for sp in all_spans:
         for row, a, b in sp:
-            g = random.randint(150, 255)
-            hline(a, max(a, b - 1), row, (g * 4 // 5, g * 9 // 10, g))
+            g = random.randint(190, 255)
+            hline(a, max(a, b - 1), row, (g, g * 19 // 20, g * 9 // 10))
     for sp in all_spans:
         for row, a, b in sp[1:-1]:
             if b - a > 2:
-                hline(a + 1, b - 2, row, (8, 10, 15))
-                if random.randint(0, 3) == 0:
-                    px = random.randint(a + 1, b - 2)
-                    g = random.randint(35, 90)
-                    hline(px, min(b - 2, px + 1), row, (g * 5 // 6, g * 11 // 12, g))
+                g = random.randint(28, 62)
+                hline(a + 1, b - 2, row, (g, g, g + 8))
     # small cold blue eyes
     for ex, ey in ((137.2, 41.2), (149.1, 48.55)):
         a, b = m(ex, ey)

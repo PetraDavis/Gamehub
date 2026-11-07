@@ -240,7 +240,7 @@ def sprites(g, zb, ca, sa):
     for fwd, side, kind in order:
         cx = (side / fwd) / (FOV * 0.5 * 1.15)
         scol = (cx + 1) / 2 * COLS
-        w = 0.6 if kind == "ys" else SPR[kind][0]
+        w = 0.45 if kind == "ys" else SPR[kind][0]
         half = w / 2 / fwd / (FOV * 0.5 * 1.15) * COLS / 2
         h = VH * 1.35 / fwd
         top = (VH - h) / 2
@@ -366,7 +366,7 @@ def ys_column(x, left, wid, top, h):
     if not YS:
         _build_ys()
     x1 = x + CWID
-    rim = max(1, int(wid * .03))
+    rim = max(1, int(wid * .015))
     eyes = []
     for p in (0, 1):
         for u0, u1, v0, v1, kind in YS:
@@ -390,11 +390,11 @@ def ys_column(x, left, wid, top, h):
             if y1 - y0 < 1:
                 continue
             if p == 0:
-                g = random.randint(170, 255)
-                c = (g * 4 // 5, g * 9 // 10, g)
+                g = random.randint(190, 255)
+                c = (g, g * 19 // 20, g * 9 // 10)
             else:
-                g = random.randint(0, 9)
-                c = (6, 8, 12) if g < 7 else (40 + g * 4, 50 + g * 4, 62 + g * 4)
+                g = random.randint(28, 62)
+                c = (g, g, g + 8)
             rect(a, y0, b - a, y1 - y0, c)
     for pa, pb, v0, v1 in eyes:
         cx = (pa + pb) // 2
