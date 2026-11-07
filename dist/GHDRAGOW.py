@@ -28,10 +28,13 @@ def G_foe_screen(f,title):
  rbox(150,30,140,120,10,RED if f is G_DREAD else f[4],2,G_NIGHT)
  G_foe_art(f)
  ctext(24,title,GOLD)
-def G_battle(g,f):
+def G_battle(g,f,lv=0):
  name,fhp,fat,xp,fc,fe=f
+ up=lv-G_LVL[g.m][0]if lv else 0
+ fhp,fat,xp=(fhp+4*up,fat+up,xp+3*up)
+ who=('Lv '+str(lv)+' 'if lv else '')+name
  mx=fhp
- G_foe_screen(f,name+' appears!')
+ G_foe_screen(f,who+' appears!')
  log=''
  sel=0
  was=None
@@ -111,7 +114,10 @@ def G_battle(g,f):
       dd[4]+=6
       dd[3]=dd[4]
       msg.append(dd[0]+' is now level '+str(dd[2])+'!')
-   message(msg[:3]or['You won!'],name+' beaten')
+   if lv>=5:
+    g.coins+=lv
+    msg=['+'+str(lv)+' coins!']+msg
+   message(msg[:3]or['You won!'],who+' beaten')
    if f is not G_BOSS:
     G_quest_step(g,0,name)
     G_quest_step(g,2,g.m)
@@ -123,7 +129,7 @@ def G_battle(g,f):
    if d[3]==0:
     g.ride=None
     message([d[0]+' is too tired to fly.','You fight on foot!'],'Oh no')
-    G_foe_screen(f,name)
+    G_foe_screen(f,who)
     was=None
   else:
    g.hp-=dm
