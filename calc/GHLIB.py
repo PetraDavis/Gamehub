@@ -181,6 +181,7 @@ def home(mod, title, rules, buttons, opts=("Play", "Back"), sel=0):
         ring(160, 58, 36, GOLD, 3)
         try:
             import GHICONS
+            circ(160, 58, 33, GHICONS.bg(mod))
             GHICONS.draw(mod, 160, 58, WHITE)
         except Exception:
             pass

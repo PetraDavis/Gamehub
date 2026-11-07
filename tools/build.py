@@ -12,6 +12,7 @@ for mod in I.ICONS:
     if mod.startswith('*'):
         continue
     L.cls()
+    L.circ(160, 105, 26, I.bg(mod))
     I.draw(mod, 160, 105, L.WHITE)
     im = S.img.crop((160 - 26, 105 - 26, 160 + 26, 105 + 26)).resize((104, 104), Image.NEAREST)
     im.save(os.path.join(ROOT, 'site', 'icons', mod + '.png'))

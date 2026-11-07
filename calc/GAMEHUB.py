@@ -56,11 +56,12 @@ def app_pos(i):
 def draw_app(app, i, on):
     x, y = app_pos(i)
     c = GOLD if on else WHITE
-    ring(x, y, 27, c)
     try:
         import GHICONS
+        ring(x, y, 27, c, 2, GHICONS.bg(app[1]))
         GHICONS.draw(app[1], x, y, WHITE)
     except Exception:
+        ring(x, y, 27, c)
         ctext(y + 7, app[0][0], c, x)
 
 

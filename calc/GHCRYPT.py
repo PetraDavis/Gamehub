@@ -268,7 +268,7 @@ def sprites(g, zb, ca, sa):
                         rect(x, max(0, y0), CWID, max(2, int(h * .1)), (gv, gv, gv))
                 if head and (.36 < u < .46 or .54 < u < .64):
                     y0 = int(top + h * (1 - .82))
-                    rect(x, max(0, y0), CWID, max(2, int(h * .03)), (10, 10, 10))
+                    rect(x, max(0, y0), CWID, max(2, int(h * .03)), (90, 190, 255))
                 continue
             for u0, u1, v0, v1, c in SPR[kind][1]:
                 if u0 <= u <= u1:
