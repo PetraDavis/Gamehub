@@ -396,16 +396,28 @@ def ys_column(x, left, wid, top, h):
                 g = random.randint(28, 62)
                 c = (g, g, g + 8)
             rect(a, y0, b - a, y1 - y0, c)
+    # eyes like the game's: a soft dark socket, a faint wide blue halo,
+    # a tight blue bloom and a pin-point cold core
+    pts = []
     for pa, pb, v0, v1 in eyes:
-        cx = (pa + pb) // 2
         cy = int(top + h * (1 - (v0 + v1) / 2))
-        if x - 2 <= cx < x1 + 2 and 0 <= cy < VH - 2:
-            ha = max(x, cx - 1)
-            hb = min(x1, cx + 3)
-            if hb - ha >= 1:
-                rect(ha, cy - 1, hb - ha, 4, (40, 110, 210))
-            if x <= cx < x1:
-                rect(cx, cy, 2, 2, (230, 250, 255))
+        if 2 <= cy <= VH - 4:
+            pts.append(((pa + pb) // 2, cy))
+    for r, c in ((max(3, int(wid * .045)), (22, 40, 70)), (max(2, int(wid * .028)), (4, 5, 8)),
+                 (max(1, int(wid * .012)), (88, 200, 255)), (0, (232, 251, 255))):
+        for cx, cy in pts:
+            if c[2] == 255 and r > 0:
+                # the bloom is a small plus around the core
+                for bx0, bx1, by0, by1 in ((cx - r, cx + r + 1, cy, cy + 1), (cx, cx + 1, cy - r, cy + r + 1)):
+                    ea = max(x, bx0)
+                    eb = min(x1, bx1)
+                    if eb - ea >= 1:
+                        rect(ea, by0, eb - ea, by1 - by0, c)
+                continue
+            ea = max(x, cx - r)
+            eb = min(x1, cx + r + 1)
+            if eb - ea >= 1:
+                rect(ea, max(0, cy - r), eb - ea, min(VH, cy + r + 1) - max(0, cy - r), c)
 
 
 # ---------- text screens ----------

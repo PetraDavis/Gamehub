@@ -370,10 +370,16 @@ def crypt(x, y, c):
                 g = random.randint(28, 62)
                 hline(a + 1, b - 2, row, (g, g, g + 8))
     # small cold blue eyes
-    for ex, ey in ((137.2, 41.2), (149.1, 48.55)):
-        a, b = m(ex, ey)
-        circ(a, b, 1, (35, 95, 200))
-        box(a, b, 2, 2, (225, 248, 255))
+    eyes = [m(ex, ey) for ex, ey in ((137.2, 41.2), (149.1, 48.55))]
+    for r, col in ((3, (22, 40, 70)), (2, (4, 5, 8))):
+        for a, b in eyes:
+            circ(a, b, r, col)
+    for a, b in eyes:
+        a = int(a)
+        b = int(b)
+        hline(a - 1, a + 1, b, (88, 200, 255))
+        line(a, b - 1, a, b + 1, (88, 200, 255))
+        hline(a, a, b, (232, 251, 255))
     random.seed()
 
 
