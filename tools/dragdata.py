@@ -9,7 +9,7 @@
 # Colours are numbers into the palette in GHDRAGON.drag: 0-14 PAL; 15 = the dragon's wing colour
 # (lighter), 16 = darker, 17 = the dragon's own colour; 18 purple, 19 silver, 20 cape blue,
 # 21 night blue, 22 bright violet, 23 blood red; 24 = a little lighter, 25 = much darker;
-# 26 dark brown, 27 dark gold, 28 steel, 29 deep pink, 30 teal, 31 deep blue, 32 light brown.
+# 26 dark brown, 27 dark gold, 28 steel, 29 deep pink, 30 teal, 31 deep blue, 32 light brown, 33 glowing lilac.
 import os, re
 
 OX, OY = 8, 8   # added to every x, y so nothing is negative
@@ -98,11 +98,21 @@ FEAT = [
     ([], (21, 0),
      [('t', 2, 25, 20, 28, 25, 22, 25), ('r', 2, 27, 8, 2, 2), ('r', 2, 25, 13, 2, 2), ('r', 2, 21, 16, 1, 1), ('r', 2, 29, 5, 1, 1),
       ('r', 2, 27, 17, 1, 1), ('r', 2, 5, 10, 2, 2)]),
-    # 20 Quantum: dark blue and black halves, violet glow, violet eyes
-    ([('r', 0, 26, 17, 7, 10), ('c', 0, 33, 22, 5), ('t', 0, 33, 18, 49, 23, 33, 27), ('t', 22, 10, 8, 17, 2, 13, 10),
+    # 20 Quantum: the prettiest one. Dark blue and black halves with glowing violet veins,
+    # a glowing star core on its chest, crystal spikes down its tail, a galaxy wing full of stars,
+    # big crystal horns, glowing violet eyes and a glowing orb on the tip of its tail
+    ([('r', 0, 26, 17, 7, 10), ('c', 0, 33, 22, 5), ('t', 0, 33, 18, 49, 23, 33, 27),
+      ('t', 18, 34, 19, 37, 12, 39, 20), ('t', 18, 40, 21, 43, 15, 45, 22),
+      ('t', 22, 35, 19, 37, 12, 38, 19), ('t', 22, 41, 21, 43, 15, 44, 21), ('t', 22, 10, 8, 17, 2, 13, 10),
       ('r', 22, 9, 16, 2, 6), ('r', 22, 17, 21, 8, 1), ('r', 22, 24, 21, 1, 3), ('r', 22, 24, 23, 9, 1),
-      ('r', 22, 33, 20, 1, 4), ('r', 22, 38, 21, 7, 1)], (0, 18),
-     [('r', 22, 2, 13, 6, 1), ('r', 22, 5, 10, 2, 2)]),
+      ('r', 22, 33, 20, 1, 4), ('r', 22, 38, 21, 7, 1)],
+     (21, 22),
+     [('r', 1, 24, 11, 1, 1), ('r', 33, 27, 7, 1, 1), ('r', 1, 21, 15, 1, 1), ('r', 33, 28, 14, 1, 1),
+      ('r', 33, 25, 16, 1, 1), ('r', 1, 29, 4, 1, 3), ('r', 1, 28, 5, 3, 1),
+      ('t', 22, 11, 20, 14, 16, 17, 20), ('t', 22, 11, 20, 14, 24, 17, 20), ('r', 33, 13, 19, 3, 2), ('r', 1, 14, 19, 1, 2),
+      ('t', 18, 6, 9, 10, -3, 10, 9), ('t', 22, 9, 9, 19, -7, 14, 10), ('t', 33, 11, 8, 19, -7, 13, 8),
+      ('t', 22, 46, 19, 52, 23, 46, 27), ('c', 22, 53, 23, 3), ('c', 33, 53, 23, 2), ('r', 1, 53, 22, 1, 1),
+      ('r', 22, 2, 13, 6, 1), ('r', 22, 4, 10, 3, 2), ('r', 1, 5, 10, 1, 1)]),
     # 21 Dread Drake (the evil one, never hatched): spikes, big horns, red mouth, violet eyes
     ([('t', 23, 20, 17, 22, 11, 24, 17), ('t', 23, 35, 19, 37, 13, 40, 20), ('t', 23, 41, 21, 43, 16, 46, 22),
       ('t', 23, 11, 12, 13, 7, 16, 12), ('r', 25, 16, 24, 19, 3), ('r', 23, 9, 16, 2, 6)], (0, 23),
