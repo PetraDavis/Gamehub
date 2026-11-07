@@ -177,7 +177,7 @@ I_INK=(20,20,20)
 I_RED=(215,40,40)
 I_BG={'GHSOLI':(25,110,55)}
 def I_c_(c):
- set_color(c[0],c[1],c[2])
+ col(c)
 def I_box(x,y,w,h,c):
  I_c_(c)
  fill_rect(int(x)-1,int(y)-1,max(1,int(w))+1,max(1,int(h))+1)

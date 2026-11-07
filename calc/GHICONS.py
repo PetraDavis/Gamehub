@@ -1,6 +1,7 @@
 # App icons for the GAMEHUB menu and home screens.
 # Each icon sits on its own background disc (radius 25) and fits inside it.
 from ti_draw import *
+from GHLIB import col
 import math
 
 BLACK = (0, 0, 0)
@@ -21,7 +22,8 @@ FONT = {"0": "111101101101111", "1": "010110010010111", "2": "111001111100111",
 
 
 def c_(c):
-    set_color(c[0], c[1], c[2])
+    # GHLIB's col remembers the colour, so it stays right after an icon
+    col(c)
 
 
 def box(x, y, w, h, c):

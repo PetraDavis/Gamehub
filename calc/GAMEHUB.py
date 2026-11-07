@@ -125,10 +125,12 @@ def run_app(mod):
     except Exception as e:
         cls()
         message([str(e)[:26], "Is " + mod + " on the", "calculator?"], "Could not run")
-    try:
-        del sys.modules[mod]
-    except Exception:
-        pass
+    # forget the game and its part files (GHCRYPTB, GHCRYPTC...) to free memory
+    for k in [mod] + [mod[:7] + c for c in "BCDEF"]:
+        try:
+            del sys.modules[k]
+        except Exception:
+            pass
     m = None
     gc.collect()
 

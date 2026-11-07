@@ -145,6 +145,7 @@
 </div>
 
 <script src="site/evo-send.js"></script>
+<script src="dist/parts.js"></script>
 <script>
 (function () {
   const GAMES = [
@@ -165,6 +166,15 @@
     { mod: 'GHCRYPT', name: 'Encrypted Demo', cat: 'Adventure', shot: 'encrypted', text: 'A 3D horror demo. Get the power on, find the clues with your flashlight and hide from Ysolde. Ends at the Hallway keypad.' },
   ];
   const url = n => 'dist/' + n + '.py';
+  // big programs come in parts (GHCRYPT needs GHCRYPTB and GHCRYPTC next to it)
+  const files = n => (window.PARTS && PARTS[n]) || [n];
+  function download(names) {
+    for (const f of names) {
+      const a = document.createElement('a');
+      a.href = url(f); a.download = f + '.py';
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+  }
   const $ = id => document.getElementById(id);
 
   const grid = $('games');
@@ -177,12 +187,13 @@
       '<p>' + g.text + '</p>' +
       '<img class="shot" loading="lazy" alt="' + g.name + ' on the calculator" src="site/shots/' + g.shot + '.png">' +
       '<div class="row"><button class="btn small" type="button">Send this game</button>' +
-      '<a class="btn small" href="' + url(g.mod) + '" download>Download .py</a></div>';
-    el.querySelector('button').addEventListener('click', () => send([g.mod], g.name));
+      '<a class="btn small" href="' + url(g.mod) + '" download>' + (files(g.mod).length > 1 ? 'Download ' + files(g.mod).length + ' files' : 'Download .py') + '</a></div>';
+    el.querySelector('button').addEventListener('click', () => send(files(g.mod), g.name));
+    el.querySelector('a.btn').addEventListener('click', e => { if (files(g.mod).length > 1) { e.preventDefault(); download(files(g.mod)); } });
     grid.appendChild(el);
   }
 
-  $('sendAll').addEventListener('click', () => send(['GAMEHUB'].concat(GAMES.map(g => g.mod)), 'GAMEHUB'));
+  $('sendAll').addEventListener('click', () => send([].concat(...GAMES.map(g => files(g.mod)), files('GAMEHUB')), 'GAMEHUB'));
 
   const ok = window.EvoSend && EvoSend.supported();
   if (!ok) {
@@ -212,7 +223,7 @@
       });
       msg.className = 'msg ok';
       msg.textContent = 'Done! ' + label + ' is on your calculator.';
-      sub.textContent = 'Open the Python app and run ' + names[0] + '.';
+      sub.textContent = 'Open the Python app and run ' + names[names.length - 1] + '.';
     } catch (e) {
       msg.className = 'msg bad';
       if (e && (e.name === 'NotFoundError' || /No device selected|No port selected/i.test(e.message))) {

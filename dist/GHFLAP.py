@@ -173,7 +173,7 @@ I_BLACK=(0,0,0)
 I_WHITE=(255,255,255)
 I_BG={'GHFLAP':(110,195,240)}
 def I_c_(c):
- set_color(c[0],c[1],c[2])
+ col(c)
 def I_box(x,y,w,h,c):
  I_c_(c)
  fill_rect(int(x)-1,int(y)-1,max(1,int(w))+1,max(1,int(h))+1)
@@ -229,9 +229,9 @@ G_LEAF=(50,140,60)
 G_INK=(20,20,20)
 G_BODY=(240,200,40)
 G_BEAK=(245,140,30)
-G_GRAV=900.0
-G_FLAP=-265.0
-G_FALL=430.0
+G_GRAV=620.0
+G_FLAP=-235.0
+G_FALL=330.0
 G_SPEED=80.0
 def G_column(gy):
  return[(G_TOP,gy,G_LEAF),(gy,gy+G_GAP,G_SKY),(gy+G_GAP,G_GND,G_LEAF)]
@@ -342,7 +342,7 @@ def G_game():
    return
   if G_now:
    t=G_now()
-   dt=min(0.12,max(0.03,t-last))
+   dt=min(0.12,max(0.01,t-last))
    last=t
   else:
    dt=0.05

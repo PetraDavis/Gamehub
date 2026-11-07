@@ -176,7 +176,7 @@ def home(mod,title,rules,buttons,opts=('Play','Back'),sel=0):
 I_BLACK=(0,0,0)
 I_BG={'GHBLOCKS':(40,30,90)}
 def I_c_(c):
- set_color(c[0],c[1],c[2])
+ col(c)
 def I_box(x,y,w,h,c):
  I_c_(c)
  fill_rect(int(x)-1,int(y)-1,max(1,int(w))+1,max(1,int(h))+1)

@@ -182,17 +182,17 @@ def hub_loader(tree, games):
     return tree
 
 
-def emit(parts, head):
+def emit(parts, head, pre=()):
     src = head + '\n'
     imports = set()
-    body = []
+    body = list(pre)
     for t in parts:
         for n in t.body:
             if isinstance(n, (ast.Import, ast.ImportFrom)) and n.col_offset == 0 and not isinstance(n, ast.Try):
                 s = ast.unparse(n)
                 if s not in imports:
                     imports.add(s)
-                    body.insert(len(imports) - 1, s)
+                    body.insert(len(pre) + len(imports) - 1, s)
                 continue
             body.append(ast.unparse(n))
     out = []
@@ -212,11 +212,129 @@ def mods_map(extra):
     return m
 
 
+# The Evo runs out of memory turning a file into code when the file holds
+# too much code (it counts words, not bytes: "a=1" costs as much as
+# "apple=100"). GAMEHUB 6800 words opened, 7900 didn't; Tiny Quest at 6100
+# opens. So a file over LIMIT words is split in two: <NAME>B holds the
+# helpers and everything they need, and <NAME> starts with
+# "from <NAME>B import *" and keeps the rest.
+SPLIT_OVER = 6200
+LIMIT = 5000
+
+
+def words(src):
+    import tokenize, io
+    skip = (tokenize.COMMENT, tokenize.NL, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT, tokenize.ENDMARKER)
+    return sum(1 for t in tokenize.generate_tokens(io.StringIO(src).readline) if t.type not in skip)
+
+
+def node_words(n):
+    return words(ast.unparse(n) + '\n')
+
+
+def defines(n):
+    if isinstance(n, (ast.FunctionDef, ast.ClassDef)):
+        return {n.name}
+    out = set()
+    stack = [n]
+    while stack:
+        x = stack.pop()
+        if isinstance(x, (ast.FunctionDef, ast.ClassDef)) and x is not n:
+            out.add(x.name)
+            continue
+        if isinstance(x, ast.Name) and isinstance(x.ctx, ast.Store):
+            out.add(x.id)
+        if isinstance(x, (ast.Import, ast.ImportFrom)):
+            out |= {(a.asname or a.name).split('.')[0] for a in x.names}
+        stack.extend(ast.iter_child_nodes(x))
+    return out
+
+
+def side_name(name, k=0):
+    # GHCRYPT -> GHCRYPTB, then GHCRYPTC (calculator names: 8 letters at most)
+    return name[:7] + 'BCDEF'[k]
+
+
+def loads(nodes):
+    return {x.id for n in nodes for x in ast.walk(n) if isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load)}
+
+
+def split(parts, name, head, tail):
+    # tail: statements that must stay last in the main file (main(), RAN)
+    nodes = [n for t in parts for n in t.body]
+    full = emit([ast.Module(body=nodes + tail, type_ignores=[])], head)
+    if words(full) <= SPLIT_OVER:
+        return {name: full}
+    imports = [n for n in nodes if isinstance(n, (ast.Import, ast.ImportFrom))]
+    rest = [n for n in nodes if n not in imports]
+    out = {}
+    cur, cur_head, cur_tail, k = name, head, tail, 0
+    while True:
+        bn = side_name(name, k)
+        main_nodes, side_nodes = peel(rest, cur_tail)
+        if not side_nodes:
+            main_nodes, side_nodes = rest, []
+        have = set()
+        for n in side_nodes:
+            have |= defines(n)
+        under = sorted(u for u in loads(main_nodes + cur_tail) if u in have and u.startswith('_'))
+        pre = []
+        if side_nodes:
+            pre = ['from %s import *' % bn] + (['from %s import %s' % (bn, ','.join(under))] if under else [])
+        body = main_nodes + cur_tail if pre else imports + main_nodes + cur_tail
+        out[cur] = emit([ast.Module(body=body, type_ignores=[])], cur_head, pre)
+        if not side_nodes:
+            return out
+        rest = side_nodes
+        last = emit([ast.Module(body=imports + rest, type_ignores=[])], '')
+        cur, cur_head, cur_tail, k = bn, '# %s: part of %s. Keep it next to %s.' % (bn, name, name), [], k + 1
+        if words(last) <= LIMIT:
+            out[cur] = emit([ast.Module(body=imports + rest, type_ignores=[])], cur_head)
+            return out
+
+
+MOVABLE = (ast.FunctionDef, ast.ClassDef, ast.Assign, ast.Try)
+
+
+def peel(rest, tail):
+    # Split rest into (main, side): side holds definitions and everything
+    # they need, main holds callers nothing in side needs, about LIMIT words
+    owner = {}
+    for n in rest:
+        for d in defines(n):
+            owner[d] = n
+    deps = {}
+    for n in rest:
+        deps[id(n)] = {id(owner[u]) for u in loads([n]) if u in owner and owner[u] is not n}
+    side = {id(n) for n in rest if isinstance(n, MOVABLE) and defines(n)}
+    for n in rest:
+        if not isinstance(n, MOVABLE):
+            side -= {id(owner[d]) for d in defines(n) if d in owner}
+    while True:
+        bad = {i for i in side if not deps[i] <= side}
+        if not bad:
+            break
+        side.difference_update(bad)
+    size = {id(n): node_words(n) for n in rest}
+    budget = LIMIT - sum(size[id(n)] for n in rest if id(n) not in side) - words(emit([ast.Module(body=tail, type_ignores=[])], ''))
+    while True:
+        needed = set()
+        for i in side:
+            needed |= deps[i]
+        free = [i for i in side if i not in needed and size[i] <= budget]
+        if not free:
+            break
+        i = max(free, key=lambda i: size[i])
+        side.discard(i)
+        budget -= size[i]
+    return [n for n in rest if id(n) not in side], [n for n in rest if id(n) in side]
+
+
 def build_hub():
     mods = mods_map([])
     parts = [convert(LIB, mods), convert('GHICONS', mods), convert('GHSAVE', mods), convert('GAMEHUB', mods)]
     shake(parts)
-    return emit(parts, '# GAMEHUB - game center for the TI-84 Evo. Run this file.')
+    return split(parts, 'GAMEHUB', '# GAMEHUB - game center for the TI-84 Evo. Run this file.', [])
 
 
 def keep_only(tree, var, key):
@@ -264,10 +382,12 @@ def build_game(g):
     if 'GHSAVE' in open(os.path.join(CALC, g + '.py')).read():
         parts.append(convert('GHSAVE', mods))
     parts.append(convert(g, mods))
-    parts.append(ast.parse(mods[g] + 'main()'))
+    call = ast.parse(mods[g] + 'main()')
+    parts.append(call)
     shake(parts)
-    parts.append(ast.parse('RAN = True'))
-    return emit(parts, '# %s from GAMEHUB, on its own. Run it.' % g)
+    parts.pop()
+    tail = call.body + ast.parse('RAN = True').body
+    return split(parts, g, '# %s from GAMEHUB, on its own. Run it.' % g, tail)
 
 
 def build_single():
@@ -306,10 +426,20 @@ if __name__ == '__main__':
     os.makedirs(DIST, exist_ok=True)
     # build_single() (the one-file GHONE) is kept but not built: the Evo
     # can't open a file over about 36-40 KB, so one file can't hold every game
-    out = {'GAMEHUB': build_hub()}
+    out = dict(build_hub())
+    parts = {}
     for g in GAMES:
-        out[g] = build_game(g)
+        files = build_game(g)
+        out.update(files)
+        parts[g] = sorted(files)[::-1]
+    for f in os.listdir(DIST):
+        if f.endswith('.py') and f[:-3] not in out:
+            os.remove(os.path.join(DIST, f))
+    # the site sends every file a game needs
+    parts['GAMEHUB'] = sorted(f for f in out if f.startswith('GAMEHUB'))[::-1]
+    import json
+    open(os.path.join(DIST, 'parts.js'), 'w').write('window.PARTS = ' + json.dumps(parts, sort_keys=True) + ';\n')
     for name, src in out.items():
         compile(src, name, 'exec')
         open(os.path.join(DIST, name + '.py'), 'w').write(src)
-    print(' '.join('%s=%d' % (k, len(v)) for k, v in out.items()))
+    print(' '.join('%s=%d/%dw' % (k, len(v), words(v)) for k, v in out.items()))
