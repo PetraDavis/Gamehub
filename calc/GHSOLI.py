@@ -27,31 +27,12 @@ PICS = (
 )
 
 
-def _runs(pic):
-    # the picture as rectangles: runs of # in a row, joined with the same run below
-    out = []
-    for r in range(7):
-        row = pic[r]
-        c = 0
-        while c < 7:
-            if row[c] == "#":
-                e = c
-                while e < 7 and row[e] == "#":
-                    e += 1
-                for k in range(len(out)):
-                    a = out[k]
-                    if a[0] == c and a[2] == e - c and a[1] + a[3] == r:
-                        out[k] = (a[0], a[1], a[2], a[3] + 1)
-                        break
-                else:
-                    out.append((c, r, e - c, 1))
-                c = e
-            else:
-                c += 1
-    return out
-
-
-SUITS = [_runs(p) for p in PICS]
+# fewest rectangles (they may overlap, they are one colour) for each suit,
+# found from these pictures:
+SUITS = (((0, 1, 7, 3), (2, 1, 3, 5), (1, 0, 2, 5), (4, 0, 2, 5), (3, 1, 1, 6)),
+         ((2, 1, 3, 5), (1, 2, 5, 3), (3, 0, 1, 7), (0, 3, 7, 1)),
+         ((0, 3, 7, 2), (1, 2, 5, 3), (2, 1, 1, 5), (4, 1, 1, 5), (3, 0, 1, 5), (1, 6, 5, 1)),
+         ((3, 0, 1, 7), (0, 2, 2, 3), (5, 2, 2, 3), (2, 0, 3, 2), (1, 6, 5, 1), (0, 3, 5, 1)))
 
 
 def suit(x, y, s, k=1):
@@ -61,25 +42,44 @@ def suit(x, y, s, k=1):
         rect(x + a * k, y + b * k, w * k, h * k, c)
 
 
+# Each drawing call is slow on the calculator, so a card is plain
+# rectangles: a black outline with its corner dots cut off, then the face.
+def body(x, y, h, c):
+    rect(x + 1, y, CW - 2, h, BLACK)
+    rect(x, y + 1, CW, h - 2, BLACK)
+    rect(x + 1, y + 1, CW - 2, h - 2, c)
+
+
 def card(x, y, cd, h=CHT):
     if cd is None:
-        rbox(x, y, CW, CHT, 4, (60, 110, 80), 1, FELT)
+        col((60, 110, 80))
+        draw_rect(x, y, CW - 1, CHT - 1)
         return
     r, s, up = cd
-    rrect(x, y, CW, h, 4, BLACK)
     if not up:
-        rrect(x + 1, y + 1, CW - 2, h - 2, 3, BACK)
+        body(x, y, h, BACK)
         if h >= 12:
             rect(x + 4, y + 4, CW - 8, h - 8, lt(BACK, 0.15))
-            for i in range(x + 7, x + CW - 6, 6):
-                rect(i, y + 6, 2, h - 12, BACK)
+            rect(x + 6, y + 6, CW - 12, h - 12, BACK)
         return
-    rrect(x + 1, y + 1, CW - 2, h - 2, 3, CARD)
+    body(x, y, h, CARD)
     if h >= 14:
         text(x + 3, y + 14, RANKS[r], RED if s < 2 else BLACK)
         suit(x + CW - 11, y + 4, s)
     if h >= CHT:
         suit(x + 13, y + 15, s, 2)
+
+
+def backs(x, ys, i, j):
+    # face-down cards i..j-1 of a column (each showing only its top edge)
+    # as one tall back with a dark line where each card starts
+    y0 = ys[i]
+    h = ys[j] - y0 + 4
+    rect(x + 1, y0, CW - 2, h, BLACK)
+    rect(x, y0 + 1, CW, h - 2, BLACK)
+    rect(x + 1, y0 + 1, CW - 2, h - 2, BACK)
+    for k in range(i + 1, j):
+        rect(x + 1, ys[k], CW - 2, 1, BLACK)
 
 
 class G:
@@ -139,8 +139,17 @@ def draw_col(g, c, drawn):
         if d is not None and n < len(d[0]) and start == n - 1:
             # the card under the ones taken away shows in full again
             rect(x, bottom - 6, CW, 6, FELT)
-        for i in range(start, n):
+        i = start
+        while i < n:
+            j = i
+            while j < n - 1 and not pile[j][2]:
+                j += 1
+            if j > i + 1:
+                backs(x, ys, i, j)
+                i = j
+                continue
             card(x, ys[i], pile[i], CHT if i == n - 1 else ys[i + 1] - ys[i] + 4)
+            i += 1
     if d is None or bottom < d[1]:
         rect(x, bottom, CW, 210 - bottom, FELT)
     drawn[c] = (ys, bottom)

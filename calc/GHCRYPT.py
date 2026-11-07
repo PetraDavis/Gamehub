@@ -22,8 +22,8 @@ MAP = [
 ]
 VW = 320
 VH = 172
-COLS = 40
-CWID = VW // COLS
+COLS = 32
+CWID = VW // COLS  # 32 columns of 10 pixels
 FOV = 1.0
 WALL = (75, 95, 99)
 DOOR = (110, 75, 45)
@@ -106,53 +106,6 @@ def light(g, i, d):
     return min(1.2, base)
 
 
-def wall_detail(g, t, u, top, h, x, k):
-    def band(v0, v1, c):
-        y0 = int(top + h * (1 - v1))
-        y1 = int(top + h * (1 - v0))
-        if y1 - y0 >= 2:
-            rect(x, max(0, y0), CWID, min(VH, y1) - max(0, y0), shade(c, k))
-    if t in "lkjCF":
-        if u < .12 or u > .88:
-            band(0, .8, (70, 48, 30))
-        band(.8, 1, WALL)
-        if .7 < u < .85:
-            band(.42, .47, (210, 180, 90))
-        if t in "kC" and .12 < u < .3:
-            on = (t == "C" and g.closet) or False
-            band(.5, .6, (40, 40, 40))
-            band(.53, .57, (40, 200, 70) if on else (200, 40, 40) if g.power else (30, 30, 30))
-        if t == "F" and g.locked and .15 < u < .25:
-            band(.6, .64, (255, 30, 40))
-    elif t == "S":
-        for n in range(6):
-            band(n * .14, n * .14 + .07, (95, 70, 45))
-        if .2 < u < .8:
-            band(.25, .32, (150, 120, 80))
-            band(.55, .62, (150, 120, 80))
-    elif t == "B":
-        for n in range(4):
-            band(n * .25 + .02, n * .25 + .05, (70, 45, 25))
-            cc = ((150, 50, 50), (50, 90, 150), (60, 130, 70), (170, 140, 60))[(int(u * 7) + n) % 4]
-            band(n * .25 + .05, n * .25 + .2, cc)
-    elif t == "T":
-        if .1 < u < .9:
-            band(.35, .7, (15, 15, 20) if not g.tv else (60, 90, 160))
-    elif t == "G":
-        if .28 < u < .72:
-            band(0, .85, (70, 45, 30))
-            band(.6, .75, (220, 210, 180))
-            if .45 < u < .55:
-                band(.2, .55, (180, 150, 70))
-                if not g.note:
-                    band(.25, .3, (240, 240, 230))
-    elif t == "P":
-        if .3 < u < .6:
-            band(.38, .56, (130, 130, 135))
-            if .4 < u < .5:
-                band(.44 if g.power else .48, .54 if g.power else .58, (40, 40, 40))
-
-
 def colour(t):
     if t in "lkjCF":
         return DOOR
@@ -163,14 +116,120 @@ def colour(t):
     return WALL
 
 
+def lq(k):
+    # light comes in a few steps, so neighbouring columns share colours
+    return int(k * 5 + .5) / 5
+
+
+def put(sp, a, b, c):
+    # paint colour c over rows a..b of a column's span list
+    if b <= a:
+        return sp
+    out = []
+    for y0, y1, cc in sp:
+        if y0 < a:
+            out.append((y0, min(y1, a), cc))
+    out.append((a, b, c))
+    for y0, y1, cc in sp:
+        if y1 > b:
+            out.append((max(y0, b), y1, cc))
+    return out
+
+
+def diff(old, new):
+    # the parts of column spans new that differ from old, as (y0, y1, colour)
+    if old is None:
+        return new
+    out = []
+    i = j = 0
+    y = 0
+    while y < VH:
+        o0, o1, oc = old[i]
+        n0, n1, nc = new[j]
+        e = min(o1, n1)
+        if oc != nc:
+            if out and out[-1][1] == y and out[-1][2] == nc:
+                out[-1] = (out[-1][0], e, nc)
+            else:
+                out.append((y, e, nc))
+        y = e
+        if o1 == e:
+            i += 1
+        if n1 == e:
+            j += 1
+    return out
+
+
+def column(g, t, u, top, h, k):
+    # what one wall column looks like, top to bottom, as spans
+    cl = (0, 0, 0) if g.blackout else CEIL
+    fl = (0, 0, 0) if g.blackout else shade(FLOOR, .5 if not g.power else 1)
+    y0 = max(0, top)
+    y1 = min(VH, top + h)
+    sp = [(0, y0, cl), (y0, y1, shade(colour(t), k)), (y1, VH, fl)]
+    if y0 == 0:
+        sp = sp[1:]
+    if y1 == VH:
+        sp = sp[:-1]
+    sp = [s for s in sp if s[1] > s[0]]
+
+    def band(v0, v1, c):
+        a = int(top + h * (1 - v1)) & ~1
+        b = int(top + h * (1 - v0)) & ~1
+        if b - a >= 2:
+            return put(sp, max(0, a), min(VH, b), shade(c, k))
+        return sp
+    if t in "lkjCF":
+        if u < .12 or u > .88:
+            sp = band(0, .8, (70, 48, 30))
+        sp = band(.8, 1, WALL)
+        if .7 < u < .85:
+            sp = band(.42, .47, (210, 180, 90))
+        if t in "kC" and .12 < u < .3:
+            on = t == "C" and g.closet
+            sp = band(.5, .6, (40, 40, 40))
+            sp = band(.53, .57, (40, 200, 70) if on else (200, 40, 40) if g.power else (30, 30, 30))
+        if t == "F" and g.locked and .15 < u < .25:
+            sp = band(.6, .64, (255, 30, 40))
+    elif t == "S":
+        for n in range(6):
+            sp = band(n * .14, n * .14 + .07, (95, 70, 45))
+        if .2 < u < .8:
+            sp = band(.25, .32, (150, 120, 80))
+            sp = band(.55, .62, (150, 120, 80))
+    elif t == "B":
+        for n in range(4):
+            cc = ((150, 50, 50), (50, 90, 150), (60, 130, 70), (170, 140, 60))[(int(u * 4) + n) % 4]
+            sp = band(n * .25 + .05, n * .25 + .2, cc)
+    elif t == "T":
+        if .1 < u < .9:
+            sp = band(.35, .7, (15, 15, 20) if not g.tv else (60, 90, 160))
+    elif t == "G":
+        if .28 < u < .72:
+            sp = band(0, .85, (70, 45, 30))
+            sp = band(.6, .75, (220, 210, 180))
+            if .45 < u < .55:
+                sp = band(.2, .55, (180, 150, 70))
+                if not g.note:
+                    sp = band(.25, .3, (240, 240, 230))
+    elif t == "P":
+        if .3 < u < .6:
+            sp = band(.38, .56, (130, 130, 135))
+            if .4 < u < .5:
+                sp = band(.44 if g.power else .48, .54 if g.power else .58, (40, 40, 40))
+    return sp
+
+
 def render(g, full=False):
-    # g.cols remembers what each screen column shows
+    # Every screen column is a list of coloured spans. Only the spans that
+    # differ from what is on screen are painted, side-by-side columns with the
+    # same change become one rectangle, and each colour is set only once.
     if full or not hasattr(g, 'cols') or g.cover != COVER[0]:
         g.cover = COVER[0]
         g.cols = [None] * COLS
-        g.spr = [False] * COLS
+        g.ysk = None
     shown = g.cols
-    spr = g.spr
+    new = []
     zb = [0] * COLS
     ca = math.cos(g.a)
     sa = math.sin(g.a)
@@ -216,87 +275,74 @@ def render(g, full=False):
         else:
             u = g.x + d * rx
         u -= int(u)
-        h = int(VH * 1.35 / d)
+        h = int(VH * 1.35 / d) & ~7
         top = (VH - h) // 2
-        x = i * CWID
-        k = light(g, i, d) * (0.8 if side else 1.0)
-        # a column that looks the same as last frame isn't drawn again
-        key = (top, h, t, int(u * 32), int(k * 64))
-        if key == shown[i] and not spr[i]:
-            continue
-        shown[i] = key
-        if top > 0:
-            # ceiling and floor fade darker toward the far wall; the bands sit
-            # side by side so no pixel is painted twice
-            m = top // 2 if top >= 4 else 0
-            rect(x, 0, CWID, top - m, shade(CEIL, max(k, .3)))
-            rect(x, top - m, CWID, m, shade(CEIL, max(k, .3) * .8))
-            fy = top + h
-            rest = VH - fy
-            if m >= 2:
-                rect(x, fy, CWID, m, shade(FLOOR, max(k, .25) * .75))
-                if m >= 6:
-                    ly = fy + m + m // 2
-                    rect(x, fy + m, CWID, ly - fy - m, shade(FLOOR, max(k, .25)))
-                    rect(x, ly, CWID, 1, shade(FLOOR, max(k, .25) * .85))
-                    rect(x, ly + 1, CWID, VH - ly - 1, shade(FLOOR, max(k, .25)))
-                else:
-                    rect(x, fy + m, CWID, rest - m, shade(FLOOR, max(k, .25)))
-            else:
-                rect(x, fy, CWID, rest, shade(FLOOR, max(k, .25)))
-        rect(x, max(0, top), CWID, min(VH, top + h) - max(0, top), shade(colour(t), k))
-        wall_detail(g, t, u, top, h, x, k)
-    used = sprites(g, zb, ca, sa)
-    # columns with a sprite in them are drawn again next frame too
+        k = lq(light(g, i, d) * (0.8 if side else 1.0))
+        new.append(column(g, t, u, top, h, k))
+    sprites(g, zb, ca, sa, new)
+    ys = ys_place(g, zb, ca, sa)
+    if g.ysk is not None and (ys is None or ys[0] != g.ysk):
+        # she moved or left: her old columns are painted afresh
+        for i in range(g.ysa, g.ysb):
+            shown[i] = None
+    runs = {}
+    hit = False
     for i in range(COLS):
-        spr[i] = i in used
+        for y0, y1, c in diff(shown[i], new[i]):
+            key = (y0, y1, c)
+            r = runs.get(key)
+            if r and r[-1][1] == i:
+                r[-1][1] = i + 1
+            elif r:
+                r.append([i, i + 1])
+            else:
+                runs[key] = [[i, i + 1]]
+            if ys and ys[1] <= i < ys[2]:
+                hit = True
+        shown[i] = new[i]
+    for key in sorted(runs, key=lambda q: q[2]):
+        y0, y1, c = key
+        for a, b in runs[key]:
+            rect(a * CWID, y0, (b - a) * CWID, y1 - y0, c)
+    if ys:
+        if ys[0] != g.ysk or hit:
+            ys_draw(g, ys)
+        else:
+            ys_shimmer(g)
+        g.ysk, g.ysa, g.ysb = ys[0], ys[1], ys[2]
+    else:
+        g.ysk = None
 
 
-def sprites(g, zb, ca, sa):
-    used = {}
+def sprites(g, zb, ca, sa, new):
     lst = []
     for sx, sy, kind in SPRITES:
-        lst.append((sx, sy, kind))
-    if g.ys_vis:
-        lst.append((g.yx, g.yy, "ys"))
-    order = []
-    for sx, sy, kind in lst:
         dx = sx - g.x
         dy = sy - g.y
         fwd = dx * ca + dy * sa
         if fwd < 0.2:
             continue
-        side = -dx * sa + dy * ca
-        order.append((fwd, side, kind))
-    order.sort(reverse=True)
-    for fwd, side, kind in order:
+        lst.append((fwd, -dx * sa + dy * ca, kind))
+    lst.sort(reverse=True)
+    for fwd, side, kind in lst:
         cx = (side / fwd) / (FOV * 0.5 * 1.15)
         scol = (cx + 1) / 2 * COLS
-        w = 0.45 if kind == "ys" else SPR[kind][0]
-        half = w / 2 / fwd / (FOV * 0.5 * 1.15) * COLS / 2
+        half = SPR[kind][0] / 2 / fwd / (FOV * 0.5 * 1.15) * COLS / 2
         h = VH * 1.35 / fwd
         top = (VH - h) / 2
-        c0 = int(scol - half)
-        c1 = int(scol + half) + 1
-        k = 1.0 if kind == "ys" else light(g, int(scol), fwd)
-        for i in range(max(0, c0), min(COLS, c1)):
+        k = lq(light(g, int(scol), fwd))
+        for i in range(max(0, int(scol - half)), min(COLS, int(scol + half) + 1)):
             if zb[i] < fwd:
                 continue
-            used[i] = 1
             u = (i + 0.5 - (scol - half)) / (2 * half) if half > 0 else .5
             if u < 0 or u > 1:
                 continue
-            x = i * CWID
-            if kind == "ys":
-                ys_column(x, (scol - half) * CWID, 2 * half * CWID, top, h)
-                continue
             for u0, u1, v0, v1, c in SPR[kind][1]:
                 if u0 <= u <= u1:
-                    y0 = int(top + h * (1 - v1))
-                    y1 = int(top + h * (1 - v0))
+                    y0 = int(top + h * (1 - v1)) & ~1
+                    y1 = int(top + h * (1 - v0)) & ~1
                     if y1 - y0 >= 2 and y0 < VH:
-                        rect(x, max(0, y0), CWID, min(VH, y1) - max(0, y0), shade(c, k))
-    return used
+                        new[i] = put(new[i], max(0, y0), min(VH, y1), shade(c, k))
 
 
 def bottom(g, prompt):
@@ -396,57 +442,114 @@ def _build_ys():
         YS.append(((ex - 2) / 256, (ex + 2) / 256, 1 - (ey + 2) / 640, 1 - (ey - 2) / 640, 4))
 
 
-def ys_column(x, left, wid, top, h):
+YG = 4  # Ysolde is drawn on a 4-pixel grid
+RIM = ((215, 215, 225), (170, 175, 190), (250, 250, 255))
+INSIDE = (36, 36, 44)
+
+
+def ys_place(g, zb, ca, sa):
+    # where Ysolde is on screen, or None
+    if not g.ys_vis:
+        return None
+    dx = g.yx - g.x
+    dy = g.yy - g.y
+    fwd = dx * ca + dy * sa
+    if fwd < 0.2:
+        return None
+    cx = (-dx * sa + dy * ca) / fwd / (FOV * 0.5 * 1.15)
+    scol = (cx + 1) / 2 * COLS
+    half = 0.45 / 2 / fwd / (FOV * 0.5 * 1.15) * COLS / 2
+    # her size and place move in small steps, so she isn't drawn again for
+    # every tiny step she takes
+    h = int(VH * 1.35 / fwd) & ~7
+    top = (VH - h) // 2
+    a = None
+    b = 0
+    for i in range(max(0, int(scol - half)), min(COLS, int(scol + half) + 1)):
+        if zb[i] >= fwd:
+            if a is None:
+                a = i
+            b = i + 1
+    if a is None:
+        return None
+    left = int((scol - half) * CWID) & ~3
+    return ((left, int(2 * half * CWID) & ~3, top, h, a, b), a, b)
+
+
+def ys_draw(g, ys):
+    # her body: slabs merged into rows on a 4-pixel grid, an outline of
+    # bright static and a dark inside; rows that match the row above
+    # become one taller rectangle
     if not YS:
         _build_ys()
-    x1 = x + CWID
-    rim = max(1, int(wid * .015))
+    left, wid, top, h, a, b = ys[0]
+    lo = a * CWID
+    hi = b * CWID
+    rows = {}
     eyes = []
-    for p in (0, 1):
-        for u0, u1, v0, v1, kind in YS:
-            pa = int(left + u0 * wid)
-            pb = int(left + u1 * wid) + 1
-            if kind == 4:
-                if p == 0:
-                    eyes.append((pa, pb, v0, v1))
-                continue
-            if p == 1:
-                if kind == 5:
-                    continue
-                pa += rim
-                pb -= rim
-            a = max(x, pa)
-            b = min(x1, pb)
-            if b - a < 1:
-                continue
-            y0 = max(0, int(top + h * (1 - v1)))
-            y1 = min(VH, int(top + h * (1 - v0)) + 1)
-            if y1 - y0 < 1:
-                continue
-            if p == 0:
-                g = random.randint(190, 255)
-                c = (g, g * 19 // 20, g * 9 // 10)
+    for u0, u1, v0, v1, kind in YS:
+        xa = max(lo, int(left + u0 * wid)) // YG
+        xb = min(hi, int(left + u1 * wid) + 1 + YG - 1) // YG
+        ya = int(top + h * (1 - v1))
+        yb = int(top + h * (1 - v0)) + 1
+        if kind == 4:
+            eyes.append(((xa + xb) * YG // 2, (ya + yb) // 2))
+            continue
+        if xb <= xa:
+            continue
+        for r in range(max(0, ya) // YG, (min(VH, yb) + YG - 1) // YG):
+            if r in rows:
+                rows[r].append((xa, xb))
             else:
-                g = random.randint(28, 62)
-                c = (g, g, g + 8)
-            rect(a, y0, b - a, y1 - y0, c)
-    # eyes like Ivy's video: a wide soft blue glow, a bright blue bloom
-    # and a near-white core, high up in her tilted head
-    pts = []
-    for pa, pb, v0, v1 in eyes:
-        cy = int(top + h * (1 - (v0 + v1) / 2))
-        if 2 <= cy <= VH - 4:
-            pts.append(((pa + pb) // 2, cy))
-    for f, c in ((.03, (35, 80, 150)), (.016, (80, 175, 245)), (.006, (230, 250, 255))):
-        r = max(1 if f > .01 else 0, int(wid * f))
-        for cx, cy in pts:
-            ea = max(x, cx - r)
-            eb = min(x1, cx + r + 1)
-            if eb - ea < 1:
-                continue
-            for dx in range(ea - cx, eb - cx):
-                hh = int((r * r - dx * dx) ** .5)
-                rect(cx + dx, max(0, cy - hh), 1, 2 * hh + 1, c)
+                rows[r] = [(xa, xb)]
+    out = []
+    open_ = {}
+    for r in range(VH // YG + 1):
+        cur = {}
+        segs = sorted(rows.get(r, ()))
+        m = []
+        for xa, xb in segs:
+            if m and xa <= m[-1][1]:
+                if xb > m[-1][1]:
+                    m[-1][1] = xb
+            else:
+                m.append([xa, xb])
+        for xa, xb in m:
+            if xb - xa >= 3:
+                cur[(xa, xa + 1, 0)] = 1
+                cur[(xa + 1, xb - 1, 1)] = 1
+                cur[(xb - 1, xb, 0)] = 1
+            else:
+                cur[(xa, xb, 0)] = 1
+        for key in list(open_):
+            if key not in cur:
+                out.append((key, open_.pop(key), r))
+        for key in cur:
+            if key not in open_:
+                open_[key] = r
+    g.rim = []
+    for c in (0, 1):
+        for (xa, xb, kind), r0, r1 in out:
+            if kind == c:
+                x, y, w, hh = xa * YG, r0 * YG, (xb - xa) * YG, min(VH, r1 * YG) - r0 * YG
+                if hh > 0:
+                    rect(x, y, w, hh, INSIDE if c else RIM[0])
+                    if not c:
+                        g.rim.append((x, y, w, hh))
+    r = max(2, wid // 12)
+    eyes = [(x, y) for x, y in eyes if lo + r <= x < hi - r and r <= y < VH - r]
+    for rr, c in ((r, (35, 80, 150)), (r * 2 // 3, (80, 175, 245)), (max(1, r // 3), (230, 250, 255))):
+        for x, y in eyes:
+            circ(x, y, rr, c)
+
+
+def ys_shimmer(g):
+    # the static crawls: a few pieces of her outline change shade
+    if not g.rim:
+        return
+    for n in range(3):
+        x, y, w, h = random.choice(g.rim)
+        rect(x, y, w, h, random.choice(RIM))
 
 
 # ---------- text screens ----------

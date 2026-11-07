@@ -3,6 +3,11 @@
 from GHLIB import *
 import random
 
+try:
+    from time import monotonic as now
+except Exception:
+    now = None
+
 CW = 10
 CH = 20
 C = 9
@@ -57,34 +62,26 @@ def ok(b, p):
     return True
 
 
-def sq(x, y, c):
-    if y < 0:
-        return
-    px = X0 + x * C
-    py = Y0 + y * C
-    # only filled rectangles that stay inside the cell, so erasing a cell
-    # with one WELL square leaves nothing behind (lines can bleed outside)
-    if c == WELL:
-        rect(px, py, C, C, WELL)
-        rect(px + 4, py + 4, 2, 2, DOT)
-    else:
-        rect(px, py, C, C, dk(c, 0.55))
-        rect(px, py, C - 1, C - 1, c)
-        rect(px, py, C - 1, 2, lt(c, 0.45))
-        rect(px, py, 2, C - 1, lt(c, 0.45))
-        rect(px + 3, py + 3, 2, 2, lt(c, 0.7))
+# Every drawing call is slow on the calculator (about 7 ms, and the same
+# again to change colour), so a block is three rectangles (dark, light, middle)
+# drawn layer by layer for all changed cells of a colour at once, and the
+# empty well is one plain colour that is painted back in row-long strips.
+def bevel(todo, c):
+    # todo: [(px, py)] cell corners that become colour c
+    lo, hi = dk(c, 0.55), lt(c, 0.45)
+    for px, py in todo:
+        rect(px, py, C, C, lo)
+    for px, py in todo:
+        rect(px, py, C - 1, C - 1, hi)
+    for px, py in todo:
+        rect(px + 1, py + 1, C - 2, C - 2, c)
 
 
 class Well:
     # remembers what each cell shows, so only cells that change are drawn
     def __init__(self):
-        self.s = [[-1] * CW for i in range(CH)]
+        self.s = [[0] * CW for i in range(CH)]
         self.last = []
-
-    def put(self, x, y, v):
-        if 0 <= y and self.s[y][x] != v:
-            self.s[y][x] = v
-            sq(x, y, COLS[v - 1] if v else WELL)
 
     def show(self, b, p, full=False):
         # the piece's old and new cells, or every cell after rows clear
@@ -95,11 +92,27 @@ class Well:
             cells = self.last + new
         self.last = new
         v = p[0] + 1 if p else 0
-        want = [(v if c in new else b[c[1]][c[0]], c) for c in cells]
-        # one colour at a time is quicker on the calculator
-        want.sort()
-        for w, c in want:
-            self.put(c[0], c[1], w)
+        ch = {}
+        for c in cells:
+            x, y = c
+            w = v if c in new else b[y][x]
+            if self.s[y][x] != w:
+                self.s[y][x] = w
+                ch[c] = w
+        # empty cells first, joined along each row
+        run = None
+        for y in range(CH):
+            for x in range(CW + 1):
+                e = x < CW and ch.get((x, y)) == 0
+                if e and run is None:
+                    run = x
+                elif not e and run is not None:
+                    rect(X0 + run * C, Y0 + y * C, (x - run) * C, C, WELL)
+                    run = None
+        for w in range(1, 8):
+            todo = [(X0 + x * C, Y0 + y * C) for (x, y), u in ch.items() if u == w]
+            if todo:
+                bevel(todo, COLS[w - 1])
 
 
 def side(score, lines, nxt, old):
@@ -113,11 +126,7 @@ def side(score, lines, nxt, old):
         old = (None, None, None)
     if nxt != old[2]:
         rect(240, 50, 40, 22, PANEL)
-        for x, y in get((nxt, 0, 0, 0)):
-            c = COLS[nxt]
-            rect(244 + x * 9, 54 + y * 9, 9, 9, dk(c, 0.55))
-            rect(244 + x * 9, 54 + y * 9, 8, 8, c)
-            rect(245 + x * 9, 55 + y * 9, 2, 2, lt(c, 0.7))
+        bevel([(244 + x * 9, 54 + y * 9) for x, y in get((nxt, 0, 0, 0))], COLS[nxt])
     if score != old[0]:
         if old[0] is not None:
             text(234, 131, str(old[0]), PANEL)
@@ -136,12 +145,10 @@ def game():
         rect(0, i, 320, 15, (58, 25, 80))
     rbox(X0 - 4, Y0 - 4, CW * C + 8, CH * C + 8, 4, WHITE, 2, WELL)
     well = Well()
-    well.show(b, None, True)
     rbox(4, 26, 96, 56, 6, GOLD, 2, PANEL)
     text(14, 48, "STACK", GOLD)
     text(14, 68, "DROP", GOLD)
     for i, cc in enumerate(COLS[:5]):
-        rect(12 + i * 16, 96, 12, 12, dk(cc, 0.55))
         rect(12 + i * 16, 96, 11, 11, cc)
     rbox(4, 150, 96, 40, 6, (150, 110, 190), 2, PANEL)
     text(12, 167, "2nd key:", (200, 185, 230))
@@ -154,6 +161,7 @@ def game():
     held = 0
     hc = 0
     sd = side(score, lines, nxt, None)
+    last = now() if now else 0
     while True:
         if p is None:
             p = [nxt, 0, 3, -1]
@@ -190,8 +198,16 @@ def game():
                     q[3] += 1
                 t = speed
         held = k
-        t += 1
-        fall = t >= speed
+        if now:
+            # falling goes by the clock, so it doesn't speed up when
+            # there is less to draw
+            tn = now()
+            fall = t >= speed or tn - last >= speed * 0.035
+            if fall:
+                last = tn
+        else:
+            t += 1
+            fall = t >= speed
         if q != p and ok(b, q):
             p = q
             well.show(b, p)

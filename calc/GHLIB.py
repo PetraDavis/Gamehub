@@ -179,33 +179,45 @@ def rrect(x, y, w, h, r, c):
     fill_circle(x + w - r - 1, y + h - r - 1, r)
 
 
-def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
-    # rounded outline box
-    rrect(x, y, w, h, r, c)
-    rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def _corners(x, y, w, h, r, t):
+    # a rounded outline as stepped pixel corners, made only of rectangles
+    # that don't overlap, so it is quick to draw and to recolour
+    if r <= t:
+        return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+    a = min(r // 2, 2 * t)
+    return ((x + r, y, w - 2 * r, t), (x + r, y + h - t, w - 2 * r, t),
+            (x, y + r, t, h - 2 * r), (x + w - t, y + r, t, h - 2 * r),
+            (x + a, y + t, r - a, t), (x + w - r, y + t, r - a, t),
+            (x + a, y + h - 2 * t, r - a, t), (x + w - r, y + h - 2 * t, r - a, t),
+            (x + t, y + a, t, r - a), (x + w - 2 * t, y + a, t, r - a),
+            (x + t, y + h - r, t, r - a), (x + w - 2 * t, y + h - r, t, r - a))
+
+
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+    # rounded outline box; fill=False leaves the inside as it is (for a box
+    # drawn on a screen that is already the inner colour)
+    edge(x, y, w, h, r, c, t)
+    if not fill:
+        return
+    col(inner)
+    if r <= t:
+        fr(x + t, y + t, w - 2 * t, h - 2 * t)
+        return
+    a = min(r // 2, 2 * t)
+    fr(x + t, y + r, w - 2 * t, h - 2 * r)
+    fr(x + r, y + t, w - 2 * r, t)
+    fr(x + r, y + h - 2 * t, w - 2 * r, t)
+    if r > 2 * t:
+        fr(x + a, y + 2 * t, w - 2 * a, r - 2 * t)
+        fr(x + a, y + h - r, w - 2 * a, r - 2 * t)
 
 
 def edge(x, y, w, h, r, c, t=2, inner=BLACK):
-    # recolour the outline of an rbox without touching what's inside it, so
-    # moving a highlight doesn't make the box flash
+    # (re)colour the outline of an rbox without touching what's inside it
     col(c)
-    fr(x + r, y, w - 2 * r, t)
-    fr(x + r, y + h - t, w - 2 * r, t)
-    fr(x, y + r, t, h - 2 * r)
-    fr(x + w - t, y + r, t, h - 2 * r)
-    for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1),
-                           (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
-        col(c)
-        fill_circle(cx, cy, r)
-        col(inner)
-        fill_circle(cx, cy, max(r - t, 2))
-        # the coloured disc also spilled inwards; paint those parts back
-        ax = cx + 1 if sx > 0 else cx - r
-        ay = y + t if sy > 0 else cy - r
-        fr(ax, ay, r, (cy + r + 1 - ay) if sy > 0 else (y + h - t - ay))
-        ax = x + t if sx > 0 else cx - r
-        ay = cy + 1 if sy > 0 else cy - r
-        fr(ax, ay, (cx + r + 1 - ax) if sx > 0 else (x + w - t - ax), r)
+    for bx, by, bw, bh in _corners(x, y, w, h, r, t):
+        if bw > 0 and bh > 0:
+            fr(bx, by, bw, bh)
 
 
 def vacate(ox, oy, nx, ny, w, h, c):
@@ -270,7 +282,7 @@ def choose(title, opts, sel=0):
     for i in range(n):
         y = 40 + i * 30
         c = GOLD if i == sel else WHITE
-        rbox(60, y, 200, 24, 8, c)
+        rbox(60, y, 200, 24, 8, c, 2, BLACK, False)
         ctext(y + 18, opts[i], c)
     while True:
         k = wkey()
@@ -283,6 +295,8 @@ def choose(title, opts, sel=0):
             return sel
         elif k == CLR:
             return -1
+        if sel == old:
+            continue
         for i in (old, sel):
             y = 40 + i * 30
             c = GOLD if i == sel else WHITE
@@ -339,16 +353,20 @@ def home(mod, title, rules, buttons, opts=("Play", "Back"), sel=0):
         ctext(146, "Up/Down: how to play", GREY)
         bw = (300 - (n - 1) * 8) // n
         first = True
+        old = -1
         while True:
             for i in range(n):
+                if not first and i != sel and i != old:
+                    continue
                 x = 10 + i * (bw + 8)
                 c = GOLD if i == sel else WHITE
                 if first:
-                    rbox(x, 166, bw, 28, 10, c)
+                    rbox(x, 166, bw, 28, 10, c, 2, BLACK, False)
                 else:
                     edge(x, 166, bw, 28, 10, c)
                 text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
             first = False
+            old = sel
             k = wkey()
             if k == LEFT:
                 sel = (sel - 1) % n

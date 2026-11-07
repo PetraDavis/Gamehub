@@ -56,40 +56,31 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  fill_circle(x, y, r)
  col(inner)
  fill_circle(x, y, r - t)
-def rrect(x, y, w, h, r, c):
- if w < 2 * r + 1 or h < 2 * r + 1:
-  r = max(0, min(w, h) // 2 - 1)
- col(c)
- if w - 2 * r >= 1:
-  fr(x + r, y, w - 2 * r, h)
- if h - 2 * r >= 1:
-  fr(x, y + r, w, h - 2 * r)
- if r < 1:
+def _corners(x, y, w, h, r, t):
+ if r <= t:
+  return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+ a = min(r // 2, 2 * t)
+ return ((x + r, y, w - 2 * r, t), (x + r, y + h - t, w - 2 * r, t), (x, y + r, t, h - 2 * r), (x + w - t, y + r, t, h - 2 * r), (x + a, y + t, r - a, t), (x + w - r, y + t, r - a, t), (x + a, y + h - 2 * t, r - a, t), (x + w - r, y + h - 2 * t, r - a, t), (x + t, y + a, t, r - a), (x + w - 2 * t, y + a, t, r - a), (x + t, y + h - r, t, r - a), (x + w - 2 * t, y + h - r, t, r - a))
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+ edge(x, y, w, h, r, c, t)
+ if not fill:
   return
- fill_circle(x + r, y + r, r)
- fill_circle(x + w - r - 1, y + r, r)
- fill_circle(x + r, y + h - r - 1, r)
- fill_circle(x + w - r - 1, y + h - r - 1, r)
-def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
- rrect(x, y, w, h, r, c)
- rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+ col(inner)
+ if r <= t:
+  fr(x + t, y + t, w - 2 * t, h - 2 * t)
+  return
+ a = min(r // 2, 2 * t)
+ fr(x + t, y + r, w - 2 * t, h - 2 * r)
+ fr(x + r, y + t, w - 2 * r, t)
+ fr(x + r, y + h - 2 * t, w - 2 * r, t)
+ if r > 2 * t:
+  fr(x + a, y + 2 * t, w - 2 * a, r - 2 * t)
+  fr(x + a, y + h - r, w - 2 * a, r - 2 * t)
 def edge(x, y, w, h, r, c, t=2, inner=BLACK):
  col(c)
- fr(x + r, y, w - 2 * r, t)
- fr(x + r, y + h - t, w - 2 * r, t)
- fr(x, y + r, t, h - 2 * r)
- fr(x + w - t, y + r, t, h - 2 * r)
- for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
-  col(c)
-  fill_circle(cx, cy, r)
-  col(inner)
-  fill_circle(cx, cy, max(r - t, 2))
-  ax = cx + 1 if sx > 0 else cx - r
-  ay = y + t if sy > 0 else cy - r
-  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
-  ax = x + t if sx > 0 else cx - r
-  ay = cy + 1 if sy > 0 else cy - r
-  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+ for bx, by, bw, bh in _corners(x, y, w, h, r, t):
+  if bw > 0 and bh > 0:
+   fr(bx, by, bw, bh)
 def vacate(ox, oy, nx, ny, w, h, c):
  if abs(nx - ox) >= w or abs(ny - oy) >= h:
   rect(ox, oy, w, h, c)
@@ -132,7 +123,7 @@ def choose(title, opts, sel=0):
  for i in range(n):
   y = 40 + i * 30
   c = GOLD if i == sel else WHITE
-  rbox(60, y, 200, 24, 8, c)
+  rbox(60, y, 200, 24, 8, c, 2, BLACK, False)
   ctext(y + 18, opts[i], c)
  while True:
   k = wkey()
@@ -145,6 +136,8 @@ def choose(title, opts, sel=0):
    return sel
   elif k == CLR:
    return -1
+  if sel == old:
+   continue
   for i in (old, sel):
    y = 40 + i * 30
    c = GOLD if i == sel else WHITE
@@ -193,16 +186,20 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
   first = True
+  old = -1
   while True:
    for i in range(n):
+    if not first and i != sel and (i != old):
+     continue
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
     if first:
-     rbox(x, 166, bw, 28, 10, c)
+     rbox(x, 166, bw, 28, 10, c, 2, BLACK, False)
     else:
      edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
    first = False
+   old = sel
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -443,37 +440,53 @@ def anim_paint(s, i, v):
  rect(x, y, anim_P, anim_P, anim_COL[v])
  s.shown[i] = v
 def anim_refresh(s, src=None):
- runs = {}
- hide = s.hide
- for r in range(anim_CHG):
-  base = r * anim_CWD
-  c = 0
-  while c < anim_CWD:
-   i = base + c
-   v = src[i] if src is not None else anim_want(s, i)
-   if i == hide and s.shown[i] == v:
-    c += 1
-    continue
-   e = c
-   dirty = False
-   while e < anim_CWD:
-    j = base + e
-    w = src[j] if src is not None else anim_want(s, j)
-    if w != v or (j == hide and s.shown[j] == v):
+ t = src if src is not None else bytearray([anim_want(s, i) for i in range(anim_N)])
+ sh = s.shown
+ hb = s.hide if s.hide >= 0 and sh[s.hide] == t[s.hide] else -1
+ todo = {}
+ for i in range(anim_N):
+  v = t[i]
+  if sh[i] == v:
+   continue
+  r = i // anim_CWD
+  c = i - r * anim_CWD
+  e = 1
+  while c + e < anim_CWD and t[i + e] == v and (i + e != hb):
+   e += 1
+  n = e
+  while n > 1 and sh[i + n - 1] == v:
+   n -= 1
+  best = None
+  for w in (e, n) if n < e else (e,):
+   h = 1
+   while r + h < anim_CHG:
+    j = i + h * anim_CWD
+    k = 0
+    while k < w and t[j + k] == v and (j + k != hb):
+     k += 1
+    if k < w:
      break
-    if s.shown[j] != v:
-     dirty = True
-     s.shown[j] = v
-    e += 1
-   if dirty:
-    if v in runs:
-     runs[v].append((c, r, e - c))
-    else:
-     runs[v] = [(c, r, e - c)]
-   c = e
- for v in runs:
-  for c, r, n in runs[v]:
-   rect(anim_CX + c * anim_P, anim_CY + r * anim_P, n * anim_P, anim_P, anim_COL[v])
+    h += 1
+   g = 0
+   for q in range(h):
+    j = i + q * anim_CWD
+    for k in range(w):
+     if sh[j + k] != v:
+      g += 1
+   if best is None or g > best[0]:
+    best = (g, w, h)
+  g, w, h = best
+  for q in range(h):
+   j = i + q * anim_CWD
+   for k in range(w):
+    sh[j + k] = v
+  if v in todo:
+   todo[v].append((c, r, w, h))
+  else:
+   todo[v] = [(c, r, w, h)]
+ for v in todo:
+  for c, r, w, h in todo[v]:
+   rect(anim_CX + c * anim_P, anim_CY + r * anim_P, w * anim_P, h * anim_P, anim_COL[v])
 def anim_cursor(s):
  x = anim_CX + s.cx * anim_P
  y = anim_CY + s.cy * anim_P
@@ -492,16 +505,23 @@ def anim_label(s, key, x, y, t, c, bg=WHITE):
   text(x, y, t, c)
   return
  o, oc = old
- for k in range(max(len(o), len(t))):
-  a = o[k] if k < len(o) else ' '
-  b = t[k] if k < len(t) else ' '
-  if a != b:
-   if a != ' ':
-    rect(x + k * 10, y - 12, 10, 16, bg)
-   if b != ' ':
-    text(x + k * 10, y, b, c)
-  elif oc != c and b != ' ':
-   text(x + k * 10, y, b, c)
+ n = max(len(o), len(t))
+ o = o + ' ' * (n - len(o))
+ t2 = t + ' ' * (n - len(t))
+ segs = []
+ for k in range(n):
+  if o[k] != t2[k] or (oc != c and t2[k] != ' '):
+   if segs and k - segs[-1][1] <= 2:
+    segs[-1][1] = k + 1
+   else:
+    segs.append([k, k + 1])
+ rub = [g for g in segs if o[g[0]:g[1]].strip()]
+ for a, b in rub:
+  rect(x + a * 10, y - 12, (b - a) * 10, 16, bg)
+ for a, b in segs:
+  w = t2[a:b]
+  if w.strip():
+   text(x + a * 10, y, w, c)
 def anim_swatch(s, c, sel=-1):
  x = 210 + c % 4 * 26
  y = 30 + c // 4 * 26
@@ -515,10 +535,9 @@ def anim_palette(s):
   x = 210 + c % 4 * 26
   y = 30 + c // 4 * 26
   rect(x + 1, y + 1, 20, 20, anim_PAL[c])
-  if c == 0:
-   col(GREY)
-   draw_rect(x, y, 20, 20)
-  anim_swatch(s, c)
+ col(GREY)
+ draw_rect(210, 30, 20, 20)
+ anim_swatch(s, s.col)
 def anim_topbar(s):
  pct = anim_used(s) * 100 // anim_MAXB
  anim_label(s, 'fr', 4, 17, 'Frame ' + str(s.ci + 1) + '/' + str(len(s.F)), anim_INK)
@@ -695,21 +714,36 @@ def anim_scrollbar(top, old=None):
   return
  rect(anim_SBX, anim_thumb_y(top), 5, anim_THH, WHITE)
 def anim_mbox(x, y, w, h, c):
- rect(x + 4, y, w - 8, 2, c)
- rect(x + 4, y + h - 2, w - 8, 2, c)
- rect(x, y + 4, 2, h - 8, c)
- rect(x + w - 2, y + 4, 2, h - 8, c)
- rect(x + 2, y + 2, 2, 2, c)
- rect(x + w - 4, y + 2, 2, 2, c)
- rect(x + 2, y + h - 4, 2, 2, c)
- rect(x + w - 4, y + h - 4, 2, 2, c)
-def anim_mrow(s, r, i, on):
- y = anim_MY + r * anim_MH
- c = GOLD if on else WHITE
- if s.lab.get(('mb', r)) != c:
+ rect(x + 2, y, w - 4, 2, c)
+ rect(x + 2, y + h - 2, w - 4, 2, c)
+ rect(x, y + 2, 2, h - 4, c)
+ rect(x + w - 2, y + 2, 2, h - 4, c)
+def anim_mrows(s, top, sel):
+ boxes = []
+ rub = []
+ words = []
+ for r in range(anim_MV):
+  i = top + r
+  y = anim_MY + r * anim_MH
+  c = GOLD if i == sel else WHITE
+  if s.lab.get(('mb', r)) != c:
+   boxes.append((c, y))
+   s.lab['mb', r] = c
+  old = s.lab.get(('m', r))
+  t = anim_ITEMS[i]
+  if old != (t, c):
+   if old and old[0] != t:
+    rub.append((y, len(old[0])))
+   words.append((c, y, t))
+   s.lab['m', r] = (t, c)
+ boxes.sort()
+ for c, y in boxes:
   anim_mbox(anim_MX + 1, y, anim_MW, 22, c)
-  s.lab['mb', r] = c
- anim_label(s, ('m', r), anim_MX + 5, y + 16, anim_ITEMS[i], c, BLACK)
+ for y, n in rub:
+  rect(anim_MX + 5, y + 4, n * 10, 16, BLACK)
+ words.sort()
+ for c, y, t in words:
+  text(anim_MX + 5, y + 16, t, c)
 def anim_menu(s, sel):
  rect(anim_MX, 22, 320 - anim_MX, 154, BLACK)
  for r in range(anim_MV):
@@ -717,8 +751,7 @@ def anim_menu(s, sel):
   s.lab.pop(('m', r), None)
  anim_botbar(s, 'MENU  Up/Down: pick', 'ENTER: do it  2nd: close')
  top = min(max(0, sel - 2), 16 - anim_MV)
- for r in range(anim_MV):
-  anim_mrow(s, r, top + r, top + r == sel)
+ anim_mrows(s, top, sel)
  anim_scrollbar(top)
  while True:
   k = wkey()
@@ -741,8 +774,7 @@ def anim_menu(s, sel):
    nt = sel - anim_MV + 1
   anim_scrollbar(nt, top)
   top = nt
-  for r in range(anim_MV):
-   anim_mrow(s, r, top + r, top + r == sel)
+  anim_mrows(s, top, sel)
  anim_side(s)
  anim_botbar(s)
  return sel

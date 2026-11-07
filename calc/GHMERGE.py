@@ -52,7 +52,11 @@ def move(b, d):
 
 
 def draw(b, score, old=None, oscore=-1):
-    # only tiles that changed are drawn again, so the board doesn't flash
+    # only tiles that changed are drawn again, so the board doesn't flash.
+    # Each drawing call is slow on the calculator, so a tile is two plain
+    # rectangles and its number, and everything of one colour is drawn together.
+    faces = []
+    nums = []
     for i in range(16):
         v = b[i]
         if old and old[i] == v:
@@ -60,19 +64,24 @@ def draw(b, score, old=None, oscore=-1):
         x = X0 + (i % 4) * S
         y = Y0 + (i // 4) * S
         c = TC.get(v, (235, 180, 20))
-        rrect(x + 2, y + 4, S - 4, S - 5, 5, dk(c, 0.8))
-        rrect(x + 2, y + 2, S - 4, S - 5, 5, c)
-        if v:
-            rect(x + 7, y + 4, S - 14, 2, lt(c, 0.4))
+        faces.append((c, x + 2, y + 2, S - 4, S - 6))
+        faces.append((dk(c, 0.8), x + 2, y + S - 4, S - 4, 2))
         if v:
             s = str(v)
             if len(s) > 3:
                 s = s[:2] + "k" if v >= 10000 else s
-            tc = (60, 55, 50) if v < 8 else WHITE
-            text(x + S // 2 - len(s) * 5, y + 25, s, tc)
+            nums.append(((60, 55, 50) if v < 8 else WHITE, x + S // 2 - len(s) * 5, y + 24, s))
+    faces.sort()
+    for c, x, y, w, h in faces:
+        rect(x, y, w, h, c)
+    nums.sort()
+    for c, x, y, s in nums:
+        text(x, y, s, c)
     if score != oscore:
-        rrect(95, 182, 130, 24, 6, BOARD)
-        ctext(200, "Score " + str(score), WHITE)
+        # only the number changes: write the old one in the pill colour
+        if oscore >= 0:
+            text(165, 200, str(oscore), BOARD)
+        text(165, 200, str(score), WHITE)
 
 
 def frame():
@@ -86,6 +95,8 @@ def frame():
     text(250, 60, "Arrows", (120, 110, 100))
     text(250, 78, "slide", (120, 110, 100))
     rrect(X0 - 4, Y0 - 4, S * 4 + 8, S * 4 + 8, 8, BOARD)
+    rrect(95, 182, 130, 24, 6, BOARD)
+    text(105, 200, "Score", WHITE)
 
 
 def game():

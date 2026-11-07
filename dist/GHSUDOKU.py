@@ -60,40 +60,31 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  fill_circle(x, y, r)
  col(inner)
  fill_circle(x, y, r - t)
-def rrect(x, y, w, h, r, c):
- if w < 2 * r + 1 or h < 2 * r + 1:
-  r = max(0, min(w, h) // 2 - 1)
- col(c)
- if w - 2 * r >= 1:
-  fr(x + r, y, w - 2 * r, h)
- if h - 2 * r >= 1:
-  fr(x, y + r, w, h - 2 * r)
- if r < 1:
+def _corners(x, y, w, h, r, t):
+ if r <= t:
+  return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+ a = min(r // 2, 2 * t)
+ return ((x + r, y, w - 2 * r, t), (x + r, y + h - t, w - 2 * r, t), (x, y + r, t, h - 2 * r), (x + w - t, y + r, t, h - 2 * r), (x + a, y + t, r - a, t), (x + w - r, y + t, r - a, t), (x + a, y + h - 2 * t, r - a, t), (x + w - r, y + h - 2 * t, r - a, t), (x + t, y + a, t, r - a), (x + w - 2 * t, y + a, t, r - a), (x + t, y + h - r, t, r - a), (x + w - 2 * t, y + h - r, t, r - a))
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+ edge(x, y, w, h, r, c, t)
+ if not fill:
   return
- fill_circle(x + r, y + r, r)
- fill_circle(x + w - r - 1, y + r, r)
- fill_circle(x + r, y + h - r - 1, r)
- fill_circle(x + w - r - 1, y + h - r - 1, r)
-def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
- rrect(x, y, w, h, r, c)
- rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+ col(inner)
+ if r <= t:
+  fr(x + t, y + t, w - 2 * t, h - 2 * t)
+  return
+ a = min(r // 2, 2 * t)
+ fr(x + t, y + r, w - 2 * t, h - 2 * r)
+ fr(x + r, y + t, w - 2 * r, t)
+ fr(x + r, y + h - 2 * t, w - 2 * r, t)
+ if r > 2 * t:
+  fr(x + a, y + 2 * t, w - 2 * a, r - 2 * t)
+  fr(x + a, y + h - r, w - 2 * a, r - 2 * t)
 def edge(x, y, w, h, r, c, t=2, inner=BLACK):
  col(c)
- fr(x + r, y, w - 2 * r, t)
- fr(x + r, y + h - t, w - 2 * r, t)
- fr(x, y + r, t, h - 2 * r)
- fr(x + w - t, y + r, t, h - 2 * r)
- for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
-  col(c)
-  fill_circle(cx, cy, r)
-  col(inner)
-  fill_circle(cx, cy, max(r - t, 2))
-  ax = cx + 1 if sx > 0 else cx - r
-  ay = y + t if sy > 0 else cy - r
-  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
-  ax = x + t if sx > 0 else cx - r
-  ay = cy + 1 if sy > 0 else cy - r
-  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+ for bx, by, bw, bh in _corners(x, y, w, h, r, t):
+  if bw > 0 and bh > 0:
+   fr(bx, by, bw, bh)
 MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
@@ -156,16 +147,20 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
   first = True
+  old = -1
   while True:
    for i in range(n):
+    if not first and i != sel and (i != old):
+     continue
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
     if first:
-     rbox(x, 166, bw, 28, 10, c)
+     rbox(x, 166, bw, 28, 10, c, 2, BLACK, False)
     else:
      edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
    first = False
+   old = sel
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -278,7 +273,7 @@ sudoku_SHOWN = {}
 def sudoku_cell(b, fixed, i, cur):
  x = sudoku_X0 + i % 9 * sudoku_S
  y = sudoku_Y0 + i // 9 * sudoku_S
- bg = (236, 238, 246) if fixed[i] else WHITE
+ bg = sudoku_FIX if fixed[i] else WHITE
  v = b[i]
  c = (sudoku_INK if fixed[i] else RED if sudoku_clash(b, i) else sudoku_PEN) if v else None
  on = i == cur
@@ -295,6 +290,28 @@ def sudoku_cell(b, fixed, i, cur):
   rect(x + 1, y + 3, 2, sudoku_S - 6, k)
   rect(x + sudoku_S - 3, y + 3, 2, sudoku_S - 6, k)
  sudoku_SHOWN[i] = (v, c, on)
+sudoku_FIX = (236, 238, 246)
+def sudoku_first(b, fixed, cur):
+ for r in range(9):
+  c = 0
+  while c < 9:
+   if fixed[r * 9 + c]:
+    e = c
+    while e < 9 and fixed[r * 9 + e]:
+     e += 1
+    rect(sudoku_X0 + c * sudoku_S, sudoku_Y0 + r * sudoku_S, (e - c) * sudoku_S, sudoku_S, sudoku_FIX)
+    c = e
+   else:
+    c += 1
+ sudoku_grid()
+ for r in range(9):
+  row = ''.join([(str(b[r * 9 + c]) if b[r * 9 + c] else ' ') + ' ' for c in range(9)])
+  if row.strip():
+   text(sudoku_X0 + 5, sudoku_Y0 + r * sudoku_S + 16, row.rstrip(), sudoku_INK)
+ for i in range(81):
+  v = b[i]
+  sudoku_SHOWN[i] = (v, (sudoku_INK if fixed[i] else RED if sudoku_clash(b, i) else sudoku_PEN) if v else None, False)
+ sudoku_cell(b, fixed, cur, cur)
 def sudoku_grid():
  for i in range(10):
   c = sudoku_INK if i % 3 == 0 else (150, 150, 150)
@@ -310,7 +327,6 @@ def sudoku_game(holes):
  b = sudoku_make(holes)
  fixed = [v != 0 for v in b]
  cls(WHITE)
- sudoku_grid()
  rbox(208, 12, 106, 30, 8, sudoku_PEN, 2, (225, 235, 252))
  text(222, 33, 'SUDOKU', sudoku_PEN)
  text(214, 70, '0-9 type', GREY)
@@ -321,8 +337,7 @@ def sudoku_game(holes):
  cur = 0
  while fixed[cur]:
   cur += 1
- for i in range(81):
-  sudoku_cell(b, fixed, i, cur)
+ sudoku_first(b, fixed, cur)
  while True:
   k = wkey()
   old = cur

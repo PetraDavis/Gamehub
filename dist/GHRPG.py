@@ -52,40 +52,31 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  fill_circle(x, y, r)
  col(inner)
  fill_circle(x, y, r - t)
-def rrect(x, y, w, h, r, c):
- if w < 2 * r + 1 or h < 2 * r + 1:
-  r = max(0, min(w, h) // 2 - 1)
- col(c)
- if w - 2 * r >= 1:
-  fr(x + r, y, w - 2 * r, h)
- if h - 2 * r >= 1:
-  fr(x, y + r, w, h - 2 * r)
- if r < 1:
+def _corners(x, y, w, h, r, t):
+ if r <= t:
+  return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+ a = min(r // 2, 2 * t)
+ return ((x + r, y, w - 2 * r, t), (x + r, y + h - t, w - 2 * r, t), (x, y + r, t, h - 2 * r), (x + w - t, y + r, t, h - 2 * r), (x + a, y + t, r - a, t), (x + w - r, y + t, r - a, t), (x + a, y + h - 2 * t, r - a, t), (x + w - r, y + h - 2 * t, r - a, t), (x + t, y + a, t, r - a), (x + w - 2 * t, y + a, t, r - a), (x + t, y + h - r, t, r - a), (x + w - 2 * t, y + h - r, t, r - a))
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+ edge(x, y, w, h, r, c, t)
+ if not fill:
   return
- fill_circle(x + r, y + r, r)
- fill_circle(x + w - r - 1, y + r, r)
- fill_circle(x + r, y + h - r - 1, r)
- fill_circle(x + w - r - 1, y + h - r - 1, r)
-def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
- rrect(x, y, w, h, r, c)
- rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+ col(inner)
+ if r <= t:
+  fr(x + t, y + t, w - 2 * t, h - 2 * t)
+  return
+ a = min(r // 2, 2 * t)
+ fr(x + t, y + r, w - 2 * t, h - 2 * r)
+ fr(x + r, y + t, w - 2 * r, t)
+ fr(x + r, y + h - 2 * t, w - 2 * r, t)
+ if r > 2 * t:
+  fr(x + a, y + 2 * t, w - 2 * a, r - 2 * t)
+  fr(x + a, y + h - r, w - 2 * a, r - 2 * t)
 def edge(x, y, w, h, r, c, t=2, inner=BLACK):
  col(c)
- fr(x + r, y, w - 2 * r, t)
- fr(x + r, y + h - t, w - 2 * r, t)
- fr(x, y + r, t, h - 2 * r)
- fr(x + w - t, y + r, t, h - 2 * r)
- for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
-  col(c)
-  fill_circle(cx, cy, r)
-  col(inner)
-  fill_circle(cx, cy, max(r - t, 2))
-  ax = cx + 1 if sx > 0 else cx - r
-  ay = y + t if sy > 0 else cy - r
-  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
-  ax = x + t if sx > 0 else cx - r
-  ay = cy + 1 if sy > 0 else cy - r
-  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+ for bx, by, bw, bh in _corners(x, y, w, h, r, t):
+  if bw > 0 and bh > 0:
+   fr(bx, by, bw, bh)
 MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
@@ -148,16 +139,20 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
   first = True
+  old = -1
   while True:
    for i in range(n):
+    if not first and i != sel and (i != old):
+     continue
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
     if first:
-     rbox(x, 166, bw, 28, 10, c)
+     rbox(x, 166, bw, 28, 10, c, 2, BLACK, False)
     else:
      edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
    first = False
+   old = sel
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -217,113 +212,119 @@ rpg_FOES = ((), (('Slime', 12, 4, 1, 6, (80, 200, 90)), ('Bat', 10, 5, 0, 7, (12
 rpg_BOSS = ('Hollow King', 70, 12, 4, 0, (110, 80, 180))
 rpg_GRASS = (40, 110, 50)
 rpg_STONE = (60, 55, 50)
-def rpg_grass(px, py, x, y):
- rect(px, py, rpg_T, rpg_T, rpg_GRASS)
- h = (x * 7 + y * 13) % 5
- rect(px + 3 + h * 2, py + 5 + h, 1, 3, (70, 150, 70))
- rect(px + 5 + h * 2, py + 6 + h, 1, 2, (70, 150, 70))
- rect(px + 13 - h, py + 14 - h, 1, 3, (30, 90, 40))
- if h == 2:
-  rect(px + 14, py + 4, 2, 2, (240, 220, 90))
- elif h == 4:
-  rect(px + 4, py + 15, 2, 2, (230, 120, 160))
-def rpg_floor(px, py, x, y):
- rect(px, py, rpg_T, rpg_T, rpg_STONE)
- o = 0 if y % 2 else 10
- rect(px, py, rpg_T, 1, (45, 40, 38))
- rect(px + o, py, 1, rpg_T, (45, 40, 38))
- rect(px + 2, py + 2, 6, 1, (75, 70, 64))
-def rpg_tile(m, x, y, ch):
+rpg_BASE = {'.': rpg_GRASS, '>': rpg_GRASS, '<': rpg_GRASS, ' ': rpg_GRASS, 'T': rpg_GRASS, 'H': rpg_GRASS, '~': (40, 90, 190), '#': (30, 28, 35), ':': rpg_STONE, 'B': rpg_STONE}
+rpg_LEAF = (25, 85, 35)
+rpg_BARK = (90, 60, 30)
+rpg_LINE = (45, 40, 38)
+rpg_WOOD = (120, 75, 35)
+def rpg_shapes(m, x, y, ch, out):
  px = x * rpg_T
  py = 20 + y * rpg_T
  if ch in '.>< ':
-  rpg_grass(px, py, x, y)
+  h = (x * 7 + y * 13) % 5
+  if h == 2:
+   out.append((0, (240, 220, 90), 0, (px + 14, py + 4, 2, 2)))
+  elif h == 4:
+   out.append((0, (230, 120, 160), 0, (px + 4, py + 15, 2, 2)))
  elif ch == 'T':
-  rpg_grass(px, py, x, y)
-  rect(px + 8, py + 12, 4, 7, (90, 60, 30))
-  rect(px + 10, py + 12, 2, 7, (65, 42, 22))
-  circ(px + 10, py + 8, 8, (20, 70, 30))
-  circ(px + 9, py + 7, 6, (35, 100, 45))
-  rect(px + 6, py + 4, 3, 2, (70, 150, 70))
+  out.append((0, rpg_BARK, 0, (px + 8, py + 14, 4, 6)))
+  out.append((1, rpg_LEAF, 1, (px + 10, py + 8, 8)))
  elif ch == '~':
-  rect(px, py, rpg_T, rpg_T, (40, 90, 190))
   o = (x * 5 + y * 3) % 8
-  rect(px + o, py + 6, 6, 1, (110, 160, 235))
-  rect(px + (o + 9) % 14, py + 14, 5, 1, (110, 160, 235))
+  out.append((0, (110, 160, 235), 0, (px + o, py + 8, 6, 1)))
  elif ch == 'H':
-  rpg_grass(px, py, x, y)
-  rect(px + 2, py + 8, 16, 12, (200, 170, 120))
-  rect(px + 2, py + 18, 16, 2, (160, 130, 90))
-  col((170, 50, 40))
-  fill_poly([px, px + 10, px + 20], [py + 9, py, py + 9])
-  col((120, 35, 30))
-  draw_line(px + 10, py, px + 20, py + 9)
-  rect(px + 8, py + 13, 4, 7, (90, 60, 30))
-  rect(px + 4, py + 11, 3, 3, (250, 230, 140))
-  rect(px + 13, py + 11, 3, 3, (250, 230, 140))
- elif ch == 'C':
-  if m < 2:
-   rpg_grass(px, py, x, y)
+  out.append((0, (200, 170, 120), 0, (px + 2, py + 9, 16, 11)))
+  out.append((1, (170, 50, 40), 2, ([px, px + 10, px + 20], [py + 9, py, py + 9])))
+  out.append((2, rpg_BARK, 0, (px + 8, py + 13, 4, 7)))
+  out.append((2, (250, 230, 140), 0, (px + 4, py + 11, 3, 3)))
+  out.append((2, (250, 230, 140), 0, (px + 13, py + 11, 3, 3)))
+ elif ch == 'C' or ch == 'c':
+  if m == 2:
+   out.append((0, rpg_LINE, 0, (px, py, rpg_T, 1)))
+  if ch == 'C':
+   out.append((0, (60, 40, 20), 0, (px + 3, py + 6, 14, 11)))
+   out.append((1, (160, 110, 40), 0, (px + 4, py + 7, 12, 9)))
+   out.append((2, GOLD, 0, (px + 4, py + 10, 12, 2)))
   else:
-   rpg_floor(px, py, x, y)
-  rect(px + 3, py + 6, 14, 11, (60, 40, 20))
-  rect(px + 4, py + 7, 12, 9, (160, 110, 40))
-  rect(px + 4, py + 7, 12, 2, (190, 140, 60))
-  rect(px + 4, py + 10, 12, 2, GOLD)
-  rect(px + 9, py + 11, 2, 3, GOLD)
- elif ch == 'c':
-  if m < 2:
-   rpg_grass(px, py, x, y)
-  else:
-   rpg_floor(px, py, x, y)
-  rect(px + 4, py + 10, 12, 6, (100, 70, 30))
-  rect(px + 4, py + 10, 12, 1, (130, 95, 45))
+   out.append((0, (100, 70, 30), 0, (px + 4, py + 10, 12, 6)))
  elif ch == '#':
-  rect(px, py, rpg_T, rpg_T, (30, 28, 35))
-  o = 0 if y % 2 else 5
-  for yy in (0, 7, 14):
-   rect(px, py + yy, rpg_T, 1, (50, 47, 58))
-  for xx in (o, o + 10):
-   rect(px + xx, py, 1, 6, (50, 47, 58))
-   rect(px + (xx + 5) % rpg_T, py + 7, 1, 6, (50, 47, 58))
+  for yy in (6, 13):
+   out.append((0, (50, 47, 58), 0, (px, py + yy, rpg_T, 1)))
  elif ch == ':':
-  rpg_floor(px, py, x, y)
+  out.append((0, rpg_LINE, 0, (px, py, rpg_T, 1)))
  elif ch == 'B':
-  rpg_floor(px, py, x, y)
-  circ(px + 10, py + 11, 8, (80, 55, 140))
-  circ(px + 10, py + 10, 8, (110, 80, 180))
-  col(GOLD)
-  fill_poly([px + 3, px + 6, px + 10, px + 14, px + 17], [py + 4, py - 1, py + 3, py - 1, py + 4])
-  rect(px + 5, py + 8, 3, 3, RED)
-  rect(px + 12, py + 8, 3, 3, RED)
-  rect(px + 6, py + 14, 8, 1, (40, 25, 70))
-def rpg_hero(x, y):
+  out.append((0, rpg_LINE, 0, (px, py, rpg_T, 1)))
+  out.append((1, (110, 80, 180), 1, (px + 10, py + 11, 8)))
+  out.append((2, GOLD, 2, ([px + 3, px + 6, px + 10, px + 14, px + 17], [py + 4, py - 1, py + 3, py - 1, py + 4])))
+  out.append((3, RED, 0, (px + 5, py + 8, 3, 3)))
+  out.append((3, RED, 0, (px + 12, py + 8, 3, 3)))
+def rpg_base(m, ch):
+ if ch in 'Cc':
+  return rpg_GRASS if m < 2 else rpg_STONE
+ return rpg_BASE.get(ch, rpg_GRASS)
+def rpg_hero(x, y, out):
  px = x * rpg_T
  py = 20 + y * rpg_T
- rect(px + 5, py + 18, 10, 2, (25, 60, 30))
- circ(px + 10, py + 5, 4, (240, 200, 160))
- rect(px + 6, py + 1, 8, 3, (120, 70, 30))
- rect(px + 8, py + 5, 1, 1, BLACK)
- rect(px + 11, py + 5, 1, 1, BLACK)
- rect(px + 6, py + 9, 8, 7, (60, 120, 230))
- rect(px + 6, py + 13, 8, 1, (120, 80, 40))
- rect(px + 6, py + 16, 3, 4, (60, 40, 30))
- rect(px + 11, py + 16, 3, 4, (60, 40, 30))
- rect(px + 15, py + 4, 2, 11, (210, 215, 225))
- rect(px + 14, py + 12, 4, 2, GOLD)
+ out.append((5, (240, 200, 160), 1, (px + 10, py + 5, 4)))
+ out.append((6, rpg_WOOD, 0, (px + 6, py + 1, 8, 3)))
+ out.append((6, BLACK, 0, (px + 8, py + 5, 1, 1)))
+ out.append((6, BLACK, 0, (px + 11, py + 5, 1, 1)))
+ out.append((6, (60, 120, 230), 0, (px + 6, py + 9, 8, 7)))
+ out.append((6, (60, 40, 30), 0, (px + 6, py + 16, 3, 4)))
+ out.append((6, (60, 40, 30), 0, (px + 11, py + 16, 3, 4)))
+ out.append((6, (210, 215, 225), 0, (px + 15, py + 4, 2, 8)))
+ out.append((6, GOLD, 0, (px + 14, py + 12, 4, 2)))
+def rpg_paint(ops):
+ ops.sort(key=lambda o: (o[0], o[1], o[2], o[3][1] if o[2] == 0 else 0, o[3][0]))
+ last = None
+ for layer, c, kind, a in ops:
+  if kind == 0:
+   if last and last[0] == (layer, c) and (last[2] == a[1]) and (last[4] == a[3]) and (last[1] + last[3] == a[0]):
+    last[3] += a[2]
+    continue
+   if last:
+    rect(last[1], last[2], last[3], last[4], last[0][1])
+   last = [(layer, c), a[0], a[1], a[2], a[3]]
+   continue
+  if last:
+   rect(last[1], last[2], last[3], last[4], last[0][1])
+   last = None
+  if kind == 1:
+   circ(a[0], a[1], a[2], c)
+  else:
+   col(c)
+   fill_poly(a[0], a[1])
+ if last:
+  rect(last[1], last[2], last[3], last[4], last[0][1])
+def rpg_cells(g, todo, with_hero):
+ mp = g.maps[g.m]
+ ops = []
+ rows = {}
+ for x, y in todo:
+  rows.setdefault(y, []).append(x)
+ for y in rows:
+  xs = sorted(rows[y])
+  i = 0
+  while i < len(xs):
+   c = rpg_base(g.m, mp[y][xs[i]])
+   j = i + 1
+   while j < len(xs) and xs[j] == xs[j - 1] + 1 and (rpg_base(g.m, mp[y][xs[j]]) == c):
+    j += 1
+   ops.append((-1, c, 0, (xs[i] * rpg_T, 20 + y * rpg_T, (j - i) * rpg_T, rpg_T)))
+   i = j
+ for x, y in todo:
+  rpg_shapes(g.m, x, y, mp[y][x], ops)
+ if with_hero:
+  rpg_hero(g.x, g.y, ops)
+ rpg_paint(ops)
 def rpg_draw_map(g, after_msg=False):
- m = g.m
  r0, r1 = (0, 10)
  if after_msg:
   r0 = max(0, (MSG[0] - 20) // rpg_T)
   r1 = min(10, (MSG[0] + MSG[1] - 20) // rpg_T + 1)
  else:
   rpg_HUD[0] = None
- for y in range(r0, r1):
-  for x in range(16):
-   rpg_tile(m, x, y, g.maps[m][y][x])
- if r0 <= g.y < r1:
-  rpg_hero(g.x, g.y)
+ rpg_cells(g, [(x, y) for y in range(r0, r1) for x in range(16)], r0 <= g.y < r1)
  rpg_hud(g)
 rpg_HUD = [None]
 def rpg_hud(g):
@@ -513,8 +514,7 @@ def rpg_play():
    return
   ox, oy = (g.x, g.y)
   g.x, g.y = (nx, ny)
-  rpg_tile(g.m, ox, oy, mp[oy][ox])
-  rpg_hero(g.x, g.y)
+  rpg_cells(g, [(ox, oy)], True)
   steps += 1
   if rpg_FOES[g.m] and steps > 6 and (random.random() < 0.12):
    steps = 0

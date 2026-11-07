@@ -12,11 +12,30 @@ PW = 46
 BG = (30, 70, 170)
 
 
+# Each drawing call is slow on the calculator, so a brick is three
+# rectangles, a whole row of bricks starts as three long ones, and the
+# paddle and ball are plain rectangles.
 def brick(r, c, on):
+    x = 10 + c * BW + 1
+    y = BY + r * BH + 1
     if on:
-        block(10 + c * BW + 1, BY + r * BH + 1, BW - 2, BH - 2, RC[r], 2)
+        rect(x, y, BW - 2, BH - 2, RC[r])
+        rect(x, y, BW - 2, 2, lt(RC[r]))
+        rect(x, y + BH - 4, BW - 2, 2, dk(RC[r]))
     else:
-        rect(10 + c * BW + 1, BY + r * BH + 1, BW - 2, BH - 2, BG)
+        rect(x, y, BW - 2, BH - 2, BG)
+
+
+def bricks():
+    w = COLS * BW - 2
+    for r in range(ROWS):
+        y = BY + r * BH + 1
+        rect(11, y, w, BH - 2, RC[r])
+        rect(11, y, w, 2, lt(RC[r]))
+        rect(11, y + BH - 4, w, 2, dk(RC[r]))
+    # then the thin gaps between the bricks, top to bottom in one go each
+    for c in range(1, COLS):
+        rect(10 + c * BW - 1, BY + 1, 2, ROWS * BH - 2, BG)
 
 
 def walls():
@@ -31,38 +50,31 @@ PL = (255, 200, 150)
 
 
 def paddle(x):
-    # pieces that never overlap, so drawing it again where it is can't flash
-    rect(x + 1, 192, PW - 2, 1, PC)
-    rect(x, 193, 4, 2, PC)
-    rect(x + 4, 193, PW - 8, 2, PL)
-    rect(x + PW - 4, 193, 4, 2, PC)
-    rect(x, 195, PW, 4, PC)
-    rect(x + 1, 199, PW - 2, 1, PC)
-    for cx, cy in ((x, 192), (x + PW - 1, 192), (x, 199), (x + PW - 1, 199)):
-        rect(cx, cy, 1, 1, BG)
+    rect(x, 192, PW, 8, PC)
 
 
 def puck(x, y):
     rect(x - 3, y - 3, 6, 6, WHITE)
-    rect(x - 2, y - 2, 2, 2, (200, 220, 255))
 
 
 HUD = [None, None]
 
 
 def hud(score, lives):
-    # rub out only the old words, by writing them in the background colour
-    a = "Score " + str(score)
-    b = "Balls " + str(lives)
-    if a != HUD[0]:
-        if HUD[0]:
-            text(6, 17, HUD[0], BG)
-        text(6, 17, a)
-    if b != HUD[1]:
-        if HUD[1]:
-            text(214, 17, HUD[1], BG)
-        text(214, 17, b, GOLD)
-    HUD[0], HUD[1] = a, b
+    # the words stay; only an old number is rubbed out, by writing it in
+    # the background colour
+    if HUD[0] is None:
+        text(6, 17, "Score")
+        text(214, 17, "Balls", GOLD)
+    if score != HUD[0]:
+        if HUD[0] is not None:
+            text(66, 17, str(HUD[0]), BG)
+        text(66, 17, str(score))
+    if lives != HUD[1]:
+        if HUD[1] is not None:
+            text(274, 17, str(HUD[1]), BG)
+        text(274, 17, str(lives), GOLD)
+    HUD[0], HUD[1] = score, lives
 
 
 def game():
@@ -70,9 +82,7 @@ def game():
     rect(0, 22, 320, 2, WHITE)
     walls()
     b = [[1] * COLS for r in range(ROWS)]
-    for r in range(ROWS):
-        for c in range(COLS):
-            brick(r, c, 1)
+    bricks()
     left = ROWS * COLS
     score = 0
     lives = 3
@@ -134,8 +144,10 @@ def game():
                             brick(rr, cc, 1)
             if opx != px:
                 vacate(opx, 192, px, 192, PW, 8, BG)
-            if opx != px or oby > 186:
+            if oby > 186:
                 paddle(px)
+            elif opx != px:
+                vacate(px, 192, opx, 192, PW, 8, PC)
             puck(int(bx), int(by))
             if by > 210:
                 lives -= 1

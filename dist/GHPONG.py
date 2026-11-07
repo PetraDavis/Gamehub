@@ -65,49 +65,36 @@ def ctext(y, s, c=WHITE, cx=160):
 def circ(x, y, r, c):
  col(c)
  fill_circle(x, y, r)
-def lt(c, k=0.35):
- return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
-def dk(c, k=0.65):
- return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
 def ring(x, y, r, c, t=2, inner=BLACK):
  col(c)
  fill_circle(x, y, r)
  col(inner)
  fill_circle(x, y, r - t)
-def rrect(x, y, w, h, r, c):
- if w < 2 * r + 1 or h < 2 * r + 1:
-  r = max(0, min(w, h) // 2 - 1)
- col(c)
- if w - 2 * r >= 1:
-  fr(x + r, y, w - 2 * r, h)
- if h - 2 * r >= 1:
-  fr(x, y + r, w, h - 2 * r)
- if r < 1:
+def _corners(x, y, w, h, r, t):
+ if r <= t:
+  return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+ a = min(r // 2, 2 * t)
+ return ((x + r, y, w - 2 * r, t), (x + r, y + h - t, w - 2 * r, t), (x, y + r, t, h - 2 * r), (x + w - t, y + r, t, h - 2 * r), (x + a, y + t, r - a, t), (x + w - r, y + t, r - a, t), (x + a, y + h - 2 * t, r - a, t), (x + w - r, y + h - 2 * t, r - a, t), (x + t, y + a, t, r - a), (x + w - 2 * t, y + a, t, r - a), (x + t, y + h - r, t, r - a), (x + w - 2 * t, y + h - r, t, r - a))
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+ edge(x, y, w, h, r, c, t)
+ if not fill:
   return
- fill_circle(x + r, y + r, r)
- fill_circle(x + w - r - 1, y + r, r)
- fill_circle(x + r, y + h - r - 1, r)
- fill_circle(x + w - r - 1, y + h - r - 1, r)
-def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
- rrect(x, y, w, h, r, c)
- rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+ col(inner)
+ if r <= t:
+  fr(x + t, y + t, w - 2 * t, h - 2 * t)
+  return
+ a = min(r // 2, 2 * t)
+ fr(x + t, y + r, w - 2 * t, h - 2 * r)
+ fr(x + r, y + t, w - 2 * r, t)
+ fr(x + r, y + h - 2 * t, w - 2 * r, t)
+ if r > 2 * t:
+  fr(x + a, y + 2 * t, w - 2 * a, r - 2 * t)
+  fr(x + a, y + h - r, w - 2 * a, r - 2 * t)
 def edge(x, y, w, h, r, c, t=2, inner=BLACK):
  col(c)
- fr(x + r, y, w - 2 * r, t)
- fr(x + r, y + h - t, w - 2 * r, t)
- fr(x, y + r, t, h - 2 * r)
- fr(x + w - t, y + r, t, h - 2 * r)
- for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
-  col(c)
-  fill_circle(cx, cy, r)
-  col(inner)
-  fill_circle(cx, cy, max(r - t, 2))
-  ax = cx + 1 if sx > 0 else cx - r
-  ay = y + t if sy > 0 else cy - r
-  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
-  ax = x + t if sx > 0 else cx - r
-  ay = cy + 1 if sy > 0 else cy - r
-  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+ for bx, by, bw, bh in _corners(x, y, w, h, r, t):
+  if bw > 0 and bh > 0:
+   fr(bx, by, bw, bh)
 def vacate(ox, oy, nx, ny, w, h, c):
  if abs(nx - ox) >= w or abs(ny - oy) >= h:
   rect(ox, oy, w, h, c)
@@ -186,16 +173,20 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
   first = True
+  old = -1
   while True:
    for i in range(n):
+    if not first and i != sel and (i != old):
+     continue
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
     if first:
-     rbox(x, 166, bw, 28, 10, c)
+     rbox(x, 166, bw, 28, 10, c, 2, BLACK, False)
     else:
      edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
    first = False
+   old = sel
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -246,27 +237,29 @@ pong_TOP = 24
 pong_TABLE = (30, 85, 165)
 pong_BALL = (250, 150, 40)
 pong_LINE = (150, 190, 235)
-def pong_net():
- col(pong_LINE)
- draw_circle(160, 117, 28)
+def pong_net(box=None):
+ if box is None or pong_ring_hit(box):
+  col(pong_LINE)
+  draw_circle(160, 117, 28)
  for y in range(pong_TOP + 2, 208, 14):
-  rect(159, y, 2, 7, WHITE)
+  if box is None or (box[1] < y + 7 and y < box[1] + 8 and (box[0] < 161) and (159 < box[0] + 8)):
+   rect(159, y, 2, 7, WHITE)
+def pong_ring_hit(b):
+ x0, y0 = b
+ nx = min(max(160, x0), x0 + 7) - 160
+ ny = min(max(117, y0), y0 + 7) - 117
+ fx = max(abs(x0 - 160), abs(x0 + 7 - 160))
+ fy = max(abs(y0 - 117), abs(y0 + 7 - 117))
+ return nx * nx + ny * ny <= 29 * 29 and fx * fx + fy * fy >= 27 * 27
 def pong_court():
  cls(pong_TABLE)
  rect(0, 207, 320, 3, pong_LINE)
  rect(0, pong_TOP + 1, 320, 1, pong_LINE)
  pong_net()
 def pong_paddle(x, y, c):
- rect(x, y, 1, pong_PH, lt(c))
- rect(x + 1, y, 1, pong_PH, c)
- rect(x + 2, y, 2, 4, c)
- rect(x + 2, y + 4, 2, pong_PH - 8, lt(c, 0.5))
- rect(x + 2, y + pong_PH - 4, 2, 4, c)
- rect(x + 4, y, 1, pong_PH, c)
- rect(x + 5, y, 1, pong_PH, dk(c))
+ rect(x, y, 6, pong_PH, c)
 def pong_puck(x, y):
  rect(x - 4, y - 4, 8, 8, pong_BALL)
- rect(x - 2, y - 2, 2, 2, lt(pong_BALL, 0.6))
 def pong_scores(a, b):
  rect(0, 0, 320, pong_TOP - 2, pong_TABLE)
  text(110, 18, str(a))
@@ -320,17 +313,22 @@ def pong_game():
     vx = max(-9, -vx * 1.06)
     vy += (by - (cy + pong_PH / 2)) / 6
     bx = 302
-   vacate(int(obx) - 4, int(oby) - 4, int(bx) - 4, int(by) - 4, 8, 8, pong_TABLE)
+   ob = (int(obx) - 4, int(oby) - 4)
+   vacate(ob[0], ob[1], int(bx) - 4, int(by) - 4, 8, 8, pong_TABLE)
    if opy != py:
     vacate(8, opy, 8, py, 6, pong_PH, pong_TABLE)
    if ocy != cy:
     vacate(306, ocy, 306, cy, 6, pong_PH, pong_TABLE)
-   if 126 < obx < 194:
-    pong_net()
-   if opy != py or 0 < obx < 24:
+   if 0 < obx < 24:
     pong_paddle(8, py, WHITE)
-   if ocy != cy or 296 < obx < 320:
+   elif opy != py:
+    vacate(8, py, 8, opy, 6, pong_PH, WHITE)
+   if 126 < obx < 194:
+    pong_net(ob)
+   if 296 < obx < 320:
     pong_paddle(306, cy, GOLD)
+   elif ocy != cy:
+    vacate(306, cy, 306, ocy, 6, pong_PH, GOLD)
    pong_puck(int(bx), int(by))
    if bx < 0:
     cpu += 1

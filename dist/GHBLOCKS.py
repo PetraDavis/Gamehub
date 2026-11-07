@@ -56,40 +56,31 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  fill_circle(x, y, r)
  col(inner)
  fill_circle(x, y, r - t)
-def rrect(x, y, w, h, r, c):
- if w < 2 * r + 1 or h < 2 * r + 1:
-  r = max(0, min(w, h) // 2 - 1)
- col(c)
- if w - 2 * r >= 1:
-  fr(x + r, y, w - 2 * r, h)
- if h - 2 * r >= 1:
-  fr(x, y + r, w, h - 2 * r)
- if r < 1:
+def _corners(x, y, w, h, r, t):
+ if r <= t:
+  return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+ a = min(r // 2, 2 * t)
+ return ((x + r, y, w - 2 * r, t), (x + r, y + h - t, w - 2 * r, t), (x, y + r, t, h - 2 * r), (x + w - t, y + r, t, h - 2 * r), (x + a, y + t, r - a, t), (x + w - r, y + t, r - a, t), (x + a, y + h - 2 * t, r - a, t), (x + w - r, y + h - 2 * t, r - a, t), (x + t, y + a, t, r - a), (x + w - 2 * t, y + a, t, r - a), (x + t, y + h - r, t, r - a), (x + w - 2 * t, y + h - r, t, r - a))
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+ edge(x, y, w, h, r, c, t)
+ if not fill:
   return
- fill_circle(x + r, y + r, r)
- fill_circle(x + w - r - 1, y + r, r)
- fill_circle(x + r, y + h - r - 1, r)
- fill_circle(x + w - r - 1, y + h - r - 1, r)
-def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
- rrect(x, y, w, h, r, c)
- rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+ col(inner)
+ if r <= t:
+  fr(x + t, y + t, w - 2 * t, h - 2 * t)
+  return
+ a = min(r // 2, 2 * t)
+ fr(x + t, y + r, w - 2 * t, h - 2 * r)
+ fr(x + r, y + t, w - 2 * r, t)
+ fr(x + r, y + h - 2 * t, w - 2 * r, t)
+ if r > 2 * t:
+  fr(x + a, y + 2 * t, w - 2 * a, r - 2 * t)
+  fr(x + a, y + h - r, w - 2 * a, r - 2 * t)
 def edge(x, y, w, h, r, c, t=2, inner=BLACK):
  col(c)
- fr(x + r, y, w - 2 * r, t)
- fr(x + r, y + h - t, w - 2 * r, t)
- fr(x, y + r, t, h - 2 * r)
- fr(x + w - t, y + r, t, h - 2 * r)
- for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
-  col(c)
-  fill_circle(cx, cy, r)
-  col(inner)
-  fill_circle(cx, cy, max(r - t, 2))
-  ax = cx + 1 if sx > 0 else cx - r
-  ay = y + t if sy > 0 else cy - r
-  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
-  ax = x + t if sx > 0 else cx - r
-  ay = cy + 1 if sy > 0 else cy - r
-  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+ for bx, by, bw, bh in _corners(x, y, w, h, r, t):
+  if bw > 0 and bh > 0:
+   fr(bx, by, bw, bh)
 def pause(s):
  time.sleep(s)
 MSG = [0, 0]
@@ -154,16 +145,20 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
   first = True
+  old = -1
   while True:
    for i in range(n):
+    if not first and i != sel and (i != old):
+     continue
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
     if first:
-     rbox(x, 166, bw, 28, 10, c)
+     rbox(x, 166, bw, 28, 10, c, 2, BLACK, False)
     else:
      edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
    first = False
+   old = sel
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -213,12 +208,15 @@ def icons_draw(mod, x, y, c):
  f = icons_ICONS.get(mod)
  if f:
   f(x, y, c)
+try:
+ from time import monotonic as blocks_now
+except Exception:
+ blocks_now = None
 blocks_CW = 10
 blocks_CH = 20
 blocks_C = 9
 blocks_OUT = (50, 20, 70)
 blocks_WELL = (35, 30, 90)
-blocks_DOT = (60, 55, 125)
 blocks_PANEL = (70, 35, 100)
 blocks_X0 = 115
 blocks_Y0 = 22
@@ -248,30 +246,19 @@ def blocks_ok(b, p):
   if y >= 0 and b[y][x]:
    return False
  return True
-def blocks_sq(x, y, c):
- if y < 0:
-  return
- px = blocks_X0 + x * blocks_C
- py = blocks_Y0 + y * blocks_C
- if c == blocks_WELL:
-  rect(px, py, blocks_C, blocks_C, blocks_WELL)
-  rect(px + 4, py + 4, 2, 2, blocks_DOT)
- else:
-  rect(px, py, blocks_C, blocks_C, dk(c, 0.55))
-  rect(px, py, blocks_C - 1, blocks_C - 1, c)
-  rect(px, py, blocks_C - 1, 2, lt(c, 0.45))
-  rect(px, py, 2, blocks_C - 1, lt(c, 0.45))
-  rect(px + 3, py + 3, 2, 2, lt(c, 0.7))
+def blocks_bevel(todo, c):
+ lo, hi = (dk(c, 0.55), lt(c, 0.45))
+ for px, py in todo:
+  rect(px, py, blocks_C, blocks_C, lo)
+ for px, py in todo:
+  rect(px, py, blocks_C - 1, blocks_C - 1, hi)
+ for px, py in todo:
+  rect(px + 1, py + 1, blocks_C - 2, blocks_C - 2, c)
 class blocks_Well:
 
  def __init__(self):
-  self.s = [[-1] * blocks_CW for i in range(blocks_CH)]
+  self.s = [[0] * blocks_CW for i in range(blocks_CH)]
   self.last = []
-
- def put(self, x, y, v):
-  if 0 <= y and self.s[y][x] != v:
-   self.s[y][x] = v
-   blocks_sq(x, y, blocks_COLS[v - 1] if v else blocks_WELL)
 
  def show(self, b, p, full=False):
   new = [c for c in blocks_get(p) if c[1] >= 0] if p else []
@@ -281,10 +268,26 @@ class blocks_Well:
    cells = self.last + new
   self.last = new
   v = p[0] + 1 if p else 0
-  want = [(v if c in new else b[c[1]][c[0]], c) for c in cells]
-  want.sort()
-  for w, c in want:
-   self.put(c[0], c[1], w)
+  ch = {}
+  for c in cells:
+   x, y = c
+   w = v if c in new else b[y][x]
+   if self.s[y][x] != w:
+    self.s[y][x] = w
+    ch[c] = w
+  run = None
+  for y in range(blocks_CH):
+   for x in range(blocks_CW + 1):
+    e = x < blocks_CW and ch.get((x, y)) == 0
+    if e and run is None:
+     run = x
+    elif not e and run is not None:
+     rect(blocks_X0 + run * blocks_C, blocks_Y0 + y * blocks_C, (x - run) * blocks_C, blocks_C, blocks_WELL)
+     run = None
+  for w in range(1, 8):
+   todo = [(blocks_X0 + x * blocks_C, blocks_Y0 + y * blocks_C) for (x, y), u in ch.items() if u == w]
+   if todo:
+    blocks_bevel(todo, blocks_COLS[w - 1])
 def blocks_side(score, lines, nxt, old):
  if old is None:
   for y, h in ((26, 64), (96, 40), (142, 40)):
@@ -295,11 +298,7 @@ def blocks_side(score, lines, nxt, old):
   old = (None, None, None)
  if nxt != old[2]:
   rect(240, 50, 40, 22, blocks_PANEL)
-  for x, y in blocks_get((nxt, 0, 0, 0)):
-   c = blocks_COLS[nxt]
-   rect(244 + x * 9, 54 + y * 9, 9, 9, dk(c, 0.55))
-   rect(244 + x * 9, 54 + y * 9, 8, 8, c)
-   rect(245 + x * 9, 55 + y * 9, 2, 2, lt(c, 0.7))
+  blocks_bevel([(244 + x * 9, 54 + y * 9) for x, y in blocks_get((nxt, 0, 0, 0))], blocks_COLS[nxt])
  if score != old[0]:
   if old[0] is not None:
    text(234, 131, str(old[0]), blocks_PANEL)
@@ -316,12 +315,10 @@ def blocks_game():
   rect(0, i, 320, 15, (58, 25, 80))
  rbox(blocks_X0 - 4, blocks_Y0 - 4, blocks_CW * blocks_C + 8, blocks_CH * blocks_C + 8, 4, WHITE, 2, blocks_WELL)
  well = blocks_Well()
- well.show(b, None, True)
  rbox(4, 26, 96, 56, 6, GOLD, 2, blocks_PANEL)
  text(14, 48, 'STACK', GOLD)
  text(14, 68, 'DROP', GOLD)
  for i, cc in enumerate(blocks_COLS[:5]):
-  rect(12 + i * 16, 96, 12, 12, dk(cc, 0.55))
   rect(12 + i * 16, 96, 11, 11, cc)
  rbox(4, 150, 96, 40, 6, (150, 110, 190), 2, blocks_PANEL)
  text(12, 167, '2nd key:', (200, 185, 230))
@@ -334,6 +331,7 @@ def blocks_game():
  held = 0
  hc = 0
  sd = blocks_side(score, lines, nxt, None)
+ last = blocks_now() if blocks_now else 0
  while True:
   if p is None:
    p = [nxt, 0, 3, -1]
@@ -370,8 +368,14 @@ def blocks_game():
      q[3] += 1
     t = speed
   held = k
-  t += 1
-  fall = t >= speed
+  if blocks_now:
+   tn = blocks_now()
+   fall = t >= speed or tn - last >= speed * 0.035
+   if fall:
+    last = tn
+  else:
+   t += 1
+   fall = t >= speed
   if q != p and blocks_ok(b, q):
    p = q
    well.show(b, p)

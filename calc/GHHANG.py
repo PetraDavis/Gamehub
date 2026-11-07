@@ -14,28 +14,49 @@ POST = (225, 175, 20)
 USED = (190, 190, 190)
 
 
-def letter_box(i, used, sel, full=False):
-    x = 4 + (i % 13) * 24
-    y = 150 + (i // 13) * 28
+# Each drawing call is slow on the calculator, so a letter box is four
+# rectangles (an outline with notched corners) and the letters of a row are
+# written with one call: they sit 20 px apart, two characters of text.
+def lxy(i):
+    return 30 + (i % 13) * 20, 150 + (i // 13) * 28
+
+
+def nbox(x, y, w, h, c):
+    rect(x + 2, y, w - 4, 2, c)
+    rect(x + 2, y + h - 2, w - 4, 2, c)
+    rect(x, y + 2, 2, h - 4, c)
+    rect(x + w - 2, y + 2, 2, h - 4, c)
+
+
+def letter_box(i, used, sel):
+    x, y = lxy(i)
     c = GOLD if i == sel else (USED if ABC[i] in used else INK)
-    if full:
-        rbox(x, y, 22, 24, 3, c, 2, WHITE)
-    else:
-        edge(x, y, 22, 24, 3, c, 2, WHITE)
-    text(x + 6, y + 18, ABC[i], c)
+    nbox(x, y, 18, 24, c)
+    text(x + 4, y + 18, ABC[i], c)
+
+
+def letters(sel):
+    for i in range(26):
+        if i != sel:
+            x, y = lxy(i)
+            nbox(x, y, 18, 24, INK)
+    for r in range(2):
+        text(34, 168 + r * 28, " ".join(ABC[r * 13:r * 13 + 13]), INK)
+    letter_box(sel, "", sel)
 
 
 def word_line(w, used, new=None):
     # first time: blanks and letters. Later only the guessed letter appears,
     # writing over its blanks, so the rest of the word stays still
     x0 = 310 - len(w) * 20
-    for i in range(len(w)):
-        ch = w[i]
-        if new is None:
-            text(x0 + i * 20, 85, ch if ch in used else "_", INK)
-        elif ch == new:
-            text(x0 + i * 20, 85, "_", WHITE)
-            text(x0 + i * 20, 85, ch, INK)
+    if new is None:
+        text(x0, 85, " ".join([ch if ch in used else "_" for ch in w]), INK)
+        return
+    at = [i for i in range(len(w)) if w[i] == new]
+    for i in at:
+        text(x0 + i * 20, 85, "_", WHITE)
+    for i in at:
+        text(x0 + i * 20, 85, new, INK)
 
 
 def figure(n):
@@ -69,8 +90,7 @@ def game():
     sel = 0
     cls(WHITE)
     figure(0)
-    for i in range(26):
-        letter_box(i, used, sel, True)
+    letters(sel)
     word_line(w, used)
     while True:
         done = True

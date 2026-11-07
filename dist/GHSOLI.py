@@ -57,40 +57,31 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  fill_circle(x, y, r)
  col(inner)
  fill_circle(x, y, r - t)
-def rrect(x, y, w, h, r, c):
- if w < 2 * r + 1 or h < 2 * r + 1:
-  r = max(0, min(w, h) // 2 - 1)
- col(c)
- if w - 2 * r >= 1:
-  fr(x + r, y, w - 2 * r, h)
- if h - 2 * r >= 1:
-  fr(x, y + r, w, h - 2 * r)
- if r < 1:
+def _corners(x, y, w, h, r, t):
+ if r <= t:
+  return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+ a = min(r // 2, 2 * t)
+ return ((x + r, y, w - 2 * r, t), (x + r, y + h - t, w - 2 * r, t), (x, y + r, t, h - 2 * r), (x + w - t, y + r, t, h - 2 * r), (x + a, y + t, r - a, t), (x + w - r, y + t, r - a, t), (x + a, y + h - 2 * t, r - a, t), (x + w - r, y + h - 2 * t, r - a, t), (x + t, y + a, t, r - a), (x + w - 2 * t, y + a, t, r - a), (x + t, y + h - r, t, r - a), (x + w - 2 * t, y + h - r, t, r - a))
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+ edge(x, y, w, h, r, c, t)
+ if not fill:
   return
- fill_circle(x + r, y + r, r)
- fill_circle(x + w - r - 1, y + r, r)
- fill_circle(x + r, y + h - r - 1, r)
- fill_circle(x + w - r - 1, y + h - r - 1, r)
-def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
- rrect(x, y, w, h, r, c)
- rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+ col(inner)
+ if r <= t:
+  fr(x + t, y + t, w - 2 * t, h - 2 * t)
+  return
+ a = min(r // 2, 2 * t)
+ fr(x + t, y + r, w - 2 * t, h - 2 * r)
+ fr(x + r, y + t, w - 2 * r, t)
+ fr(x + r, y + h - 2 * t, w - 2 * r, t)
+ if r > 2 * t:
+  fr(x + a, y + 2 * t, w - 2 * a, r - 2 * t)
+  fr(x + a, y + h - r, w - 2 * a, r - 2 * t)
 def edge(x, y, w, h, r, c, t=2, inner=BLACK):
  col(c)
- fr(x + r, y, w - 2 * r, t)
- fr(x + r, y + h - t, w - 2 * r, t)
- fr(x, y + r, t, h - 2 * r)
- fr(x + w - t, y + r, t, h - 2 * r)
- for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
-  col(c)
-  fill_circle(cx, cy, r)
-  col(inner)
-  fill_circle(cx, cy, max(r - t, 2))
-  ax = cx + 1 if sx > 0 else cx - r
-  ay = y + t if sy > 0 else cy - r
-  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
-  ax = x + t if sx > 0 else cx - r
-  ay = cy + 1 if sy > 0 else cy - r
-  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+ for bx, by, bw, bh in _corners(x, y, w, h, r, t):
+  if bw > 0 and bh > 0:
+   fr(bx, by, bw, bh)
 MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
@@ -153,16 +144,20 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
   first = True
+  old = -1
   while True:
    for i in range(n):
+    if not first and i != sel and (i != old):
+     continue
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
     if first:
-     rbox(x, 166, bw, 28, 10, c)
+     rbox(x, 166, bw, 28, 10, c, 2, BLACK, False)
     else:
      edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
    first = False
+   old = sel
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -230,52 +225,41 @@ soli_BACK = (40, 80, 160)
 soli_FELT = (15, 70, 40)
 def soli_cx(c):
  return 6 + c * 44
-soli_PICS = (('.##.##.', '#######', '#######', '#######', '.#####.', '..###..', '...#...'), ('...#...', '..###..', '.#####.', '#######', '.#####.', '..###..', '...#...'), ('...#...', '..###..', '.#####.', '#######', '#######', '..#.#..', '.#####.'), ('..###..', '..###..', '##.#.##', '#######', '##.#.##', '...#...', '.#####.'))
-def soli__runs(pic):
- out = []
- for r in range(7):
-  row = pic[r]
-  c = 0
-  while c < 7:
-   if row[c] == '#':
-    e = c
-    while e < 7 and row[e] == '#':
-     e += 1
-    for k in range(len(out)):
-     a = out[k]
-     if a[0] == c and a[2] == e - c and (a[1] + a[3] == r):
-      out[k] = (a[0], a[1], a[2], a[3] + 1)
-      break
-    else:
-     out.append((c, r, e - c, 1))
-    c = e
-   else:
-    c += 1
- return out
-soli_SUITS = [soli__runs(p) for p in soli_PICS]
+soli_SUITS = (((0, 1, 7, 3), (2, 1, 3, 5), (1, 0, 2, 5), (4, 0, 2, 5), (3, 1, 1, 6)), ((2, 1, 3, 5), (1, 2, 5, 3), (3, 0, 1, 7), (0, 3, 7, 1)), ((0, 3, 7, 2), (1, 2, 5, 3), (2, 1, 1, 5), (4, 1, 1, 5), (3, 0, 1, 5), (1, 6, 5, 1)), ((3, 0, 1, 7), (0, 2, 2, 3), (5, 2, 2, 3), (2, 0, 3, 2), (1, 6, 5, 1), (0, 3, 5, 1)))
 def soli_suit(x, y, s, k=1):
  c = RED if s < 2 else BLACK
  for a, b, w, h in soli_SUITS[s]:
   rect(x + a * k, y + b * k, w * k, h * k, c)
+def soli_body(x, y, h, c):
+ rect(x + 1, y, soli_CW - 2, h, BLACK)
+ rect(x, y + 1, soli_CW, h - 2, BLACK)
+ rect(x + 1, y + 1, soli_CW - 2, h - 2, c)
 def soli_card(x, y, cd, h=soli_CHT):
  if cd is None:
-  rbox(x, y, soli_CW, soli_CHT, 4, (60, 110, 80), 1, soli_FELT)
+  col((60, 110, 80))
+  draw_rect(x, y, soli_CW - 1, soli_CHT - 1)
   return
  r, s, up = cd
- rrect(x, y, soli_CW, h, 4, BLACK)
  if not up:
-  rrect(x + 1, y + 1, soli_CW - 2, h - 2, 3, soli_BACK)
+  soli_body(x, y, h, soli_BACK)
   if h >= 12:
    rect(x + 4, y + 4, soli_CW - 8, h - 8, lt(soli_BACK, 0.15))
-   for i in range(x + 7, x + soli_CW - 6, 6):
-    rect(i, y + 6, 2, h - 12, soli_BACK)
+   rect(x + 6, y + 6, soli_CW - 12, h - 12, soli_BACK)
   return
- rrect(x + 1, y + 1, soli_CW - 2, h - 2, 3, soli_CARD)
+ soli_body(x, y, h, soli_CARD)
  if h >= 14:
   text(x + 3, y + 14, soli_RANKS[r], RED if s < 2 else BLACK)
   soli_suit(x + soli_CW - 11, y + 4, s)
  if h >= soli_CHT:
   soli_suit(x + 13, y + 15, s, 2)
+def soli_backs(x, ys, i, j):
+ y0 = ys[i]
+ h = ys[j] - y0 + 4
+ rect(x + 1, y0, soli_CW - 2, h, BLACK)
+ rect(x, y0 + 1, soli_CW, h - 2, BLACK)
+ rect(x + 1, y0 + 1, soli_CW - 2, h - 2, soli_BACK)
+ for k in range(i + 1, j):
+  rect(x + 1, ys[k], soli_CW - 2, 1, BLACK)
 class soli_G:
  pass
 def soli_new():
@@ -323,8 +307,17 @@ def soli_draw_col(g, c, drawn):
   bottom = ys[-1] + soli_CHT
   if d is not None and n < len(d[0]) and (start == n - 1):
    rect(x, bottom - 6, soli_CW, 6, soli_FELT)
-  for i in range(start, n):
+  i = start
+  while i < n:
+   j = i
+   while j < n - 1 and (not pile[j][2]):
+    j += 1
+   if j > i + 1:
+    soli_backs(x, ys, i, j)
+    i = j
+    continue
    soli_card(x, ys[i], pile[i], soli_CHT if i == n - 1 else ys[i + 1] - ys[i] + 4)
+   i += 1
  if d is None or bottom < d[1]:
   rect(x, bottom, soli_CW, 210 - bottom, soli_FELT)
  drawn[c] = (ys, bottom)
