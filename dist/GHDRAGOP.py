@@ -1,6 +1,8 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
 GREY=(110,110,110)
+def wkey():
+ return wait_key()
 def pause(s):
  time.sleep(s)
 def message(lines,title=None):
@@ -52,16 +54,6 @@ G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
-def G_base(m,ch):
- if ch=='~':
-  return G_WATER
- if ch=='L':
-  return G_LAVA
- if ch=='"':
-  return G_TALL[m]
- if ch=='=':
-  return(190,160,110)
- return G_GROUND[m]
 def G_paint(ops):
  ops.sort(key=lambda o:(o[0],o[1],o[2],o[3][1]if o[2]==0 else 0,o[3][0]))
  last=None
@@ -115,6 +107,8 @@ def G_draw_map(g,after_msg=False):
   G_HUD[0]=None
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
+class G_Game:
+ pass
 def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
  b=[1]
@@ -295,7 +289,8 @@ def G_play():
    continue
   if ch=='"'and steps>3 and(random.random()<0.2):
    steps=0
-   if not G_battle(g,random.choice(G_FOES[g.m])):
+   lo,hi=G_LVL[g.m]
+   if not G_battle(g,random.choice(G_FOES[g.m]),lo+min(hi-lo,int(random.random()**1.6*(hi-lo+1)))):
     return
    G_draw_map(g)
 def G_back():

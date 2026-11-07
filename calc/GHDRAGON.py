@@ -181,6 +181,7 @@ MONP = (b'B`$\xe6\x8c\x96_<\x1e}U-<(\x14\xe6\xb4(n\xa0<\xa0\xc1\x80(<\x14\xfa\xd
 FOES = ((("Goblin", 14, 4, 6, (110, 160, 60), 3), ("Bog Toad", 16, 4, 7, (60, 120, 160), 1)),
         (("Lava Imp", 26, 7, 12, (240, 120, 30), 0), ("Rock Troll", 32, 7, 14, (120, 110, 90), 2)),
         (("Ice Wraith", 34, 9, 16, (150, 200, 240), 1), ("Snow Yeti", 42, 9, 18, (235, 235, 245), 3)))
+LVL = ((1, 3), (3, 6), (6, 10), (1, 1))  # monster levels in each land
 BOSS = ("Shadow Wyrm", 110, 12, 0, (90, 50, 140), 3)
 DREAD = ("Dread Drake", 70, 11, 30, (40, 35, 45), 3)
 
@@ -236,15 +237,28 @@ def art(b, x, y, s, P, out=None, f=0):
 def drag(x, y, s, t, c, head=0, body=0, out=None, f=0, sp=0):
     # a dragon facing left, about 58 x 50 times s pixels, top left at x, y
     # (with out, the shapes go into that list for the map instead of being drawn; sp: shiny scheme)
+    P = PAL + [lt(c, 0.45), dk(c, 0.6), c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
     if sp:
-        n, c, l, k = SCH[sp]
-        P = PAL + [l, k, c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
-    else:
-        P = PAL + [lt(c, 0.45), dk(c, 0.6), c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
+        # shiny: every marking turns into a scheme colour that stands out from the body:
+        # very bright -> light; colourful bits (flames, glows, gems) -> accent; whitish -> light;
+        # near black -> very dark; the rest light or dark by whether it was lighter or darker
+        # than the dragon's own colour. So each kind keeps its own pattern in the new colours.
+        bl = (c[0] * 3 + c[1] * 6 + c[2]) // 10
+        n, c, l, k, a = SCH[sp]
+        Q = [dk(k, 0.5), P[1]]
+        for q in P[2:]:
+            v = (q[0] * 3 + q[1] * 6 + q[2]) // 10
+            Q.append(l if v > 200 else a if max(q) - min(q) > 110 else l if v > 165 else dk(k, 0.5) if v < 40 else l if v > bl else k)
+        P = Q
+        # the body itself is always the main colour, light on top and dark underneath
+        P[15], P[16], P[17], P[24], P[25] = l, k, c, l, k
     w, b = ARTW[2 * t], ARTW[2 * t + 1]
     for a in (ARTB, ARTF[t], bytes((2, w, 24, 26, 40, 10, 37, 28, 2, b, 40, 10, 28, 27, 30, 27, 2, b, 40, 10, 33, 28, 35, 28,
               2, 17, 23, 26, 40, 9, 26, 26, 1, 17, 26, 27, 3, 0, 0, 0, 2, 1, 40, 9, 42, 7, 41, 11)), ARTL, ARTO[t],
-              ARTG[body] if body else b"", ARTG[head] if head else b""):
+              ARTG[body] if body else b"", ARTG[head] if head else b"",
+              # shiny sparkles: three little white stars on the body and wing
+              bytes((0, 1, 17, 31, 5, 1, 0, 0, 0, 1, 19, 29, 1, 5, 0, 0, 0, 1, 34, 14, 5, 1, 0, 0,
+                     0, 1, 36, 12, 1, 5, 0, 0, 0, 1, 41, 32, 5, 1, 0, 0, 0, 1, 43, 30, 1, 5, 0, 0)) if sp else b""):
         art(a, x, y, s, P, out, f)
 
 
@@ -365,12 +379,12 @@ def shapes(m, x, y, ch, out):
 
 
 EGGS = {}  # (land, x, y): the egg lying there (see egg_roll)
-# Shiny colour schemes: (name, main, light, dark). An egg number is kind + 32 * scheme;
+# Shiny colour schemes: (name, main, light, dark, accent). An egg number is kind + 32 * scheme;
 # kind 31 is a small egg, which hatches a baby of a kind you have discovered.
-SCH = (None, ("Silver", (190, 195, 205), (240, 242, 248), (105, 110, 125)),
-       ("Gold", (235, 185, 40), (255, 235, 130), (150, 100, 20)),
-       ("Neon", (40, 255, 140), (240, 255, 60), (255, 40, 220)),
-       ("Purple-blue", (130, 60, 210), (70, 150, 255), (40, 30, 120)))
+SCH = (None, ("Silver", (190, 195, 205), (240, 242, 248), (105, 110, 125), (80, 170, 255)),
+       ("Gold", (235, 185, 40), (255, 235, 130), (150, 100, 20), (255, 110, 30)),
+       ("Neon", (40, 255, 140), (240, 255, 60), (255, 40, 220), (40, 230, 255)),
+       ("Purple-blue", (130, 60, 210), (70, 150, 255), (40, 30, 120), (160, 235, 255)))
 SMALL = 31
 
 
@@ -532,12 +546,16 @@ def foe_screen(f, title):
     ctext(24, title, GOLD)
 
 
-def battle(g, f):
+def battle(g, f, lv=0):
     # returns True when the monster is beaten, 2 when you got away, False
-    # when you died
+    # when you died. lv: the monster's level (each level past its land's lowest adds
+    # 4 HP, 1 attack and 3 XP); bosses have no level.
     name, fhp, fat, xp, fc, fe = f
+    up = lv - LVL[g.m][0] if lv else 0
+    fhp, fat, xp = fhp + 4 * up, fat + up, xp + 3 * up
+    who = ("Lv " + str(lv) + " " if lv else "") + name
     mx = fhp
-    foe_screen(f, name + " appears!")
+    foe_screen(f, who + " appears!")
     log = ""
     sel = 0
     was = None
@@ -618,7 +636,11 @@ def battle(g, f):
                         dd[4] += 6
                         dd[3] = dd[4]
                         msg.append(dd[0] + " is now level " + str(dd[2]) + "!")
-            message(msg[:3] or ["You won!"], name + " beaten")
+            if lv >= 5:
+                # strong monsters drop coins
+                g.coins += lv
+                msg = ["+" + str(lv) + " coins!"] + msg
+            message(msg[:3] or ["You won!"], who + " beaten")
             if f is not BOSS:
                 quest_step(g, 0, name)
                 quest_step(g, 2, g.m)
@@ -630,7 +652,7 @@ def battle(g, f):
             if d[3] == 0:
                 g.ride = None
                 message([d[0] + " is too tired to fly.", "You fight on foot!"], "Oh no")
-                foe_screen(f, name)
+                foe_screen(f, who)
                 was = None
         else:
             g.hp -= dm
@@ -1301,7 +1323,9 @@ def play():
             continue
         if ch == '"' and steps > 3 and random.random() < 0.2:
             steps = 0
-            if not battle(g, random.choice(FOES[g.m])):
+            # a level in this land's range; higher levels are rarer
+            lo, hi = LVL[g.m]
+            if not battle(g, random.choice(FOES[g.m]), lo + min(hi - lo, int(random.random() ** 1.6 * (hi - lo + 1)))):
                 return
             draw_map(g)
 

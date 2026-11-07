@@ -1,18 +1,7 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-def _corners(x,y,w,h,r,t):
- return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
-def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
- edge(x,y,w,h,r,c,t)
- if fill:
-  rect(x+t,y+t,w-2*t,h-2*t,inner)
-def edge(x,y,w,h,r,c,t=2,inner=BLACK):
- col(c)
- for bx,by,bw,bh in _corners(x,y,w,h,r,t):
-  if bw>0 and bh>0:
-   fr(bx,by,bw,bh)
 G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^^....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
-G_GROUND=((50,130,60),(85,65,55),(215,225,240),(75,150,70))
+G_DT=list(zip(('Pyrrak','Smoldedrake','Aquawyrm','Gillwing','Fernling','Lichenwing','Stonewyrm','Volcanox','Ashveil','Glacius','Tempestra','Thornwyrm','Dawnwing','Pearlhorn','Jadewyrm','Petalwyrm','Blazequill','Abyssar','Rootwyrm','Lumora','Quantum'),b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03',b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05',G_cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
 def G_egg_type(m):
  r=random.randint(0,999)
  rar=4 if r<4+2*m else 3 if r<30+10*m else 2 if r<110+25*m else 1 if r<330+40*m else 0
@@ -49,13 +38,18 @@ def G_art(b,x,y,s,P,out=None,f=0):
    col(c)
    fill_poly([x+a1*s,x+a3*s,x+a5*s],[y+a2*s,y+a4*s,y+a6*s])
 def G_drag(x,y,s,t,c,head=0,body=0,out=None,f=0,sp=0):
+ P=G_PAL+[lt(c,0.45),dk(c,0.6),c]+G_PAL2+[lt(c,0.2),dk(c,0.4)]+G_PAL3
  if sp:
-  n,c,l,k=G_SCH[sp]
-  P=G_PAL+[l,k,c]+G_PAL2+[lt(c,0.2),dk(c,0.4)]+G_PAL3
- else:
-  P=G_PAL+[lt(c,0.45),dk(c,0.6),c]+G_PAL2+[lt(c,0.2),dk(c,0.4)]+G_PAL3
+  bl=(c[0]*3+c[1]*6+c[2])//10
+  n,c,l,k,a=G_SCH[sp]
+  Q=[dk(k,0.5),P[1]]
+  for q in P[2:]:
+   v=(q[0]*3+q[1]*6+q[2])//10
+   Q.append(l if v>200 else a if max(q)-min(q)>110 else l if v>165 else dk(k,0.5)if v<40 else l if v>bl else k)
+  P=Q
+  P[15],P[16],P[17],P[24],P[25]=(l,k,c,l,k)
  w,b=(G_ARTW[2*t],G_ARTW[2*t+1])
- for a in(G_ARTB,G_ARTF[t],bytes((2,w,24,26,40,10,37,28,2,b,40,10,28,27,30,27,2,b,40,10,33,28,35,28,2,17,23,26,40,9,26,26,1,17,26,27,3,0,0,0,2,1,40,9,42,7,41,11)),G_ARTL,G_ARTO[t],G_ARTG[body]if body else b'',G_ARTG[head]if head else b''):
+ for a in(G_ARTB,G_ARTF[t],bytes((2,w,24,26,40,10,37,28,2,b,40,10,28,27,30,27,2,b,40,10,33,28,35,28,2,17,23,26,40,9,26,26,1,17,26,27,3,0,0,0,2,1,40,9,42,7,41,11)),G_ARTL,G_ARTO[t],G_ARTG[body]if body else b'',G_ARTG[head]if head else b'',bytes((0,1,17,31,5,1,0,0,0,1,19,29,1,5,0,0,0,1,34,14,5,1,0,0,0,1,36,12,1,5,0,0,0,1,41,32,5,1,0,0,0,1,43,30,1,5,0,0))if sp else b''):
   G_art(a,x,y,s,P,out,f)
 def G_shapes(m,x,y,ch,out):
  px=x*G_T
@@ -107,14 +101,7 @@ def G_shapes(m,x,y,ch,out):
   out.append((1,G_BOSS[4],1,(px+10,py+10,6)))
   out.append((2,(255,60,60),0,(px+6,py+8,3,3)))
   out.append((2,(255,60,60),0,(px+11,py+8,3,3)))
-G_SCH=(None,('Silver',(190,195,205),(240,242,248),(105,110,125)),('Gold',(235,185,40),(255,235,130),(150,100,20)),('Neon',(40,255,140),(240,255,60),(255,40,220)),('Purple-blue',(130,60,210),(70,150,255),(40,30,120)))
-def G_egg_roll(g,t):
- if g.book&2097151 and random.random()<0.05:
-  t=G_SMALL
- if random.random()<0.02:
-  r=random.random()
-  return t+32*(1 if r<0.4 else 2 if r<0.7 else 3 if r<0.9 else 4)
- return t
+G_SCH=(None,('Silver',(190,195,205),(240,242,248),(105,110,125),(80,170,255)),('Gold',(235,185,40),(255,235,130),(150,100,20),(255,110,30)),('Neon',(40,255,140),(240,255,60),(255,40,220),(40,230,255)),('Purple-blue',(130,60,210),(70,150,255),(40,30,120),(160,235,255)))
 def G_hero(g,out):
  px=g.x*G_T
  py=20+g.y*G_T
