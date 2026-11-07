@@ -84,12 +84,13 @@ def G_battle(g,f):
    fhp-=dm
    log='Sword hits for '+str(dm)+'.'
   else:
-   at=5+2*d[2]+2*G_DT[d[1]][2]
+   q=d[1]==20
+   at=5+2*d[2]+2*G_DT[d[1]][2]+q
    if o=='Claw':
-    dm=at+random.randint(0,2)
+    dm=at+random.randint(0,2+q)
     log='Claw hits for '+str(dm)+'.'
    else:
-    dm=at+random.randint(2,5)
+    dm=at+random.randint(2+q,5+2*q)
     if G_beats(G_el(d),fe):
      dm*=2
      log='Super breath! '+str(dm)+'.'

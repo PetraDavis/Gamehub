@@ -590,12 +590,14 @@ def battle(g, f):
             fhp -= dm
             log = "Sword hits for " + str(dm) + "."
         else:
-            at = 5 + 2 * d[2] + 2 * DT[d[1]][2]
+            # the Quantum dragon (kind 20) hits a bit harder: claw 18-21, breath 21-25 at level 1
+            q = d[1] == 20
+            at = 5 + 2 * d[2] + 2 * DT[d[1]][2] + q
             if o == "Claw":
-                dm = at + random.randint(0, 2)
+                dm = at + random.randint(0, 2 + q)
                 log = "Claw hits for " + str(dm) + "."
             else:
-                dm = at + random.randint(2, 5)
+                dm = at + random.randint(2 + q, 5 + 2 * q)
                 if beats(el(d), fe):
                     dm *= 2
                     log = "Super breath! " + str(dm) + "."
@@ -707,7 +709,7 @@ def load(g):
         else:
             nm, t = NAMES[s[i] // 32], s[i] % 32
         lv = s[i + 1]
-        mh = 20 + 6 * min(4, DT[t][2]) + 6 * (lv - 1)
+        mh = 20 + 6 * min(4, DT[t][2]) + 6 * (lv - 1) + 6 * (t == 20)
         x = s[i + 3] % 4000
         p = x // 200
         g.pen.append([nm, t, lv, mh, mh, s[i + 2], PAINT[p - 1] if p else DT[t][3], x // 20 % 10, x % 20, s[i + 3] // 4000])
@@ -1045,7 +1047,7 @@ def hatch(g):
     names = sample(NAMES, 4)
     i = choose("Name your " + t[0] + ":", names + ["Type a name"])
     nm = names[max(0, i)] if i < 4 else typed(t[0]) or names[0]
-    mh = 20 + 6 * min(4, t[2])
+    mh = 20 + 6 * min(4, t[2]) + 6 * (e == 20)
     d = [nm, e, 1, mh, mh, 0, t[3], 0, 0, q + 8 * b]
     g.pen.append(d)
     msg = [nm + " joins your pen!"]

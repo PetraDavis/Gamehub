@@ -168,7 +168,7 @@ def G_hatch(g):
  names=sample(G_NAMES,4)
  i=choose('Name your '+t[0]+':',names+['Type a name'])
  nm=names[max(0,i)]if i<4 else G_typed(t[0])or names[0]
- mh=20+6*min(4,t[2])
+ mh=20+6*min(4,t[2])+6*(e==20)
  d=[nm,e,1,mh,mh,0,t[3],0,0,q+8*b]
  g.pen.append(d)
  msg=[nm+' joins your pen!']
