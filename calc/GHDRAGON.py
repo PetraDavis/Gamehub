@@ -453,8 +453,8 @@ def foe_screen(f, title):
 
 
 def battle(g, f):
-    # returns True when the monster is beaten or you got away, False when
-    # you died
+    # returns True when the monster is beaten, 2 when you got away, False
+    # when you died
     name, fhp, fat, xp, fc, fe = f
     mx = fhp
     foe_screen(f, name + " appears!")
@@ -503,7 +503,7 @@ def battle(g, f):
                 log = "The Wyrm blocks your way!"
                 continue
             if random.random() < 0.6:
-                return True
+                return 2
             log = "Couldn't get away."
         elif o == "Sword":
             dm = random.randint(3, 5)
@@ -908,9 +908,19 @@ def evil(g):
     cls()
     ctext(90, "The sky goes dark...", RED)
     pause(0.8)
-    if not battle(g, DREAD):
+    r = battle(g, DREAD)
+    if not r:
         return False
     draw_map(g)
+    if r == 2:
+        # you got away, so no egg, and it hunts you again soon
+        g.dread = random.randint(25, 50)
+        message(["You got away...", "but the Dread Drake", "will be back!"], "Escaped")
+        draw_map(g, True)
+        return True
+    # beaten: it never comes back (remembered in the book's spare bit 25)
+    g.dread = 0
+    g.book |= 1 << 25
     if not put_egg(g, 20, True) and len(g.bag) < 5:
         g.bag.append(20)
     message(["The Dread Drake flies", "away... and leaves a", "strange egg behind!"], "Whoa!")
@@ -949,6 +959,7 @@ def play():
     g.quest = None
     g.seen = 0
     g.spawn = 30
+    g.dread = 0
     load(g)
     steps = 0
     draw_map(g)
@@ -1039,7 +1050,11 @@ def play():
                 put_egg(g, egg_type(g.m), False)
         hud(g)
         steps += 1
-        if steps > 3 and random.random() < EVIL:
+        # the evil dragon only hunts tamers who own a Rare (or rarer) dragon
+        if g.dread > 0:
+            g.dread -= 1
+        if (g.dread == 1 or steps > 3 and random.random() < EVIL) and not g.book >> 25 & 1 and \
+                any(DT[d[1]][2] >= 2 for d in g.pen):
             steps = 0
             if not evil(g):
                 return

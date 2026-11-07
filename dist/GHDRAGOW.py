@@ -77,7 +77,7 @@ def G_battle(g,f):
     log='The Wyrm blocks your way!'
     continue
    if random.random()<0.6:
-    return True
+    return 2
    log="Couldn't get away."
   elif o=='Sword':
    dm=random.randint(3,5)
@@ -135,9 +135,17 @@ def G_evil(g):
  cls()
  ctext(90,'The sky goes dark...',RED)
  pause(0.8)
- if not G_battle(g,G_DREAD):
+ r=G_battle(g,G_DREAD)
+ if not r:
   return False
  G_draw_map(g)
+ if r==2:
+  g.dread=random.randint(25,50)
+  message(['You got away...','but the Dread Drake','will be back!'],'Escaped')
+  G_draw_map(g,True)
+  return True
+ g.dread=0
+ g.book|=1<<25
  if not G_put_egg(g,20,True)and len(g.bag)<5:
   g.bag.append(20)
  message(['The Dread Drake flies','away... and leaves a','strange egg behind!'],'Whoa!')

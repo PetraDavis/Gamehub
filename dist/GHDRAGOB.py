@@ -1,10 +1,5 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-from GHDRAGOC import _C
-def col(c):
- if c!=_C[0]:
-  _C[0]=c
-  set_color(c[0],c[1],c[2])
 def fr(x,y,w,h):
  fill_rect(x-1,y-1,w+1,h+1)
 def rect(x,y,w,h,c):
@@ -29,26 +24,12 @@ def lt(c,k=0.35):
  return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
 def _corners(x,y,w,h,r,t):
  return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
-def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
- edge(x,y,w,h,r,c,t)
- if fill:
-  rect(x+t,y+t,w-2*t,h-2*t,inner)
-def edge(x,y,w,h,r,c,t=2,inner=BLACK):
- col(c)
- for bx,by,bw,bh in _corners(x,y,w,h,r,t):
-  if bw>0 and bh>0:
-   fr(bx,by,bw,bh)
 G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','T..........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^^....','^^^^^^^^^^^^^^^^'])
 G_GROUND=((50,130,60),(85,65,55),(215,225,240))
 G_TALL=((35,100,45),(120,90,60),(170,190,220))
-G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum')
 G_DT=list(zip(('Pyrrak','Smoldedrake','Aquawyrm','Gillwing','Fernling','Lichenwing','Stonewyrm','Volcanox','Ashveil','Glacius','Tempestra','Thornwyrm','Dawnwing','Pearlhorn','Jadewyrm','Petalwyrm','Blazequill','Abyssar','Rootwyrm','Lumora','Quantum'),b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03',b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05',G_cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
-G_GEARC=[None]+G_cl(b'\xfa\x96\xc8(((\x82<\xbe\xe6\xb4(<\xe6\xe6\x00\x00\x00\xfa\x96\xc8\xbe\xc3\xcd\xdc(\x1eZ<\x1e(P\xc8\xbe\xc3\xcd(P\xc8Z\xbeP\xdc(\x1e\xe6\xb4(')
+G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_BOSS=('Shadow Wyrm',110,12,0,(90,50,140),3)
-def G_egg_type(m):
- r=random.randint(0,99)+m*6
- rar=4 if r>=99 else 3 if r>=92 else 2 if r>=78 else 1 if r>=52 else 0
- return random.choice([i for i in range(20)if G_DT[i][2]==rar])
 def G_base(m,ch):
  if ch=='~':
   return G_WATER
@@ -140,6 +121,27 @@ def G_paint(ops):
    fill_poly(a[0],a[1])
  if last:
   rect(last[1],last[2],last[3],last[4],last[0][1])
+def G_cells(g,todo,with_hero):
+ mp=g.maps[g.m]
+ ops=[]
+ rows={}
+ for x,y in todo:
+  rows.setdefault(y,[]).append(x)
+ for y in rows:
+  xs=sorted(rows[y])
+  i=0
+  while i<len(xs):
+   c=G_base(g.m,mp[y][xs[i]])
+   j=i+1
+   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
+    j+=1
+   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
+   i=j
+ for x,y in todo:
+  G_shapes(g.m,x,y,mp[y][x],ops)
+ if with_hero:
+  G_hero(g,ops)
+ G_paint(ops)
 def G_hud(g):
  d=g.ride
  if d is not None:
