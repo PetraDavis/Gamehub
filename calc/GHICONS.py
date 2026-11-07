@@ -370,7 +370,7 @@ def crypt(x, y, c):
                 g = random.randint(28, 62)
                 hline(a + 1, b - 2, row, (g, g, g + 8))
     # small cold blue eyes
-    for ex, ey in ((136.5, 64.6), (147.3, 71.0)):
+    for ex, ey in ((136.5, 57.0), (147.3, 63.0)):
         a, b = m(ex, ey)
         a = int(a)
         b = int(b)
