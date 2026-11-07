@@ -1,11 +1,25 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-G_CAVE=[0]
-def G_egg_type(m,up=0):
- r=random.randint(0,999)
- rar=4 if r<4+2*m else 3 if r<30+10*m else 2 if r<110+25*m else 1 if r<330+40*m else 0
- rar=min(4,rar+up)
- return random.choice([i for i in range(20)if G_DT[i][2]==rar])
+def message(lines,title=None):
+ n=len(lines)+(1 if title else 0)
+ h=n*18+30
+ y=(H-h)//2
+ rbox(20,y,280,h,8,WHITE)
+ MSG[0],MSG[1]=(y,h)
+ COVER[0]+=1
+ yy=y+24
+ if title:
+  ctext(yy,title,GOLD)
+  yy+=18
+ for s in lines:
+  ctext(yy,s)
+  yy+=18
+ while True:
+  k=wkey()
+  if k in(OK,CLR):
+   return k
+G_LANDS=('Green Valley','Fire Mountain','Frost Peaks','Village')
+G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
 def G_drag(x,y,s,t,c,head=0,body=0,out=None,f=0,sp=0):
  P=G_PAL+[lt(c,0.45),dk(c,0.6),c]+G_PAL2+[lt(c,0.2),dk(c,0.4)]+G_PAL3
  if sp:
@@ -92,6 +106,7 @@ def G_shapes(m,x,y,ch,out):
   out.append((1,G_BOSS[4],1,(px+10,py+10,6)))
   out.append((2,(255,60,60),0,(px+6,py+8,3,3)))
   out.append((2,(255,60,60),0,(px+11,py+8,3,3)))
+G_SCH=(None,('Silver',(190,195,205),(240,242,248),(105,110,125),(80,170,255)),('Gold',(235,185,40),(255,235,130),(150,100,20),(255,110,30)),('Neon',(40,255,140),(240,255,60),(255,40,220),(40,230,255)),('Purple-blue',(130,60,210),(70,150,255),(40,30,120),(160,235,255)))
 def G_hero(g,out):
  px=g.x*G_T
  py=20+g.y*G_T
@@ -129,33 +144,3 @@ def G_paint(ops):
    fill_poly(a[0],a[1])
  if last:
   rect(last[1],last[2],last[3],last[4],last[0][1])
-def G_cells(g,todo,with_hero):
- mp=g.maps[g.m]
- ops=[]
- rows={}
- for x,y in todo:
-  rows.setdefault(y,[]).append(x)
- for y in rows:
-  xs=sorted(rows[y])
-  i=0
-  while i<len(xs):
-   c=G_base(g.m,mp[y][xs[i]])
-   j=i+1
-   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
-    j+=1
-   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
-   i=j
- for x,y in todo:
-  G_shapes(g.m,x,y,mp[y][x],ops)
- if with_hero:
-  G_hero(g,ops)
- G_paint(ops)
-def G_shen_off(g):
- if g.shen:
-  m,x,y=g.shen
-  if g.maps[m][y][x]=='M':
-   g.maps[m][y][x]='.'
-   if m==g.m:
-    G_cells(g,[(x,y)],False)
-  g.shen=None
-  g.shn=random.randint(250,350)
