@@ -1,5 +1,6 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
+BLACK=(0,0,0)
 def fr(x,y,w,h):
  fill_rect(x-1,y-1,w+1,h+1)
 def rect(x,y,w,h,c):
@@ -14,16 +15,14 @@ def cls(c=BLACK):
 def text(x,y,s,c=WHITE):
  col(c)
  draw_text(x,y+TY,s)
-def ctext(y,s,c=WHITE,cx=160):
- col(c)
- draw_text(cx-len(s)*5,y+TY,s)
-def circ(x,y,r,c):
- col(c)
- fill_circle(x,y,r)
 def lt(c,k=0.35):
  return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
 def _corners(x,y,w,h,r,t):
  return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
+def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
+ edge(x,y,w,h,r,c,t)
+ if fill:
+  rect(x+t,y+t,w-2*t,h-2*t,inner)
 def edge(x,y,w,h,r,c,t=2,inner=BLACK):
  col(c)
  for bx,by,bw,bh in _corners(x,y,w,h,r,t):
@@ -33,6 +32,7 @@ G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T..
 G_GROUND=((50,130,60),(85,65,55),(215,225,240))
 G_TALL=((35,100,45),(120,90,60),(170,190,220))
 G_DT=list(zip(('Pyrrak','Smoldedrake','Aquawyrm','Gillwing','Fernling','Lichenwing','Stonewyrm','Volcanox','Ashveil','Glacius','Tempestra','Thornwyrm','Dawnwing','Pearlhorn','Jadewyrm','Petalwyrm','Blazequill','Abyssar','Rootwyrm','Lumora','Quantum'),b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03',b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05',G_cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
+G_GEARC=[None]+G_cl(b'\xfa\x96\xc8(((\x82<\xbe\xe6\xb4(<\xe6\xe6\x00\x00\x00\xfa\x96\xc8\xbe\xc3\xcd\xdc(\x1eZ<\x1e(P\xc8\xbe\xc3\xcd(P\xc8Z\xbeP\xdc(\x1e\xe6\xb4(')
 def G_base(m,ch):
  if ch=='~':
   return G_WATER
@@ -222,10 +222,3 @@ def G_hatch(*a):
  GHDRAGOY=None
  G__drop('GHDRAGOY')
  return r
-def G__drop(m):
- import sys,gc
- try:
-  del sys.modules[m]
- except Exception:
-  pass
- gc.collect()

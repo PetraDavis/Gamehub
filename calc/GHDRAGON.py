@@ -16,7 +16,7 @@ T = 20
 SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil"),
         "X": ("rest", "load", "new_quest", "board", "portrait", "pen", "lst", "dress", "shop", "nest",
               "menu", "win"),
-        "Y": ("backpack", "book", "hatch", "oval", "egg")}
+        "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
      'T.....""".....~~',
@@ -71,6 +71,7 @@ RCOL = cl(b'\xff\xff\xffx\xdcxZ\xa0\xff\xc8n\xf0\xe6\xb4(<\xe6\xe6')
 # dragon kinds: name, element, rarity, colour. Each rarer level has fewer.
 DT = list(zip(('Pyrrak', 'Smoldedrake', 'Aquawyrm', 'Gillwing', 'Fernling', 'Lichenwing', 'Stonewyrm', 'Volcanox', 'Ashveil', 'Glacius', 'Tempestra', 'Thornwyrm', 'Dawnwing', 'Pearlhorn', 'Jadewyrm', 'Petalwyrm', 'Blazequill', 'Abyssar', 'Rootwyrm', 'Lumora', 'Quantum'),
          b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03', b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05', cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
+ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NAMES = ("Blaze", "Splash", "Fern", "Spark", "Misty", "Clover", "Ziggy", "Nova",
          "Pebble", "Rocket", "Biscuit", "Luna", "Comet", "Pip", "Maple", "Echo",
          "Sunny", "Bolt", "Willow", "Ash", "Ripple", "Twig", "Ember", "Taro")
@@ -567,13 +568,17 @@ def rest(g):
 
 
 # ---------- saving: one list called DRG ----------
-# [3, coins, accessories owned, species in the book, steps until the Dread Drake returns, eggs in the bag (up to 5, -1 = none),
-#  then 4 numbers a dragon: name*32+kind, level, xp, paint*200+head*20+body]
+# [4, coins, accessories owned, species in the book, steps until the Dread Drake returns, eggs in the bag (up to 5, -1 = none),
+#  then 5 numbers a dragon: name (letters 1-26 in base 27), kind, level, xp,
+#  paint*200+head*20+body]
 def save(g):
-    s = [3, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
+    s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
     for d in g.pen:
         p = PAINT.index(d[6]) + 1 if d[6] in PAINT and d[6] != DT[d[1]][3] else 0
-        s += [NAMES.index(d[0]) * 32 + d[1], d[2], d[5], p * 200 + d[7] * 20 + d[8]]
+        n = 0
+        for ch in d[0].upper():
+            n = n * 27 + ABC.index(ch) + 1
+        s += [n, d[1], d[2], d[5], p * 200 + d[7] * 20 + d[8]]
     try:
         from ti_system import store_list
         store_list("DRG", s)
@@ -587,19 +592,31 @@ def load(g):
         s = [int(v) for v in recall_list("DRG")]
     except Exception:
         return
-    if len(s) < 9 or s[0] not in (2, 3):
+    if len(s) < 9 or s[0] not in (2, 3, 4):
         return
-    k = s[0] - 2
+    v = s[0]
+    k = min(1, v - 2)
     g.coins, g.own, g.book = s[1], s[2], s[3]
     if k:
         g.dread = s[4]
     g.bag = [e for e in s[4 + k:9 + k] if e >= 0]
-    for i in range(9 + k, len(s) - 3, 4):
-        t = s[i] % 32
+    w = 5 if v > 3 else 4
+    for i in range(9 + k, len(s) - w + 1, w):
+        if v > 3:
+            # the name is packed as letters 1-26 in base 27
+            n, nm = s[i], ""
+            while n:
+                nm = ABC[n % 27 - 1] + nm
+                n //= 27
+            nm = nm[0] + nm[1:].lower()
+            i += 1
+            t = s[i]
+        else:
+            nm, t = NAMES[s[i] // 32], s[i] % 32
         lv = s[i + 1]
         mh = 20 + 6 * min(4, DT[t][2]) + 6 * (lv - 1)
         p = s[i + 3] // 200
-        g.pen.append([NAMES[s[i] // 32], t, lv, mh, mh, s[i + 2], PAINT[p - 1] if p else DT[t][3], s[i + 3] // 20 % 10, s[i + 3] % 20])
+        g.pen.append([nm, t, lv, mh, mh, s[i + 2], PAINT[p - 1] if p else DT[t][3], s[i + 3] // 20 % 10, s[i + 3] % 20])
     if g.pen:
         g.pick = g.pen[0]
     g.warm = 12
@@ -653,13 +670,16 @@ def portrait(d):
 def pen(g):
     while g.pen:
         opts = [("> " if d is g.pick else "") + d[0] + " L" + str(d[2]) + " " + DT[d[1]][0][:6] for d in g.pen]
-        c = choose("Dragon pen " + str(len(g.pen)) + "/10", opts + ["Back"])
+        c = lst("Dragon pen " + str(len(g.pen)) + "/10", opts + ["Back"])
         if c < 0 or c >= len(g.pen):
             return
         d = g.pen[c]
         a = choose(d[0] + " the " + DT[d[1]][0], ["Pick as partner", "See " + d[0], "Let it go free", "Back"])
         if a == 0:
             g.pick = d
+            if g.ride is not None:
+                g.ride = d
+            message([d[0] + " is your partner now!"], "Partner")
         elif a == 1:
             t = DT[d[1]]
             portrait(d)
@@ -668,22 +688,25 @@ def pen(g):
             g.pen.remove(d)
             if g.pick is d:
                 g.pick = g.pen[0]
+            if g.ride is d:
+                g.ride = g.pick
 
 
 def lst(title, opts):
-    # a list with small rows, for up to 10 choices; -1 for CLEAR
+    # a list with small rows, for up to 11 choices; -1 for CLEAR
     cls()
     ctext(24, title, GOLD)
     n = len(opts)
+    h = 15 if n > 9 else 17
     sel = old = 0
     for i in range(n):
-        text(70, 50 + i * 17, opts[i], GOLD if i == 0 else WHITE)
+        text(70, 50 + i * h, opts[i], GOLD if i == 0 else WHITE)
     while True:
         if sel != old:
             for i in (old, sel):
-                rect(0, 34 + i * 17, 320, 17, BLACK)
-                text(70, 50 + i * 17, opts[i], GOLD if i == sel else WHITE)
-        rect(54, 40 + sel * 17, 8, 6, GOLD)
+                rect(0, 50 + i * h - 16, 320, h, BLACK)
+                text(70, 50 + i * h, opts[i], GOLD if i == sel else WHITE)
+        rect(54, 50 + sel * h - 10, 8, 6, GOLD)
         k = wkey()
         old = sel
         if k == UP:
@@ -819,6 +842,61 @@ def book(g):
             return
 
 
+def frame(x, y, w, h, c):
+    rect(x, y, w, 2, c)
+    rect(x, y + h - 2, w, 2, c)
+    rect(x, y, 2, h, c)
+    rect(x + w - 2, y, 2, h, c)
+
+
+def kbox(i):
+    # where item i of the letter keyboard sits: 26 letters, Delete, Done
+    if i < 26:
+        return 26 + (i % 13) * 20, 92 + (i // 13) * 30, 18, 24
+    return (52, 160, 80, 26) if i == 26 else (188, 160, 80, 26)
+
+
+def typed(kind):
+    # type a name (up to 8 letters) with the arrows and ENTER
+    cls()
+    ctext(24, "Name your " + kind, GOLD)
+    frame(60, 38, 200, 30, WHITE)
+    for r in range(2):
+        text(30, 110 + r * 30, " ".join(ABC[r * 13:r * 13 + 13]), WHITE)
+    text(62, 179, "Delete", WHITE)
+    text(208, 179, "Done", WHITE)
+    text(6, 204, "ENTER: pick  DEL: erase", GREY)
+    nm = ""
+    sel = old = 0
+    frame(*kbox(0), GOLD)
+    while True:
+        k = wkey()
+        old = sel
+        if k == LEFT:
+            sel = (sel - 1) % 28
+        elif k == RIGHT:
+            sel = (sel + 1) % 28
+        elif k == UP:
+            sel = sel - 13 if 13 <= sel < 26 else (13 if sel == 26 else 20) if sel > 25 else sel + 13
+        elif k == DOWN:
+            sel = sel + 13 if sel < 13 else (26 if sel < 19 else 27) if sel < 26 else sel - 13
+        elif k == CLR:
+            return ""
+        elif k == DEL or (k == OK and sel == 26):
+            nm = nm[:-1]
+        elif k == OK and sel == 27:
+            if nm:
+                return nm
+        elif k == OK and len(nm) < 8:
+            nm += ABC[sel] if not nm else ABC[sel].lower()
+        if k in (OK, DEL):
+            rect(64, 42, 192, 22, BLACK)
+            text(70, 62, nm + ("_" if len(nm) < 8 else ""), WHITE)
+        if sel != old:
+            frame(*kbox(old), BLACK)
+            frame(*kbox(sel), GOLD)
+
+
 def hatch(g):
     e = g.bag.pop(0)
     g.warm = 12
@@ -840,8 +918,8 @@ def hatch(g):
     ctext(200, ("" if t[2] > 4 else RARE[t[2]] + " ") + t[0] + " dragon!", RCOL[t[2]])
     pause(1.2)
     names = sample(NAMES, 4)
-    i = choose("Name your " + t[0] + ":", names)
-    nm = names[max(0, i)]
+    i = choose("Name your " + t[0] + ":", names + ["Type a name"])
+    nm = names[max(0, i)] if i < 4 else typed(t[0]) or names[0]
     mh = 20 + 6 * min(4, t[2])
     d = [nm, e, 1, mh, mh, 0, t[3], 0, 0]
     g.pen.append(d)

@@ -8,6 +8,7 @@ def sample(seq,k):
  a=list(seq)
  shuffle(a)
  return a[:k]
+DEL=23
 def G_oval(x,y,s,c,k=0):
  circ(x,y+2*s,7*s-k,c)
  circ(x,y-2*s,6*s-k,c)
@@ -82,6 +83,53 @@ def G_book(g):
    i=(i+(1 if k==RIGHT else-1))%n
   elif k in(OK,CLR):
    return
+def G_frame(x,y,w,h,c):
+ rect(x,y,w,2,c)
+ rect(x,y+h-2,w,2,c)
+ rect(x,y,2,h,c)
+ rect(x+w-2,y,2,h,c)
+def G_kbox(i):
+ if i<26:
+  return(26+i%13*20,92+i//13*30,18,24)
+ return(52,160,80,26)if i==26 else(188,160,80,26)
+def G_typed(kind):
+ cls()
+ ctext(24,'Name your '+kind,GOLD)
+ G_frame(60,38,200,30,WHITE)
+ for r in range(2):
+  text(30,110+r*30,' '.join(G_ABC[r*13:r*13+13]),WHITE)
+ text(62,179,'Delete',WHITE)
+ text(208,179,'Done',WHITE)
+ text(6,204,'ENTER: pick  DEL: erase',GREY)
+ nm=''
+ sel=old=0
+ G_frame(*G_kbox(0),GOLD)
+ while True:
+  k=wkey()
+  old=sel
+  if k==LEFT:
+   sel=(sel-1)%28
+  elif k==RIGHT:
+   sel=(sel+1)%28
+  elif k==UP:
+   sel=sel-13 if 13<=sel<26 else(13 if sel==26 else 20)if sel>25 else sel+13
+  elif k==DOWN:
+   sel=sel+13 if sel<13 else(26 if sel<19 else 27)if sel<26 else sel-13
+  elif k==CLR:
+   return ''
+  elif k==DEL or(k==OK and sel==26):
+   nm=nm[:-1]
+  elif k==OK and sel==27:
+   if nm:
+    return nm
+  elif k==OK and len(nm)<8:
+   nm+=G_ABC[sel]if not nm else G_ABC[sel].lower()
+  if k in(OK,DEL):
+   rect(64,42,192,22,BLACK)
+   text(70,62,nm+('_'if len(nm)<8 else ''),WHITE)
+  if sel!=old:
+   G_frame(*G_kbox(old),BLACK)
+   G_frame(*G_kbox(sel),GOLD)
 def G_hatch(g):
  e=g.bag.pop(0)
  g.warm=12
@@ -102,8 +150,8 @@ def G_hatch(g):
  ctext(200,(''if t[2]>4 else G_RARE[t[2]]+' ')+t[0]+' dragon!',G_RCOL[t[2]])
  pause(1.2)
  names=sample(G_NAMES,4)
- i=choose('Name your '+t[0]+':',names)
- nm=names[max(0,i)]
+ i=choose('Name your '+t[0]+':',names+['Type a name'])
+ nm=names[max(0,i)]if i<4 else G_typed(t[0])or names[0]
  mh=20+6*min(4,t[2])
  d=[nm,e,1,mh,mh,0,t[3],0,0]
  g.pen.append(d)

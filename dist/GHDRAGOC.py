@@ -10,7 +10,6 @@ RIGHT=26
 OK=105
 CLR=45
 SECOND=21
-BLACK=(0,0,0)
 WHITE=(255,255,255)
 GOLD=(230,180,40)
 YELLOW=(240,220,60)
@@ -22,6 +21,9 @@ def col(c):
   set_color(c[0],c[1],c[2])
 COVER=[0]
 TY=6
+def circ(x,y,r,c):
+ col(c)
+ fill_circle(x,y,r)
 MSG=[0,0]
 G_TEST=True
 G_EVIL=0.12 if G_TEST else 0.004
@@ -34,12 +36,11 @@ G_LEAF=(25,85,35)
 G_BARK=(90,60,30)
 G_CYAN=(60,230,230)
 G_MAG=(230,60,220)
-G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum')
 def G_cl(b):
  return[tuple(b[i:i+3])for i in range(0,len(b),3)]
 G_RCOL=G_cl(b'\xff\xff\xffx\xdcxZ\xa0\xff\xc8n\xf0\xe6\xb4(<\xe6\xe6')
+G_ABC='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
-G_GEARC=[None]+G_cl(b'\xfa\x96\xc8(((\x82<\xbe\xe6\xb4(<\xe6\xe6\x00\x00\x00\xfa\x96\xc8\xbe\xc3\xcd\xdc(\x1eZ<\x1e(P\xc8\xbe\xc3\xcd(P\xc8Z\xbeP\xdc(\x1e\xe6\xb4(')
 G_PAL=G_cl(b'\x00\x00\x00\xff\xff\xff\xfa\xdc<\xf5\x8c\x1e\xdc(\x1exx}\xc8\xc8\xd2\x1eZ(Z\xbeP\xfa\x96\xc8nK(<\xe6\xe6\xe6<\xdc\xe6\xb4(\xaa\xd2\xfa')
 G_PAL2=G_cl(b'\x82<\xbe\xbe\xc3\xcd(P\xc8\x1e\x1eF\xc8\x82\xff\xaa\x14\x1e')
 G_PAL3=G_cl(b'F-\x14\xb4\x82\x14dix\xc8P\x96\x14\x8c\xa0\x14(x\xa0n<')
@@ -51,3 +52,10 @@ G_EGGS={}
 G_HUD=[None]
 class G_Game:
  pass
+def G__drop(m):
+ import sys,gc
+ try:
+  del sys.modules[m]
+ except Exception:
+  pass
+ gc.collect()

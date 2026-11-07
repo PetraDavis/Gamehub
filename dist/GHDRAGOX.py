@@ -13,19 +13,30 @@ def G_load(g):
   s=[int(v)for v in recall_list('DRG')]
  except Exception:
   return
- if len(s)<9 or s[0]not in(2,3):
+ if len(s)<9 or s[0]not in(2,3,4):
   return
- k=s[0]-2
+ v=s[0]
+ k=min(1,v-2)
  g.coins,g.own,g.book=(s[1],s[2],s[3])
  if k:
   g.dread=s[4]
  g.bag=[e for e in s[4+k:9+k]if e>=0]
- for i in range(9+k,len(s)-3,4):
-  t=s[i]%32
+ w=5 if v>3 else 4
+ for i in range(9+k,len(s)-w+1,w):
+  if v>3:
+   n,nm=(s[i],'')
+   while n:
+    nm=G_ABC[n%27-1]+nm
+    n//=27
+   nm=nm[0]+nm[1:].lower()
+   i+=1
+   t=s[i]
+  else:
+   nm,t=(G_NAMES[s[i]//32],s[i]%32)
   lv=s[i+1]
   mh=20+6*min(4,G_DT[t][2])+6*(lv-1)
   p=s[i+3]//200
-  g.pen.append([G_NAMES[s[i]//32],t,lv,mh,mh,s[i+2],G_PAINT[p-1]if p else G_DT[t][3],s[i+3]//20%10,s[i+3]%20])
+  g.pen.append([nm,t,lv,mh,mh,s[i+2],G_PAINT[p-1]if p else G_DT[t][3],s[i+3]//20%10,s[i+3]%20])
  if g.pen:
   g.pick=g.pen[0]
  g.warm=12
@@ -58,13 +69,16 @@ def G_portrait(d):
 def G_pen(g):
  while g.pen:
   opts=[('> 'if d is g.pick else '')+d[0]+' L'+str(d[2])+' '+G_DT[d[1]][0][:6]for d in g.pen]
-  c=choose('Dragon pen '+str(len(g.pen))+'/10',opts+['Back'])
+  c=G_lst('Dragon pen '+str(len(g.pen))+'/10',opts+['Back'])
   if c<0 or c>=len(g.pen):
    return
   d=g.pen[c]
   a=choose(d[0]+' the '+G_DT[d[1]][0],['Pick as partner','See '+d[0],'Let it go free','Back'])
   if a==0:
    g.pick=d
+   if g.ride is not None:
+    g.ride=d
+   message([d[0]+' is your partner now!'],'Partner')
   elif a==1:
    t=G_DT[d[1]]
    G_portrait(d)
@@ -73,19 +87,22 @@ def G_pen(g):
    g.pen.remove(d)
    if g.pick is d:
     g.pick=g.pen[0]
+   if g.ride is d:
+    g.ride=g.pick
 def G_lst(title,opts):
  cls()
  ctext(24,title,GOLD)
  n=len(opts)
+ h=15 if n>9 else 17
  sel=old=0
  for i in range(n):
-  text(70,50+i*17,opts[i],GOLD if i==0 else WHITE)
+  text(70,50+i*h,opts[i],GOLD if i==0 else WHITE)
  while True:
   if sel!=old:
    for i in(old,sel):
-    rect(0,34+i*17,320,17,BLACK)
-    text(70,50+i*17,opts[i],GOLD if i==sel else WHITE)
-  rect(54,40+sel*17,8,6,GOLD)
+    rect(0,50+i*h-16,320,h,BLACK)
+    text(70,50+i*h,opts[i],GOLD if i==sel else WHITE)
+  rect(54,50+sel*h-10,8,6,GOLD)
   k=wkey()
   old=sel
   if k==UP:
