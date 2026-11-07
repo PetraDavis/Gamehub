@@ -1,31 +1,7 @@
 # GHCRYPTB: part of GHCRYPTP. Keep it next to GHCRYPTP.
 from GHCRYPTC import*
 LEFT=24
-def circ(x,y,r,c):
- col(c)
- fill_circle(x,y,r)
-G_CWID=G_VW//G_COLS
-def G_diff(old,new):
- if old is None:
-  return new
- out=[]
- i=j=0
- y=0
- while y<G_VH:
-  o0,o1,oc=old[i]
-  n0,n1,nc=new[j]
-  e=min(o1,n1)
-  if oc!=nc:
-   if out and out[-1][1]==y and(out[-1][2]==nc):
-    out[-1]=(out[-1][0],e,nc)
-   else:
-    out.append((y,e,nc))
-  y=e
-  if o1==e:
-   i+=1
-  if n1==e:
-   j+=1
- return out
+G_SPRITES=[(3.3,5.5,'couch'),(1.9,4.6,'table'),(4.4,6.4,'phone'),(1.0,6.5,'lamp'),(2.6,1.5,'desk'),(12.4,4.9,'rack'),(6.5,1.4,'vase')]
 def G_column(g,t,u,top,h,k):
  cl=(0,0,0)if g.blackout else G_CEIL
  fl=(0,0,0)if g.blackout else G_shade(G_FLOOR,0.5 if not g.power else 1)
@@ -37,11 +13,11 @@ def G_column(g,t,u,top,h,k):
  if y1==G_VH:
   sp=sp[:-1]
  sp=[s for s in sp if s[1]>s[0]]
- def band(v0,v1,c):
+ def band(v0,v1,c,glow=False):
   a=int(top+h*(1-v1))&~1
   b=int(top+h*(1-v0))&~1
   if b-a>=2:
-   return G_put(sp,max(0,a),min(G_VH,b),G_shade(c,k))
+   return G_put(sp,max(0,a),min(G_VH,b),c if glow and(not g.blackout)else G_shade(c,k))
   return sp
  if t in 'lkjCF':
   if u<0.12 or u>0.88:
@@ -53,8 +29,13 @@ def G_column(g,t,u,top,h,k):
    on=t=='C'and g.closet
    sp=band(0.5,0.6,(40,40,40))
    sp=band(0.53,0.57,(40,200,70)if on else(200,40,40)if g.power else(30,30,30))
-  if t=='F'and g.locked and(0.15<u<0.25):
-   sp=band(0.6,0.64,(255,30,40))
+  if t=='F':
+   if 0.3<u<0.7:
+    sp=band(0.6,0.74,(70,85,120),True)
+    if 0.48<u<0.52:
+     sp=band(0.6,0.74,(30,30,40))
+   if g.locked and 0.15<u<0.25:
+    sp=band(0.55,0.6,(255,30,40),True)
  elif t=='S':
   for n in range(6):
    sp=band(n*0.14,n*0.14+0.07,(95,70,45))
@@ -77,10 +58,13 @@ def G_column(g,t,u,top,h,k):
     if not g.note:
      sp=band(0.25,0.3,(240,240,230))
  elif t=='P':
-  if 0.3<u<0.6:
-   sp=band(0.38,0.56,(130,130,135))
-   if 0.4<u<0.5:
-    sp=band(0.44 if g.power else 0.48,0.54 if g.power else 0.58,(40,40,40))
+  if 0.25<u<0.75:
+   sp=band(0.3,0.62,(150,150,155))
+   if 0.4<u<0.6:
+    sp=band(0.38,0.5,(40,40,40))
+    sp=band(0.44 if g.power else 0.38,0.5 if g.power else 0.44,(200,200,205))
+   if 0.42<u<0.58:
+    sp=band(0.54,0.59,(60,230,90)if g.power else(255,50,40),True)
  return sp
 def G_render(g,full=False):
  if full or not hasattr(g,'cols')or g.cover!=COVER[0]:
