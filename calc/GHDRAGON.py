@@ -567,10 +567,10 @@ def rest(g):
 
 
 # ---------- saving: one list called DRG ----------
-# [2, coins, accessories owned, species in the book, eggs in the bag (up to 5, -1 = none),
+# [3, coins, accessories owned, species in the book, steps until the Dread Drake returns, eggs in the bag (up to 5, -1 = none),
 #  then 4 numbers a dragon: name*32+kind, level, xp, paint*200+head*20+body]
 def save(g):
-    s = [2, g.coins, g.own, g.book] + (g.bag + [-1] * 5)[:5]
+    s = [3, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
     for d in g.pen:
         p = PAINT.index(d[6]) + 1 if d[6] in PAINT and d[6] != DT[d[1]][3] else 0
         s += [NAMES.index(d[0]) * 32 + d[1], d[2], d[5], p * 200 + d[7] * 20 + d[8]]
@@ -587,11 +587,14 @@ def load(g):
         s = [int(v) for v in recall_list("DRG")]
     except Exception:
         return
-    if len(s) < 9 or s[0] != 2:
+    if len(s) < 9 or s[0] not in (2, 3):
         return
+    k = s[0] - 2
     g.coins, g.own, g.book = s[1], s[2], s[3]
-    g.bag = [e for e in s[4:9] if e >= 0]
-    for i in range(9, len(s) - 3, 4):
+    if k:
+        g.dread = s[4]
+    g.bag = [e for e in s[4 + k:9 + k] if e >= 0]
+    for i in range(9 + k, len(s) - 3, 4):
         t = s[i] % 32
         lv = s[i + 1]
         mh = 20 + 6 * min(4, DT[t][2]) + 6 * (lv - 1)
@@ -914,7 +917,7 @@ def evil(g):
     draw_map(g)
     if r == 2:
         # you got away, so no egg, and it hunts you again soon
-        g.dread = random.randint(25, 50)
+        g.dread = random.randint(900, 1100)
         message(["You got away...", "but the Dread Drake", "will be back!"], "Escaped")
         draw_map(g, True)
         return True
@@ -1053,7 +1056,7 @@ def play():
         # the evil dragon only hunts tamers who own a Rare (or rarer) dragon
         if g.dread > 0:
             g.dread -= 1
-        if (g.dread == 1 or steps > 3 and random.random() < EVIL) and not g.book >> 25 & 1 and \
+        if (g.dread == 1 or not g.dread and steps > 3 and random.random() < EVIL) and not g.book >> 25 & 1 and \
                 any(DT[d[1]][2] >= 2 for d in g.pen):
             steps = 0
             if not evil(g):

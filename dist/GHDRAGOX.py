@@ -13,11 +13,14 @@ def G_load(g):
   s=[int(v)for v in recall_list('DRG')]
  except Exception:
   return
- if len(s)<9 or s[0]!=2:
+ if len(s)<9 or s[0]not in(2,3):
   return
+ k=s[0]-2
  g.coins,g.own,g.book=(s[1],s[2],s[3])
- g.bag=[e for e in s[4:9]if e>=0]
- for i in range(9,len(s)-3,4):
+ if k:
+  g.dread=s[4]
+ g.bag=[e for e in s[4+k:9+k]if e>=0]
+ for i in range(9+k,len(s)-3,4):
   t=s[i]%32
   lv=s[i+1]
   mh=20+6*min(4,G_DT[t][2])+6*(lv-1)
