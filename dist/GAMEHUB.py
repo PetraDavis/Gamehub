@@ -101,8 +101,7 @@ icons_WHITE = (255, 255, 255)
 icons_INK = (20, 20, 20)
 icons_RED = (215, 40, 40)
 icons_GOLD = (230, 180, 40)
-icons_BG = {'GHSOLI': (25, 110, 55), 'GHBLOCKS': (40, 30, 90), 'GHSUDOKU': icons_WHITE, 'GHANIM': icons_WHITE, 'GHFLAP': (110, 195, 240), 'GHTTT': icons_WHITE, 'GHMERGE': (187, 173, 160), 'GHPONG': (30, 85, 165), 'GHBREAK': (30, 70, 170), 'GHHANG': icons_WHITE}
-icons_FONT = {'0': '111101101101111', '1': '010110010010111', '2': '111001111100111', '3': '111001111001111', '4': '101101111001001', '5': '111100111001111', '6': '111100111101111', '7': '111001001001001', '8': '111101111101111', '9': '111101111001111'}
+icons_BG = {'GHSOLI': (25, 110, 55), 'GHBLOCKS': (40, 30, 90), 'GHSUDOKU': icons_WHITE, 'GHANIM': icons_WHITE, 'GHFLAP': (110, 195, 240), 'GHTTT': icons_WHITE, 'GHPONG': (30, 85, 165), 'GHBREAK': (30, 70, 170), 'GHHANG': icons_WHITE}
 def icons_c_(c):
  set_color(c[0], c[1], c[2])
 def icons_box(x, y, w, h, c):
@@ -145,13 +144,6 @@ def icons_digit7(x, y, ch, c):
     k = e + 1
    else:
     k += 1
-def icons_digits(x, y, s, c, p=2):
- icons_c_(c)
- for i, ch in enumerate(s):
-  bits = icons_FONT[ch]
-  for n in range(15):
-   if bits[n] == '1':
-    fill_rect(x + i * 4 * p + n % 3 * p - 1, y + n // 3 * p - 1, p + 1, p + 1)
 def icons_bevel(x, y, s, c):
  lt = tuple((min(255, v + 70) for v in c))
  dk = tuple((v // 2 for v in c))
@@ -247,10 +239,6 @@ def icons_ttt(x, y, c):
   cy = y + i * s
   icons_line(cx - 4, cy - 4, cx + 3, cy + 3, icons_INK, 2)
   icons_line(cx + 3, cy - 4, cx - 4, cy + 3, icons_INK, 2)
-def icons_g2048(x, y, c):
- icons_rr(x - 20, y - 12, 41, 28, 4, (200, 160, 30))
- icons_rr(x - 20, y - 14, 41, 28, 4, (237, 194, 46))
- icons_digits(x - 14, y - 5, '2048', icons_WHITE)
 def icons_pong(x, y, c):
  icons_c_(icons_WHITE)
  draw_rect(x - 22, y - 16, 44, 32)
@@ -401,7 +389,7 @@ def icons_about(x, y, c):
  icons_c_(c)
  fill_circle(x, y - 10, 3)
  fill_rect(x - 3, y - 5, 6, 19)
-icons_ICONS = {'GHSOLI': icons_solitaire, 'GHBLOCKS': icons_blocks, 'GHSUDOKU': icons_sudoku, 'GHANIM': icons_anim, 'GHFLAP': icons_flap, 'GHTTT': icons_ttt, 'GHMERGE': icons_g2048, 'GHPONG': icons_pong, 'GHBREAK': icons_breakout, 'GHRPG': icons_rpg, 'GHSIMON': icons_simon, 'GHHANG': icons_hangman, 'GHCRYPT': icons_crypt, '*keys': icons_keys, '*wipe': icons_wipe, '*about': icons_about}
+icons_ICONS = {'GHSOLI': icons_solitaire, 'GHBLOCKS': icons_blocks, 'GHSUDOKU': icons_sudoku, 'GHANIM': icons_anim, 'GHFLAP': icons_flap, 'GHTTT': icons_ttt, 'GHPONG': icons_pong, 'GHBREAK': icons_breakout, 'GHRPG': icons_rpg, 'GHSIMON': icons_simon, 'GHHANG': icons_hangman, 'GHCRYPT': icons_crypt, '*keys': icons_keys, '*wipe': icons_wipe, '*about': icons_about}
 def icons_bg(mod):
  return icons_BG.get(mod, icons_BLACK)
 def icons_draw(mod, x, y, c):
@@ -431,7 +419,7 @@ def save_wipe():
   store_list(save_hname(s), [0])
   n += 1
  return n
-mehub_CATS = [('Arcade', [('Wing It', 'GHFLAP'), ('Pong', 'GHPONG'), ('Breakout', 'GHBREAK')]), ('Puzzle', [('Stack Drop', 'GHBLOCKS'), ('2048', 'GHMERGE'), ('Sudoku', 'GHSUDOKU'), ('Simon', 'GHSIMON')]), ('Classics', [('Solitaire', 'GHSOLI'), ('Tic-Tac-Toe', 'GHTTT'), ('Hangman', 'GHHANG')]), ('Adventure', [('Tiny Quest', 'GHRPG'), ('Encrypted Demo', 'GHCRYPT')]), ('Create', [('Animation Studio', 'GHANIM')]), ('Settings', [('Key Test', '*keys'), ('Delete All Saves', '*wipe'), ('About', '*about')])]
+mehub_CATS = [('Arcade', [('Wing It', 'GHFLAP'), ('Pong', 'GHPONG'), ('Breakout', 'GHBREAK')]), ('Puzzle', [('Stack Drop', 'GHBLOCKS'), ('Sudoku', 'GHSUDOKU'), ('Simon', 'GHSIMON')]), ('Classics', [('Solitaire', 'GHSOLI'), ('Tic-Tac-Toe', 'GHTTT'), ('Hangman', 'GHHANG')]), ('Adventure', [('Tiny Quest', 'GHRPG'), ('Encrypted Demo', 'GHCRYPT')]), ('Create', [('Animation Studio', 'GHANIM')]), ('Settings', [('Key Test', '*keys'), ('Delete All Saves', '*wipe'), ('About', '*about')])]
 mehub_BAR_Y = 34
 mehub_BAR_H = 22
 mehub_BAR_GAP = 27

@@ -5,7 +5,7 @@ import gc
 
 CATS = [
     ("Arcade", [("Wing It", "GHFLAP"), ("Pong", "GHPONG"), ("Breakout", "GHBREAK")]),
-    ("Puzzle", [("Stack Drop", "GHBLOCKS"), ("2048", "GHMERGE"), ("Sudoku", "GHSUDOKU"), ("Simon", "GHSIMON")]),
+    ("Puzzle", [("Stack Drop", "GHBLOCKS"), ("Sudoku", "GHSUDOKU"), ("Simon", "GHSIMON")]),
     ("Classics", [("Solitaire", "GHSOLI"), ("Tic-Tac-Toe", "GHTTT"), ("Hangman", "GHHANG")]),
     ("Adventure", [("Tiny Quest", "GHRPG"), ("Encrypted Demo", "GHCRYPT")]),
     ("Create", [("Animation Studio", "GHANIM")]),

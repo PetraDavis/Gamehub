@@ -10,7 +10,7 @@ RED = (215, 40, 40)
 GOLD = (230, 180, 40)
 
 BG = {"GHSOLI": (25, 110, 55), "GHBLOCKS": (40, 30, 90), "GHSUDOKU": WHITE, "GHANIM": WHITE,
-      "GHFLAP": (110, 195, 240), "GHTTT": WHITE, "GHMERGE": (187, 173, 160), "GHPONG": (30, 85, 165),
+      "GHFLAP": (110, 195, 240), "GHTTT": WHITE, "GHPONG": (30, 85, 165),
       "GHBREAK": (30, 70, 170), "GHHANG": WHITE}
 
 # 3x5 digits, read row by row
@@ -217,12 +217,6 @@ def ttt(x, y, c):
         line(cx + 3, cy - 4, cx - 4, cy + 3, INK, 2)
 
 
-def g2048(x, y, c):
-    rr(x - 20, y - 12, 41, 28, 4, (200, 160, 30))
-    rr(x - 20, y - 14, 41, 28, 4, (237, 194, 46))
-    digits(x - 14, y - 5, "2048", WHITE)
-
-
 def pong(x, y, c):
     c_(WHITE)
     draw_rect(x - 22, y - 16, 44, 32)
@@ -410,7 +404,7 @@ def about(x, y, c):
 
 
 ICONS = {"GHSOLI": solitaire, "GHBLOCKS": blocks, "GHSUDOKU": sudoku, "GHANIM": anim,
-         "GHFLAP": flap, "GHTTT": ttt, "GHMERGE": g2048, "GHPONG": pong, "GHBREAK": breakout,
+         "GHFLAP": flap, "GHTTT": ttt, "GHPONG": pong, "GHBREAK": breakout,
          "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHCRYPT": crypt,
          "*keys": keys, "*wipe": wipe, "*about": about}
 
