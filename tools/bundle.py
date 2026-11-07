@@ -302,7 +302,9 @@ Q3 = "'" * 3
 
 if __name__ == '__main__':
     os.makedirs(DIST, exist_ok=True)
-    out = {'GAMEHUB': build_hub(), 'GHONE': build_single()}
+    # build_single() (the one-file GHONE) is kept but not built: the Evo
+    # can't open a file over about 36-40 KB, so one file can't hold every game
+    out = {'GAMEHUB': build_hub()}
     for g in GAMES:
         out[g] = build_game(g)
     for name, src in out.items():
