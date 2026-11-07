@@ -1,23 +1,10 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-def message(lines,title=None):
- n=len(lines)+(1 if title else 0)
- h=n*18+30
- y=(H-h)//2
- rbox(20,y,280,h,8,WHITE)
- MSG[0],MSG[1]=(y,h)
- COVER[0]+=1
- yy=y+24
- if title:
-  ctext(yy,title,GOLD)
-  yy+=18
- for s in lines:
-  ctext(yy,s)
-  yy+=18
- while True:
-  k=wkey()
-  if k in(OK,CLR):
-   return k
+YELLOW=(240,220,60)
+def G_egg_type(m):
+ r=random.randint(0,999)
+ rar=4 if r<4+2*m else 3 if r<30+10*m else 2 if r<110+25*m else 1 if r<330+40*m else 0
+ return random.choice([i for i in range(20)if G_DT[i][2]==rar])
 def G_art(b,x,y,s,P,out=None,f=0):
  for i in range(0,len(b),8):
   c=P[b[i+1]]
@@ -60,6 +47,8 @@ def G_drag(x,y,s,t,c,head=0,body=0,out=None,f=0,sp=0):
    Q.append(l if v>200 else a if max(q)-min(q)>110 else l if v>165 else dk(k,0.5)if v<40 else l if v>bl else k)
   P=Q
   P[15],P[16],P[17],P[24],P[25]=(l,k,c,l,k)
+  if t==21:
+   P[2],P[5],P[6],P[19]=(l,c,l,a)
  w,b=(G_ARTW[2*t],G_ARTW[2*t+1])
  r=G_DT[t][2]if t<len(G_DT)else 0
  for a in(G_ARTB,G_ARTF[t],G_ARTU[r],bytes((2,w,24,26,40,10,37,28,2,b,40,10,28,27,30,27,2,b,40,10,33,28,35,28,2,17,23,26,40,9,26,26,1,17,26,27,3,0,0,0,2,1,40,9,42,7,41,11)),G_ARTL,G_ARTT[r],G_ARTO[t],G_ARTG[body]if body else b'',G_ARTG[head]if head else b'',bytes((0,1,17,31,5,1,0,0,0,1,19,29,1,5,0,0,0,1,34,14,5,1,0,0,0,1,36,12,1,5,0,0,0,1,41,32,5,1,0,0,0,1,43,30,1,5,0,0))if sp else b''):
