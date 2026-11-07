@@ -32,6 +32,16 @@ DECK = (
     ("The Book", "book", "You learned a big lesson.", "Ask, and you will find out.", "You will discover a talent."),
     ("The Owl", "owl", "You noticed what others missed.", "Listen more than you speak.", "A wise choice will pay off."),
     ("The Feather", "feather", "You let go of a worry.", "Take it easy today.", "Things will feel lighter soon."),
+    ("The Dragon", "dragon", "You faced something scary.", "Your courage is huge today.", "You will protect a friend."),
+    ("The Comet", "comet", "Something rare happened.", "Big ideas are flying by.", "A rare chance is coming."),
+    ("The Snowflake", "snow", "You were one of a kind.", "Be proud of what's different.", "A calm day is coming."),
+    ("The Butterfly", "butterfly", "You changed in a good way.", "You are growing right now.", "You will spread your wings."),
+    ("The Anchor", "anchor", "You stayed when it was hard.", "Someone counts on you.", "You will find a safe place."),
+    ("The Flower", "flower", "A small kindness grew.", "Share a smile today.", "Something will bloom soon."),
+    ("The Gem", "gem", "You found a hidden treasure.", "You are worth a lot.", "A lucky find is ahead."),
+    ("The Mirror", "mirror", "You saw yourself clearly.", "Be honest with yourself.", "You will see things anew."),
+    ("The Compass", "compass", "You found your way back.", "Follow what feels right.", "You will pick the right path."),
+    ("The Door", "door", "You said goodbye to a thing.", "Knock and it will open.", "A new start is waiting."),
 )
 TIMES = ("PAST", "NOW", "FUTURE")
 
@@ -138,6 +148,58 @@ def art(kind, x, y, s=1):
         col((90, 170, 160))
         fill_poly([x + 8 * s, x + 4 * s, x - 6 * s, x - 9 * s, x - 3 * s], [y - 10 * s, y - 2 * s, y + 7 * s, y + 9 * s, y - 2 * s])
         r(-8, 6, 2, 4, INK)
+    elif kind == "dragon":
+        col((60, 160, 80))
+        fill_poly([x - 2 * s, x + 4 * s, x - 10 * s], [y - 2 * s, y - 2 * s, y - 11 * s])
+        circ(x - 2 * s, y + 3 * s, 7 * s, (60, 160, 80))
+        circ(x + 6 * s, y - 4 * s, 4 * s, (60, 160, 80))
+        r(6, -6, 2, 2, GOLD)
+        col((240, 110, 30))
+        fill_poly([x + 9 * s, x + 14 * s, x + 14 * s], [y - 3 * s, y - 6 * s, y])
+    elif kind == "comet":
+        col((150, 200, 250))
+        fill_poly([x + 4 * s, x - 12 * s, x + 2 * s], [y - 6 * s, y + 10 * s, y + 4 * s])
+        circ(x + 4 * s, y - 2 * s, 5 * s, GOLD)
+    elif kind == "snow":
+        r(-10, -1, 20, 3, (90, 160, 230))
+        r(-1, -10, 3, 20, (90, 160, 230))
+        for a, b in ((-7, -7), (5, -7), (-7, 5), (5, 5)):
+            r(a, b, 3, 3, (90, 160, 230))
+    elif kind == "butterfly":
+        for a, b, c in ((-6, -4, 6), (6, -4, 6), (-5, 5, 4), (5, 5, 4)):
+            circ(x + a * s, y + b * s, c * s, (240, 120, 180))
+        r(-1, -8, 3, 16, INK)
+    elif kind == "anchor":
+        circ(x, y + 2 * s, 9 * s, INK)
+        circ(x, y + 2 * s, 6 * s, FACE)
+        r(-10, -6, 21, 8, FACE)
+        r(-1, -9, 3, 18, INK)
+        r(-6, -5, 13, 2, INK)
+        circ(x, y - 10 * s, 2 * s, INK)
+    elif kind == "flower":
+        for a, b in ((0, -6), (0, 6), (-6, 0), (6, 0)):
+            circ(x + a * s, y + b * s, 4 * s, (240, 110, 150))
+        circ(x, y, 3 * s, GOLD)
+    elif kind == "gem":
+        col((60, 200, 190))
+        fill_poly([x - 10 * s, x - 5 * s, x + 5 * s, x + 10 * s, x], [y - 3 * s, y - 9 * s, y - 9 * s, y - 3 * s, y + 10 * s])
+        col(WHITE)
+        fill_poly([x - 4 * s, x, x - 1 * s], [y - 7 * s, y - 7 * s, y - 3 * s])
+    elif kind == "mirror":
+        r(-1, 6, 3, 6, (140, 90, 50))
+        circ(x, y - 2 * s, 8 * s, GOLD)
+        circ(x, y - 2 * s, 6 * s, (180, 220, 240))
+    elif kind == "compass":
+        circ(x, y, 10 * s, INK)
+        circ(x, y, 8 * s, WHITE)
+        col(RED)
+        fill_poly([x - 3 * s, x, x + 3 * s], [y, y - 8 * s, y])
+        col(INK)
+        fill_poly([x - 3 * s, x, x + 3 * s], [y, y + 8 * s, y])
+    elif kind == "door":
+        r(-7, -11, 14, 22, (140, 90, 50))
+        r(-5, -9, 10, 8, (110, 70, 40))
+        r(3, 1, 2, 2, GOLD)
     elif kind == "clock":
         circ(x, y, 9 * s, INK)
         circ(x, y, 7 * s, WHITE)
