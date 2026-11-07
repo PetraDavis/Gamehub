@@ -157,7 +157,7 @@ def G_play():
  g.book=0
  g.quest=None
  g.seen=0
- g.spawn=60
+ g.spawn=100
  g.dread=0
  G_load(g)
  steps=0
@@ -244,7 +244,7 @@ def G_play():
     continue
   g.spawn-=1
   if g.spawn<=0:
-   g.spawn=random.randint(60,90)
+   g.spawn=random.randint(100,200)
    if not any((q[0]==g.m for q in G_EGGS)):
     G_put_egg(g,G_egg_type(g.m),False)
   G_hud(g)

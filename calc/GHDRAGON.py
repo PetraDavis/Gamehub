@@ -1051,7 +1051,7 @@ def play():
     g.book = 0
     g.quest = None
     g.seen = 0
-    g.spawn = 60
+    g.spawn = 100
     g.dread = 0
     load(g)
     steps = 0
@@ -1138,7 +1138,7 @@ def play():
                 continue
         g.spawn -= 1
         if g.spawn <= 0:
-            g.spawn = random.randint(60, 90)
+            g.spawn = random.randint(100, 200)
             if not any(q[0] == g.m for q in EGGS):
                 put_egg(g, egg_type(g.m), False)
         hud(g)
