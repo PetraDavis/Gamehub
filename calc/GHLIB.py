@@ -32,6 +32,30 @@ def key():
     return get_key(0)
 
 
+class Steer:
+    # The calculator reports an arrow once when it is pressed, not again while
+    # it is held. So an arrow starts a glide that keeps going. The same arrow
+    # keeps it going, the opposite arrow reverses it (or stops it when
+    # stop_on_back is set), and any other key stops it.
+    def __init__(self, keys, stop_on_back=False):
+        self.keys = keys
+        self.back = stop_on_back
+        self.d = 0
+
+    def feed(self, k):
+        if k in self.keys:
+            if self.back and self.d and k != self.d and self.keys.index(k) // 2 == self.keys.index(self.d) // 2:
+                self.d = 0
+            else:
+                self.d = k
+        elif k:
+            self.d = 0
+        return self.d
+
+    def stop(self):
+        self.d = 0
+
+
 def wkey():
     return wait_key()
 

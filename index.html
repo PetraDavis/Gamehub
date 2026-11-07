@@ -84,7 +84,7 @@
         <button class="btn big" id="sendAll">Send GAMEHUB to my calculator</button>
       </div>
       <div class="actions">
-        <a class="btn small" href="gamehub.zip" download>Download all (.zip)</a>
+        <a class="btn small" href="dist/GAMEHUB.py" download>Download GAMEHUB.py</a>
         <a class="btn small" href="#install">How to install</a>
       </div>
       <p class="note" id="support"></p>
@@ -105,7 +105,7 @@
     <li>Use <b>Chrome or Edge on a computer</b> (Windows, Mac, Chromebook or Linux). Phones and Safari can't send to a calculator.</li>
     <li>Plug the calculator in with a USB cable that can <b>share data</b> (some cables only charge). Turn the calculator on and leave it on the home screen.</li>
     <li>Press <b>Send GAMEHUB to my calculator</b>. Your browser asks which device to use: pick the <b>TI-84 Evo</b> and press Connect.</li>
-    <li>Wait until every file shows a check mark. It takes about a minute. Don't unplug the calculator while it sends.</li>
+    <li>Wait until it says Done. GAMEHUB is one file, so it all arrives together. Don't unplug the calculator while it sends.</li>
   </ol>
 
   <div class="two" style="margin-top:18px">
@@ -114,7 +114,7 @@
       <ul>
         <li>Close TI Connect Evo and any other tab that's talking to the calculator, then try again.</li>
         <li>Try a different cable or USB port.</li>
-        <li>Or do it by hand: press <b>Download all (.zip)</b>, unzip it, and drag every <b>.py</b> file onto your calculator with <a href="https://connectevo.ti.com" target="_blank" rel="noopener">TI Connect Evo</a>.</li>
+        <li>Or do it by hand: press <b>Download GAMEHUB.py</b> and drag that one file onto your calculator with <a href="https://connectevo.ti.com" target="_blank" rel="noopener">TI Connect Evo</a>.</li>
         <li>If the calculator says it's out of memory, delete some programs you don't use and send again.</li>
       </ul>
     </div>
@@ -125,7 +125,7 @@
         <li>Arrows move, <kbd>enter</kbd> picks, <kbd>clear</kbd> goes back.</li>
         <li>On a game's home screen, press up or down to read how to play.</li>
         <li>If a button does nothing, open <b>Settings &gt; Key Test</b> in GAMEHUB and tell us which key code it shows.</li>
-        <li>Keep all the files together. Every game needs GAMEHUB, GHLIB and GHICONS.</li>
+        <li>GAMEHUB is a single file with every game inside. Each game's own Send and Download buttons give you just that game as one file that runs on its own.</li>
       </ul>
     </div>
   </div>
@@ -151,7 +151,7 @@
     { mod: 'GHSOLI', name: 'Solitaire', cat: 'Classics', shot: 'solitaire', text: 'Classic draw-one solitaire. Build the four suit piles from ace to king. 2nd sends a card up to the piles.' },
     { mod: 'GHBLOCKS', name: 'Stack Drop', cat: 'Puzzle', shot: 'stackdrop', text: 'Falling blocks: turn and slide them to fill whole rows and clear them before the stack reaches the top.' },
     { mod: 'GHSUDOKU', name: 'Sudoku', cat: 'Puzzle', shot: 'sudoku', text: 'Fill the 9x9 grid so every row, column and box has 1 to 9. Easy, Medium and Hard, and clashes turn red.' },
-    { mod: 'GHANIM', name: 'Animation Studio', cat: 'Create', shot: 'studio', text: 'Draw your own flip-book animations with 16 colors, onion skin and adjustable speed. Saves 400+ frames, even if you delete the program.', extra: ['GHSAVE'] },
+    { mod: 'GHANIM', name: 'Animation Studio', cat: 'Create', shot: 'studio', text: 'Draw your own flip-book animations with 16 colors, onion skin and adjustable speed. Saves 400+ frames, even if you delete the program.' },
     { mod: 'GHFLAP', name: 'Wing It', cat: 'Arcade', shot: 'wingit', text: 'Tap to flap. Steer a little bird through the gaps between the trees for as long as you can.' },
     { mod: 'GHTTT', name: 'Tic-Tac-Toe', cat: 'Classics', shot: 'tictactoe', text: 'Three in a row wins. Play against the calculator or pass it to a friend.' },
     { mod: 'GHMERGE', name: '2048', cat: 'Puzzle', shot: '2048', text: 'Slide the tiles and join matching numbers. Can you reach 2048?' },
@@ -162,8 +162,7 @@
     { mod: 'GHHANG', name: 'Hangman', cat: 'Classics', shot: 'hangman', text: 'Guess the word one letter at a time before the drawing is finished.' },
     { mod: 'GHCRYPT', name: 'Encrypted Demo', cat: 'Adventure', shot: 'encrypted', text: 'A 3D horror demo. Get the power on, find the clues with your flashlight and hide from Ysolde. Ends at the Hallway keypad.' },
   ];
-  const CORE = ['GAMEHUB', 'GHLIB', 'GHICONS'];
-  const url = n => 'calc/' + n + '.py';
+  const url = n => 'dist/' + n + '.py';
   const $ = id => document.getElementById(id);
 
   const grid = $('games');
@@ -177,17 +176,15 @@
       '<img class="shot" loading="lazy" alt="' + g.name + ' on the calculator" src="site/shots/' + g.shot + '.png">' +
       '<div class="row"><button class="btn small" type="button">Send this game</button>' +
       '<a class="btn small" href="' + url(g.mod) + '" download>Download .py</a></div>';
-    el.querySelector('button').addEventListener('click', () => send(CORE.concat(g.extra || [], [g.mod]), g.name));
+    el.querySelector('button').addEventListener('click', () => send([g.mod], g.name));
     grid.appendChild(el);
   }
 
-  let ALL = null;
-  fetch('site/files.json').then(r => r.json()).then(j => { ALL = j.map(f => f.name); }).catch(() => {});
-  $('sendAll').addEventListener('click', () => send(ALL || CORE.concat(['GHSAVE'], GAMES.map(g => g.mod)), 'GAMEHUB'));
+  $('sendAll').addEventListener('click', () => send(['GAMEHUB'], 'GAMEHUB'));
 
   const ok = window.EvoSend && EvoSend.supported();
   if (!ok) {
-    $('support').textContent = 'This browser can\'t talk to a calculator. Open this page in Chrome or Edge on a computer, or use Download all.';
+    $('support').textContent = 'This browser can\'t talk to a calculator. Open this page in Chrome or Edge on a computer, or use Download GAMEHUB.py.';
     document.querySelectorAll('button.btn').forEach(b => { b.disabled = true; });
   }
 
@@ -208,12 +205,12 @@
       await EvoSend.sendFiles(files, (i, state) => {
         const done = state === 'done' ? i + 1 : i;
         fill.style.width = Math.round(done / files.length * 100) + '%';
-        msg.textContent = 'Sending ' + label + '... ' + done + ' of ' + files.length;
-        sub.textContent = state === 'busy' ? 'Now sending ' + files[i].name : '';
+        msg.textContent = 'Sending ' + label + '...';
+        sub.textContent = '';
       });
       msg.className = 'msg ok';
       msg.textContent = 'Done! ' + label + ' is on your calculator.';
-      sub.textContent = 'Open the Python app and run GAMEHUB.';
+      sub.textContent = 'Open the Python app and run ' + names[0] + '.';
     } catch (e) {
       msg.className = 'msg bad';
       if (e && (e.name === 'NotFoundError' || /No device selected|No port selected/i.test(e.message))) {
@@ -221,7 +218,7 @@
         sub.textContent = 'Plug it in, turn it on, and press the button again.';
       } else {
         msg.textContent = 'Sending stopped.';
-        sub.textContent = ((e && e.message) || String(e)) + ' Check the tips under How to install, or use Download all.';
+        sub.textContent = ((e && e.message) || String(e)) + ' Check the tips under How to install, or use Download GAMEHUB.py.';
       }
     } finally {
       busy = false;

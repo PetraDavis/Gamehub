@@ -40,15 +40,21 @@ def game():
         vy = -3.0
         rect(px, 192, PW, 6, WHITE)
         pause(0.5)
+        st = Steer((LEFT, RIGHT))
         while True:
             k = key()
             if k == CLR:
                 return
             opx = px
-            if k == LEFT:
-                px = max(0, px - 8)
-            elif k == RIGHT:
-                px = min(320 - PW, px + 8)
+            d = st.feed(k)
+            if d == LEFT:
+                px = max(0, px - 7)
+                if px == 0:
+                    st.stop()
+            elif d == RIGHT:
+                px = min(320 - PW, px + 7)
+                if px == 320 - PW:
+                    st.stop()
             obx, oby = bx, by
             bx += vx
             by += vy
@@ -92,7 +98,7 @@ def game():
 
 
 RULES = 'Bounce the ball off your paddle to break every brick. You have 3 balls.'
-KEYS = ['Left/Right: move paddle', 'CLEAR: quit']
+KEYS = ['Left/Right: paddle glides that way', 'ENTER: stop the paddle', 'CLEAR: quit']
 
 
 def main():

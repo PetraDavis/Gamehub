@@ -32,15 +32,21 @@ def game():
         vx = 4.0 * serve
         vy = random.choice((-2.5, -1.5, 1.5, 2.5))
         pause(0.5)
+        st = Steer((UP, DOWN))
         while True:
             k = key()
             if k == CLR:
                 return
             opy, ocy = py, cy
-            if k == UP:
-                py = max(TOP, py - 7)
-            elif k == DOWN:
-                py = min(210 - PH, py + 7)
+            d = st.feed(k)
+            if d == UP:
+                py = max(TOP, py - 6)
+                if py == TOP:
+                    st.stop()
+            elif d == DOWN:
+                py = min(210 - PH, py + 6)
+                if py == 210 - PH:
+                    st.stop()
             target = by - PH / 2
             if vx > 0 and bx > 120:
                 cy += max(-4, min(4, target - cy))
@@ -83,7 +89,7 @@ def game():
 
 
 RULES = "Bounce the ball past the calculator's paddle. First to 7 points wins."
-KEYS = ['Up/Down: move paddle', 'CLEAR: quit']
+KEYS = ['Up/Down: paddle glides that way', 'ENTER: stop the paddle', 'CLEAR: quit']
 
 
 def main():
