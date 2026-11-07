@@ -200,13 +200,15 @@ def emit(parts, head):
         # one space per indent level instead of four, to save calculator memory
         n = len(ln) - len(ln.lstrip(' '))
         out.append(' ' * (n // 4) + ln[n:])
-    return src + '\n'.join(out) + '\n'
+    # and no spaces that Python doesn't need
+    return src + minify('\n'.join(out) + '\n')
 
 
 def mods_map(extra):
-    m = {'GHLIB': '', 'GHICONS': 'icons_', 'GHSAVE': 'save_'}
+    # short name prefixes: every name costs calculator memory
+    m = {'GHLIB': '', 'GHICONS': 'I_', 'GHSAVE': 'S_', 'GAMEHUB': 'H_'}
     for g in extra:
-        m[g] = short(g) + '_'
+        m[g] = 'G_'
     return m
 
 
@@ -256,8 +258,8 @@ def shake(parts):
 def build_game(g):
     mods = mods_map([g])
     icons = convert('GHICONS', mods)
-    keep_only(icons, 'icons_ICONS', g)
-    keep_only(icons, 'icons_BG', g)
+    keep_only(icons, mods['GHICONS'] + 'ICONS', g)
+    keep_only(icons, mods['GHICONS'] + 'BG', g)
     parts = [convert(LIB, mods), icons]
     if 'GHSAVE' in open(os.path.join(CALC, g + '.py')).read():
         parts.append(convert('GHSAVE', mods))

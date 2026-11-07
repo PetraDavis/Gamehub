@@ -52,6 +52,8 @@ def body(x, y, h, c):
 
 def card(x, y, cd, h=CHT):
     if cd is None:
+        # an empty spot: clear away any card that was here, then a thin outline
+        rect(x, y, CW, CHT, FELT)
         col((60, 110, 80))
         draw_rect(x, y, CW - 1, CHT - 1)
         return
