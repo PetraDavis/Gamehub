@@ -941,7 +941,7 @@ def shop(g):
             if g.coins < 20:
                 message(["You need 20 coins."], "Not enough")
                 continue
-            p = choose("Pick a colour", list(PAINTN))
+            p = lst("Pick a colour", list(PAINTN))
             if p >= 0:
                 g.coins -= 20
                 d[6] = PAINT[p]
