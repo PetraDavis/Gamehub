@@ -277,34 +277,55 @@ def bottom(g, prompt):
 
 
 # Ysolde: tall, thin, made of static. Small head tilted hard on a long neck,
-# lank hair, short tattered dress, arms hanging past the knees, small blue eyes.
-YS = ((.40, .45, 0, .40), (.55, .60, 0, .40), (.34, .66, .40, .52), (.38, .48, .37, .41),
-      (.55, .64, .36, .40), (.39, .61, .52, .72), (.30, .35, .28, .72), (.65, .70, .30, .72),
-      (.46, .52, .72, .80), (.44, .49, .68, .88), (.49, .63, .79, .93))
-YEYE = ((.53, .56, .865, .88), (.58, .61, .85, .865))
+# lank dark hair, short tattered dress, arms hanging past the knees with
+# too-long fingers, black tear streaks, jaw hanging open, small blue eyes.
+# Parts are (u0, u1, v0, v1, kind): u across her width, v up from the floor.
+# Kinds: 0 static, 1 hair, 2 dark, 3 eye. Drawn in that order.
+YS = (
+    (.40, .45, .02, .22, 0), (.42, .47, .22, .40, 0), (.37, .45, 0, .02, 0),
+    (.55, .60, .02, .22, 0), (.53, .58, .22, .40, 0), (.55, .63, 0, .02, 0),
+    (.36, .64, .40, .50, 0), (.35, .39, .36, .40, 0), (.42, .46, .35, .40, 0),
+    (.50, .54, .37, .40, 0), (.58, .62, .35, .40, 0),
+    (.41, .59, .50, .58, 0), (.38, .62, .58, .69, 0), (.36, .50, .68, .71, 0), (.50, .64, .69, .73, 0),
+    (.32, .36, .52, .70, 0), (.30, .34, .30, .52, 0), (.28, .29, .21, .30, 0), (.30, .31, .20, .30, 0),
+    (.32, .33, .22, .30, 0), (.64, .68, .53, .72, 0), (.66, .70, .32, .53, 0), (.66, .67, .23, .32, 0),
+    (.68, .69, .22, .32, 0), (.70, .71, .24, .32, 0),
+    (.48, .53, .72, .79, 0), (.49, .54, .78, .82, 0),
+    (.47, .58, .80, .83, 0), (.48, .61, .83, .87, 0), (.50, .63, .87, .91, 0), (.52, .63, .91, .94, 0),
+    (.54, .62, .94, .96, 0),
+    (.43, .46, .66, .88, 1), (.46, .49, .69, .92, 1), (.49, .52, .88, .96, 1), (.52, .62, .95, .975, 1),
+    (.52, .56, .865, .895, 2), (.57, .61, .88, .91, 2), (.54, .58, .80, .855, 2),
+    (.535, .545, .835, .87, 2), (.585, .595, .85, .885, 2),
+    (.53, .55, .875, .887, 3), (.58, .60, .89, .902, 3),
+)
 
 
 def ys_column(x, left, wid, top, h):
     x1 = x + CWID
-    for parts, eye in ((YS, False), (YEYE, True)):
-        for u0, u1, v0, v1 in parts:
-            a = max(x, int(left + u0 * wid))
-            b = min(x1, int(left + u1 * wid) + 1)
-            if b - a < 1:
-                continue
-            y0 = int(top + h * (1 - v1))
-            y1 = int(top + h * (1 - v0))
-            if y0 >= VH:
-                continue
-            y1 = min(VH, y1)
-            if eye:
-                rect(a, max(0, y0), b - a, max(2, y1 - y0), (90, 190, 255))
-                continue
-            st = max(3, int(h * .05))
+    for u0, u1, v0, v1, kind in YS:
+        pa = int(left + u0 * wid)
+        pb = int(left + u1 * wid) + 1
+        if kind == 3:
+            pb = max(pb, pa + 2)
+        a = max(x, pa)
+        b = min(x1, pb)
+        if b - a < 1:
+            continue
+        y0 = int(top + h * (1 - v1))
+        y1 = min(VH, int(top + h * (1 - v0)))
+        if y0 >= VH:
+            continue
+        if kind == 3:
+            rect(a, max(0, y0), b - a, max(2, y1 - y0), (110, 205, 255))
+        elif kind == 2:
+            rect(a, max(0, y0), b - a, max(1, y1 - y0), (12, 10, 14))
+        else:
+            st = max(2, int(h * .03))
+            lo, hi = (110, 245) if kind == 0 else (45, 100)
             y = y0
             while y < y1:
-                g = random.randint(110, 245)
-                rect(a, max(0, y), b - a, max(1, min(st, y1 - y)), (g, g, g))
+                g = random.randint(lo, hi)
+                rect(a, max(0, y), b - a, max(1, min(st, y1 - y)), (g, g, g + 6))
                 y += st
 
 
