@@ -13,10 +13,11 @@ DEL=23
 SECOND=21
 BLACK=(0,0,0)
 WHITE=(255,255,255)
-GOLD=(230,180,40)
 GREY=(110,110,110)
 def key():
  return get_key(0)
+def wkey():
+ return wait_key()
 _C=[None]
 def col(c):
  if c!=_C[0]:

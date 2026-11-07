@@ -12,7 +12,7 @@ GOLD = (230, 180, 40)
 
 BG = {"GHSOLI": (25, 110, 55), "GHBLOCKS": (40, 30, 90), "GHSUDOKU": WHITE, "GHANIM": WHITE,
       "GHFLAP": (110, 195, 240), "GHTTT": WHITE, "GHMERGE": (187, 173, 160), "GHPONG": (30, 85, 165),
-      "GHBREAK": (30, 70, 170), "GHHANG": WHITE, "GHSPACE": (15, 20, 50), "GHFORTUN": (55, 25, 85)}
+      "GHBREAK": (30, 70, 170), "GHHANG": WHITE, "GHSPACE": (15, 20, 50), "GHFORTUN": (55, 25, 85), "GHNAMES": (20, 60, 70)}
 
 # 3x5 digits, read row by row
 FONT = {"0": "111101101101111", "1": "010110010010111", "2": "111001111100111",
@@ -425,6 +425,15 @@ def fortune(x, y, c):
          [y - 9, y - 4, y - 4, y - 1, y + 4, y + 1, y + 4, y - 1, y - 4, y - 4], GOLD)
 
 
+def names(x, y, c):
+    # a name tag on a string: a white tag with a hole and two lines of "writing"
+    box(x - 14, y - 9, 28, 18, WHITE)
+    poly([x - 14, x - 21, x - 14], [y - 9, y, y + 9], WHITE)
+    box(x - 17, y - 1, 3, 3, (20, 60, 70))
+    box(x - 8, y - 4, 17, 3, GOLD)
+    box(x - 8, y + 2, 11, 3, INK)
+
+
 def about(x, y, c):
     c_(c)
     fill_circle(x, y - 10, 3)
@@ -433,7 +442,7 @@ def about(x, y, c):
 
 ICONS = {"GHSOLI": solitaire, "GHBLOCKS": blocks, "GHSUDOKU": sudoku, "GHANIM": anim,
          "GHFLAP": flap, "GHTTT": ttt, "GHMERGE": g2048, "GHPONG": pong, "GHBREAK": breakout,
-         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHCRYPT": crypt, "GHSPACE": space, "GHFORTUN": fortune,
+         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHCRYPT": crypt, "GHSPACE": space, "GHFORTUN": fortune, "GHNAMES": names,
          "*keys": keys, "*wipe": wipe, "*about": about}
 
 

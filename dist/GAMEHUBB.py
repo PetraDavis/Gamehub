@@ -36,6 +36,9 @@ TY=6
 def ctext(y,s,c=WHITE,cx=160):
  col(c)
  draw_text(cx-len(s)*5,y+TY,s)
+def circ(x,y,r,c):
+ col(c)
+ fill_circle(x,y,r)
 def lt(c,k=0.35):
  return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
 def dk(c,k=0.65):
@@ -46,7 +49,7 @@ I_WHITE=(255,255,255)
 I_INK=(20,20,20)
 I_RED=(215,40,40)
 I_GOLD=(230,180,40)
-I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE,'GHSPACE':(15,20,50),'GHFORTUN':(55,25,85)}
+I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE,'GHSPACE':(15,20,50),'GHFORTUN':(55,25,85),'GHNAMES':(20,60,70)}
 I_FONT={'0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001001001001','8':'111101111101111','9':'111101111001111'}
 def I_c_(c):
  col(c)
@@ -195,12 +198,16 @@ def I_fortune(x,y,c):
  I_box(x+6,y-10,13,20,(120,40,140))
  I_box(x-8,y-15,16,25,(250,240,215))
  I_poly([x,x+2,x+6,x+3,x+4,x,x-4,x-3,x-6,x-2],[y-9,y-4,y-4,y-1,y+4,y+1,y+4,y-1,y-4,y-4],I_GOLD)
+def I_names(x,y,c):
+ I_box(x-14,y-9,28,18,I_WHITE)
+ I_poly([x-14,x-21,x-14],[y-9,y,y+9],I_WHITE)
+ I_box(x-17,y-1,3,3,(20,60,70))
+ I_box(x-8,y-4,17,3,I_GOLD)
+ I_box(x-8,y+2,11,3,I_INK)
 def I_about(x,y,c):
  I_c_(c)
  fill_circle(x,y-10,3)
  fill_rect(x-3,y-5,6,19)
-def I_bg(mod):
- return I_BG.get(mod,I_BLACK)
 S_SLOTS=3
 def S_hname(s):
  return 'A'+str(s)+'H'
