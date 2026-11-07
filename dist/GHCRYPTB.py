@@ -1,6 +1,7 @@
 # GHCRYPTB: part of GHCRYPT. Keep it next to GHCRYPT.
 from GHCRYPTC import*
 from GHCRYPTC import _corners
+WHITE=(255,255,255)
 def rect(x,y,w,h,c):
  if w<1 or h<1:
   return
@@ -254,7 +255,6 @@ def G__build_ys():
  for ex,ey in((137.2,41.2),(149.1,48.55)):
   G_YS.append(((ex-2)/256,(ex+2)/256,1-(ey+2)/640,1-(ey-2)/640,4))
 G_RIM=((215,215,225),(170,175,190),(250,250,255))
-G_INSIDE=(36,36,44)
 def G_ys_draw(g,ys):
  if not G_YS:
   G__build_ys()

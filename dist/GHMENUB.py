@@ -49,7 +49,7 @@ I_WHITE=(255,255,255)
 I_INK=(20,20,20)
 I_RED=(215,40,40)
 I_GOLD=(230,180,40)
-I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE,'GHSPACE':(15,20,50),'GHFORTUN':(55,25,85),'GHNAMES':(20,60,70)}
+I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE,'GHSPACE':(15,20,50),'GHFORTUN':(55,25,85),'GHNAMES':(20,60,70),'GHSTAR':(8,10,32),'GHMATCH':(30,90,80)}
 I_FONT={'0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001001001001','8':'111101111101111','9':'111101111001111'}
 def I_c_(c):
  col(c)
@@ -159,10 +159,6 @@ def I_ttt(x,y,c):
   cy=y+i*s
   I_line(cx-4,cy-4,cx+3,cy+3,I_INK,2)
   I_line(cx+3,cy-4,cx-4,cy+3,I_INK,2)
-def I_g2048(x,y,c):
- I_rr(x-20,y-12,41,28,4,(200,160,30))
- I_rr(x-20,y-14,41,28,4,(237,194,46))
- I_digits(x-14,y-5,'2048',I_WHITE)
 def I_pong(x,y,c):
  I_c_(I_WHITE)
  draw_rect(x-22,y-16,44,32)
@@ -213,6 +209,28 @@ def I_fortune(x,y,c):
  I_box(x+6,y-10,13,20,(120,40,140))
  I_box(x-8,y-15,16,25,(250,240,215))
  I_poly([x,x+2,x+6,x+3,x+4,x,x-4,x-3,x-6,x-2],[y-9,y-4,y-4,y-1,y+4,y+1,y+4,y-1,y-4,y-4],I_GOLD)
+def I_names(x,y,c):
+ I_box(x-14,y-9,28,18,I_WHITE)
+ I_poly([x-14,x-21,x-14],[y-9,y,y+9],I_WHITE)
+ I_box(x-17,y-1,3,3,(20,60,70))
+ I_box(x-8,y-4,17,3,I_GOLD)
+ I_box(x-8,y+2,11,3,I_INK)
+def I_star(x,y,c):
+ I_box(x-7,y-15,14,9,(120,230,90))
+ I_box(x-7,y-15,3,3,(8,10,32))
+ I_box(x+4,y-15,3,3,(8,10,32))
+ I_box(x-4,y-11,8,2,(8,10,32))
+ I_box(x-1,y-3,2,6,(255,230,90))
+ I_box(x-10,y+7,20,10,(90,200,255))
+ I_box(x-10,y+7,7,4,(8,10,32))
+ I_box(x+3,y+7,7,4,(8,10,32))
+def I_match(x,y,c):
+ I_box(x-19,y-12,17,24,(200,70,90))
+ I_box(x-15,y-8,9,16,(225,120,135))
+ I_box(x+2,y-12,17,24,(250,245,230))
+ I_circ(x+8,y-2,3,I_RED)
+ I_circ(x+13,y-2,3,I_RED)
+ I_poly([x+4,x+17,x+10],[y-1,y-1,y+6],I_RED)
 def I_about(x,y,c):
  I_c_(c)
  fill_circle(x,y-10,3)
@@ -225,9 +243,6 @@ def S_hname(s):
 H_BAR_Y=34
 H_BAR_H=22
 H_BAR_GAP=27
-def H_header():
- cls()
- ctext(22,'GAMEHUB',WHITE)
 def H_app_pos(i):
  return(50+i%4*73,82+i//4*70)
 def H_show_title(name,old=None):
