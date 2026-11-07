@@ -118,6 +118,23 @@ def run_app(mod):
         return
     gc.collect()
     try:
+        # the one-file test build (GHONE) carries each game as text and turns
+        # it into code only when it is picked
+        src = GAMESRC[mod]
+    except Exception:
+        src = None
+    if src:
+        try:
+            ns = dict(globals())
+            exec(src, ns)
+        except Exception as e:
+            cls()
+            message([str(e)[:26]], "Could not run")
+        ns = None
+        src = None
+        gc.collect()
+        return
+    try:
         m = __import__(mod)
         # a one-file game runs itself when loaded and sets RAN
         if not getattr(m, 'RAN', False):
