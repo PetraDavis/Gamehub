@@ -306,92 +306,6 @@ def hangman(x, y, c):
     line(x + 10, y + 7, x + 14, y + 13, INK)
 
 
-def crypt(x, y, c):
-    # Ysolde as she looks in the full game: a thin dark shape full of faint
-    # static, outlined in bright static, with two small cold blue eyes.
-    # Same shape as her character sheet (256 x 640), head and shoulders only.
-    # a fixed pattern of static, so the icon looks the same every time
-    rs = [7]
-
-    def rnd(a, b):
-        rs[0] = (rs[0] * 1103515245 + 12345) % 2147483648
-        return a + rs[0] % (b - a + 1)
-    k = 0.21
-    ox = x + 3
-    oy = y - 17
-    ca = math.cos(0.55)
-    sa = math.sin(0.55)
-
-    def m(cx, cy):
-        return ox + (cx - 140) * k, oy + (cy - 50) * k
-
-    def head(lx, ly):
-        return m(140 + lx * ca - ly * sa, 50 + lx * sa + ly * ca)
-
-    def band(pts, w):
-        # a thick line through canvas points, as a polygon
-        left = []
-        right = []
-        for i in range(len(pts) - 1):
-            (x1, y1), (x2, y2) = pts[i], pts[i + 1]
-            d = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) or 1
-            nx = -(y2 - y1) / d * w / 2
-            ny = (x2 - x1) / d * w / 2
-            left += [(x1 + nx, y1 + ny), (x2 + nx, y2 + ny)]
-            right += [(x1 - nx, y1 - ny), (x2 - nx, y2 - ny)]
-        return [m(px, py) for px, py in left + right[::-1]]
-
-    shapes = [
-        [head(17 * math.cos(t * math.pi / 8), 25 * math.sin(t * math.pi / 8)) for t in range(16)],
-        [head(px, py) for px, py in ((-18, -6), (-27, 30), (-24, 96), (-6, 70), (8, 100), (20, 60), (17, -6), (10, -24), (-10, -24))],
-        band(((128, 125), (132, 88), (140, 66)), 11),
-        [m(px, py) for px, py in ((98, 122), (128, 112), (160, 126), (150, 210), (148, 250), (108, 250), (106, 210))],
-        band(((100, 128), (84, 250), (90, 260)), 7),
-        band(((158, 128), (176, 248), (170, 258)), 7),
-    ]
-
-    def spans(pts):
-        out = []
-        ys = [p[1] for p in pts]
-        n = len(pts)
-        for row in range(int(min(ys)), int(max(ys)) + 1):
-            yc = row + .5
-            xs = []
-            for i in range(n):
-                (x1, y1), (x2, y2) = pts[i], pts[(i + 1) % n]
-                if (y1 <= yc < y2) or (y2 <= yc < y1):
-                    xs.append(x1 + (yc - y1) * (x2 - x1) / (y2 - y1))
-            if len(xs) >= 2:
-                out.append((row, int(min(xs) + .5), int(max(xs) + .5)))
-        return out
-
-    all_spans = [spans(sh) for sh in shapes]
-    # bright static outline: everything bright first, then the dark inside
-    for sp in all_spans:
-        for row, a, b in sp:
-            g = rnd(190, 255)
-            hline(a, max(a, b - 1), row, (g, g * 19 // 20, g * 9 // 10))
-    for sp in all_spans:
-        for row, a, b in sp[1:-1]:
-            if b - a > 2:
-                g = rnd(28, 62)
-                hline(a + 1, b - 2, row, (g, g, g + 8))
-    # glowing blue eyes high in the head, like Ivy's video
-    pts = []
-    for ex, ey in ((137.2, 41.2), (149.1, 48.55)):
-        a, b = m(ex, ey)
-        pts.append((int(a), int(b)))
-    for a, b in pts:
-        hline(a - 1, a + 1, b - 1, (35, 80, 150))
-        hline(a - 2, a + 2, b, (35, 80, 150))
-        hline(a - 1, a + 1, b + 1, (35, 80, 150))
-    for a, b in pts:
-        hline(a - 1, a + 1, b, (80, 175, 245))
-        line(a, b - 1, a, b + 1, (80, 175, 245))
-    for a, b in pts:
-        hline(a, a, b, (230, 250, 255))
-
-
 def keys(x, y, c):
     for i in range(3):
         for j in range(3):
@@ -465,7 +379,7 @@ def about(x, y, c):
 
 ICONS = {"GHSOLI": solitaire, "GHBLOCKS": blocks, "GHSUDOKU": sudoku, "GHANIM": anim,
          "GHFLAP": flap, "GHTTT": ttt, "GHMERGE": g2048, "GHPONG": pong, "GHBREAK": breakout,
-         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHCRYPT": crypt, "GHSPACE": space, "GHFORTUN": fortune, "GHNAMES": names, "GHSTAR": star, "GHMATCH": match,
+         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHSPACE": space, "GHFORTUN": fortune, "GHNAMES": names, "GHSTAR": star, "GHMATCH": match,
          "*keys": keys, "*wipe": wipe, "*about": about}
 
 

@@ -26,7 +26,7 @@ def poll():
 S.on_poll = poll
 def ms(d):
     return sum(MS[k] * v for k, v in d.items())
-mods = sys.argv[1:] or ['GHTTT', 'GHSIMON', 'GHHANG', 'GHMERGE', 'GHPONG', 'GHBREAK', 'GHFLAP', 'GHBLOCKS', 'GHSUDOKU', 'GHSOLI', 'GHRPG', 'GHSPACE', 'GHFORTUN', 'GHANIM', 'GHCRYPT']
+mods = sys.argv[1:] or ['GHTTT', 'GHSIMON', 'GHHANG', 'GHMERGE', 'GHPONG', 'GHBREAK', 'GHFLAP', 'GHBLOCKS', 'GHSUDOKU', 'GHSOLI', 'GHRPG', 'GHSPACE', 'GHFORTUN', 'GHANIM']
 pool = [25, 34, 24, 26, 105, 105, 21, 23, 92, 93, 0, 0]
 for mod in mods:
     frames.clear(); cur.clear()
@@ -40,7 +40,7 @@ for mod in mods:
         def fake(c=c): c[0] += 0.05; return c[0]
         m.now = fake
     try:
-        g = m.play if mod in ('GHRPG', 'GHCRYPT') else (m.studio if mod == 'GHANIM' else m.game)
+        g = m.play if mod in ('GHRPG',) else (m.studio if mod == 'GHANIM' else m.game)
         n = g.__code__.co_argcount
         g(*([True, 40][:n] if mod == 'GHTTT' else [40][:n]))
     except SimDone:

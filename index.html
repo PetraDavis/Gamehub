@@ -134,8 +134,6 @@
   <div class="shots">
     <img src="site/shots/categories.png" alt="Apps inside a category, drawn as circles">
     <img src="site/shots/studio.png" alt="Animation Studio drawing canvas">
-    <img src="site/shots/encrypted.png" alt="Encrypted Demo hallway in 3D">
-    <img src="site/shots/encrypted2.png" alt="Encrypted Demo with the flashlight">
   </div>
 
   <footer>
@@ -166,10 +164,9 @@
     { mod: 'GHSPACE', name: 'Lost Orbit', cat: 'Adventure', shot: 'lostorbit', text: 'A short text adventure. Wake alone on a failing space station and find the last escape pod before the air runs out.' },
     { mod: 'GHSIMON', name: 'Simon', cat: 'Puzzle', shot: 'simon', text: 'Watch the colors light up, then repeat the pattern. It gets longer every round.' },
     { mod: 'GHHANG', name: 'Hangman', cat: 'Classics', shot: 'hangman', text: 'Guess the word one letter at a time before the drawing is finished.' },
-    { mod: 'GHCRYPT', name: 'Encrypted Demo', cat: 'Adventure', shot: 'encrypted', text: 'A 3D horror demo. Get the power on, find the clues with your flashlight and hide from Ysolde. Ends at the Hallway keypad.' },
   ];
   const url = n => 'dist/' + n + '.py';
-  // big programs come in parts (GHCRYPT needs GHCRYPTB and GHCRYPTC next to it)
+  // big programs come in parts (GHANIM needs GHANIMB next to it)
   const files = n => (window.PARTS && PARTS[n]) || [n];
   function download(names) {
     for (const f of names) {
