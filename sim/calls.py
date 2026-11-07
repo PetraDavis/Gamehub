@@ -26,7 +26,7 @@ def poll():
 S.on_poll = poll
 def ms(d):
     return sum(MS[k] * v for k, v in d.items())
-mods = sys.argv[1:] or ['GHTTT', 'GHSIMON', 'GHHANG', 'GHMERGE', 'GHPONG', 'GHBREAK', 'GHFLAP', 'GHBLOCKS', 'GHSUDOKU', 'GHSOLI', 'GHRPG', 'GHSPACE', 'GHANIM', 'GHCRYPT']
+mods = sys.argv[1:] or ['GHTTT', 'GHSIMON', 'GHHANG', 'GHMERGE', 'GHPONG', 'GHBREAK', 'GHFLAP', 'GHBLOCKS', 'GHSUDOKU', 'GHSOLI', 'GHRPG', 'GHSPACE', 'GHFORTUN', 'GHANIM', 'GHCRYPT']
 pool = [25, 34, 24, 26, 105, 105, 21, 23, 92, 93, 0, 0]
 for mod in mods:
     frames.clear(); cur.clear()

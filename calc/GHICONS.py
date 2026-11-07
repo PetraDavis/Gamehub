@@ -11,7 +11,7 @@ GOLD = (230, 180, 40)
 
 BG = {"GHSOLI": (25, 110, 55), "GHBLOCKS": (40, 30, 90), "GHSUDOKU": WHITE, "GHANIM": WHITE,
       "GHFLAP": (110, 195, 240), "GHTTT": WHITE, "GHMERGE": (187, 173, 160), "GHPONG": (30, 85, 165),
-      "GHBREAK": (30, 70, 170), "GHHANG": WHITE, "GHSPACE": (15, 20, 50)}
+      "GHBREAK": (30, 70, 170), "GHHANG": WHITE, "GHSPACE": (15, 20, 50), "GHFORTUN": (55, 25, 85)}
 
 # 3x5 digits, read row by row
 FONT = {"0": "111101101101111", "1": "010110010010111", "2": "111001111100111",
@@ -414,6 +414,15 @@ def space(x, y, c):
     poly([x - 5, x + 5, x], [y + 7, y + 7, y + 15], (250, 170, 40))
 
 
+def fortune(x, y, c):
+    # three cards fanned out, the middle one face up with a gold star
+    box(x - 19, y - 10, 13, 20, (120, 40, 140))
+    box(x + 6, y - 10, 13, 20, (120, 40, 140))
+    box(x - 8, y - 15, 16, 25, (250, 240, 215))
+    poly([x, x + 2, x + 6, x + 3, x + 4, x, x - 4, x - 3, x - 6, x - 2],
+         [y - 9, y - 4, y - 4, y - 1, y + 4, y + 1, y + 4, y - 1, y - 4, y - 4], GOLD)
+
+
 def about(x, y, c):
     c_(c)
     fill_circle(x, y - 10, 3)
@@ -422,7 +431,7 @@ def about(x, y, c):
 
 ICONS = {"GHSOLI": solitaire, "GHBLOCKS": blocks, "GHSUDOKU": sudoku, "GHANIM": anim,
          "GHFLAP": flap, "GHTTT": ttt, "GHMERGE": g2048, "GHPONG": pong, "GHBREAK": breakout,
-         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHCRYPT": crypt, "GHSPACE": space,
+         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHCRYPT": crypt, "GHSPACE": space, "GHFORTUN": fortune,
          "*keys": keys, "*wipe": wipe, "*about": about}
 
 
