@@ -48,40 +48,31 @@ def ring(x, y, r, c, t=2, inner=BLACK):
  fill_circle(x, y, r)
  col(inner)
  fill_circle(x, y, r - t)
-def rrect(x, y, w, h, r, c):
- if w < 2 * r + 1 or h < 2 * r + 1:
-  r = max(0, min(w, h) // 2 - 1)
- col(c)
- if w - 2 * r >= 1:
-  fr(x + r, y, w - 2 * r, h)
- if h - 2 * r >= 1:
-  fr(x, y + r, w, h - 2 * r)
- if r < 1:
+def _corners(x, y, w, h, r, t):
+ if r <= t:
+  return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+ a = min(r // 2, 2 * t)
+ return ((x + r, y, w - 2 * r, t), (x + r, y + h - t, w - 2 * r, t), (x, y + r, t, h - 2 * r), (x + w - t, y + r, t, h - 2 * r), (x + a, y + t, r - a, t), (x + w - r, y + t, r - a, t), (x + a, y + h - 2 * t, r - a, t), (x + w - r, y + h - 2 * t, r - a, t), (x + t, y + a, t, r - a), (x + w - 2 * t, y + a, t, r - a), (x + t, y + h - r, t, r - a), (x + w - 2 * t, y + h - r, t, r - a))
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+ edge(x, y, w, h, r, c, t)
+ if not fill:
   return
- fill_circle(x + r, y + r, r)
- fill_circle(x + w - r - 1, y + r, r)
- fill_circle(x + r, y + h - r - 1, r)
- fill_circle(x + w - r - 1, y + h - r - 1, r)
-def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
- rrect(x, y, w, h, r, c)
- rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+ col(inner)
+ if r <= t:
+  fr(x + t, y + t, w - 2 * t, h - 2 * t)
+  return
+ a = min(r // 2, 2 * t)
+ fr(x + t, y + r, w - 2 * t, h - 2 * r)
+ fr(x + r, y + t, w - 2 * r, t)
+ fr(x + r, y + h - 2 * t, w - 2 * r, t)
+ if r > 2 * t:
+  fr(x + a, y + 2 * t, w - 2 * a, r - 2 * t)
+  fr(x + a, y + h - r, w - 2 * a, r - 2 * t)
 def edge(x, y, w, h, r, c, t=2, inner=BLACK):
  col(c)
- fr(x + r, y, w - 2 * r, t)
- fr(x + r, y + h - t, w - 2 * r, t)
- fr(x, y + r, t, h - 2 * r)
- fr(x + w - t, y + r, t, h - 2 * r)
- for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
-  col(c)
-  fill_circle(cx, cy, r)
-  col(inner)
-  fill_circle(cx, cy, max(r - t, 2))
-  ax = cx + 1 if sx > 0 else cx - r
-  ay = y + t if sy > 0 else cy - r
-  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
-  ax = x + t if sx > 0 else cx - r
-  ay = cy + 1 if sy > 0 else cy - r
-  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+ for bx, by, bw, bh in _corners(x, y, w, h, r, t):
+  if bw > 0 and bh > 0:
+   fr(bx, by, bw, bh)
 def pause(s):
  time.sleep(s)
 def _wrap(s, n=30):
@@ -127,16 +118,20 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
   first = True
+  old = -1
   while True:
    for i in range(n):
+    if not first and i != sel and (i != old):
+     continue
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
     if first:
-     rbox(x, 166, bw, 28, 10, c)
+     rbox(x, 166, bw, 28, 10, c, 2, BLACK, False)
     else:
      edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
    first = False
+   old = sel
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -205,18 +200,25 @@ def ttt_cpu(b):
  if not free:
   free = [i for i in range(9) if b[i] == 0]
  return random.choice(free)
+def ttt_frame(i, c):
+ x = ttt_X0 + i % 3 * ttt_S + 3
+ y = ttt_Y0 + i // 3 * ttt_S + 3
+ w = ttt_S - 6
+ rect(x + 3, y, w - 6, 3, c)
+ rect(x + 3, y + w - 3, w - 6, 3, c)
+ rect(x, y + 3, 3, w - 6, c)
+ rect(x + w - 3, y + 3, 3, w - 6, c)
 def ttt_cell(b, i, cur, full=True):
  x = ttt_X0 + i % 3 * ttt_S
  y = ttt_Y0 + i // 3 * ttt_S
- if full:
-  rect(x + 3, y + 3, ttt_S - 6, ttt_S - 6, WHITE)
- edge(x + 3, y + 3, ttt_S - 6, ttt_S - 6, 4, GOLD if i == cur else WHITE, 3, WHITE)
  m = b[i]
- if m == 1:
+ if not full:
+  ttt_frame(i, GOLD if i == cur else WHITE)
+ elif m == 1:
   col(ttt_INK)
-  for o in (-1, 0, 1):
-   draw_line(x + 12 + o, y + 12, x + ttt_S - 12 + o, y + ttt_S - 12)
-   draw_line(x + ttt_S - 12 + o, y + 12, x + 12 + o, y + ttt_S - 12)
+  a, e = (12, ttt_S - 12)
+  fill_poly([x + a - 1, x + a + 2, x + e + 1, x + e - 2], [y + a, y + a, y + e, y + e])
+  fill_poly([x + e - 2, x + e + 1, x + a + 2, x + a - 1], [y + a, y + a, y + e, y + e])
  elif m == 2:
   ring(x + ttt_S // 2, y + ttt_S // 2, 15, ttt_INK, 3, WHITE)
 def ttt_grid():
@@ -225,10 +227,19 @@ def ttt_grid():
   rect(ttt_X0, ttt_Y0 + i * ttt_S - 1, ttt_S * 3, 3, ttt_INK)
 ttt_SHOWN = ['']
 def ttt_status(s):
- if s != ttt_SHOWN[0]:
-  ctext(203, ttt_SHOWN[0], WHITE)
+ o = ttt_SHOWN[0]
+ if s == o:
+  return
+ if len(s) == len(o):
+  d = [k for k in range(len(s)) if s[k] != o[k]]
+  a, e = (d[0], d[-1] + 1)
+  x = 160 - len(s) * 5 + a * 10
+  text(x, 203, o[a:e], WHITE)
+  text(x, 203, s[a:e], ttt_INK)
+ else:
+  ctext(203, o, WHITE)
   ctext(203, s, ttt_INK)
-  ttt_SHOWN[0] = s
+ ttt_SHOWN[0] = s
 def ttt_game(vs_cpu):
  b = [0] * 9
  cls(WHITE)
@@ -236,8 +247,7 @@ def ttt_game(vs_cpu):
  ttt_grid()
  cur = 4
  turn = 1
- for i in range(9):
-  ttt_cell(b, i, cur)
+ ttt_frame(cur, GOLD)
  while True:
   w = ttt_winner(b)
   if w:

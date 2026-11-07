@@ -48,40 +48,31 @@ def lt(c, k=0.35):
  return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
 def dk(c, k=0.65):
  return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
-def rrect(x, y, w, h, r, c):
- if w < 2 * r + 1 or h < 2 * r + 1:
-  r = max(0, min(w, h) // 2 - 1)
- col(c)
- if w - 2 * r >= 1:
-  fr(x + r, y, w - 2 * r, h)
- if h - 2 * r >= 1:
-  fr(x, y + r, w, h - 2 * r)
- if r < 1:
+def _corners(x, y, w, h, r, t):
+ if r <= t:
+  return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+ a = min(r // 2, 2 * t)
+ return ((x + r, y, w - 2 * r, t), (x + r, y + h - t, w - 2 * r, t), (x, y + r, t, h - 2 * r), (x + w - t, y + r, t, h - 2 * r), (x + a, y + t, r - a, t), (x + w - r, y + t, r - a, t), (x + a, y + h - 2 * t, r - a, t), (x + w - r, y + h - 2 * t, r - a, t), (x + t, y + a, t, r - a), (x + w - 2 * t, y + a, t, r - a), (x + t, y + h - r, t, r - a), (x + w - 2 * t, y + h - r, t, r - a))
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+ edge(x, y, w, h, r, c, t)
+ if not fill:
   return
- fill_circle(x + r, y + r, r)
- fill_circle(x + w - r - 1, y + r, r)
- fill_circle(x + r, y + h - r - 1, r)
- fill_circle(x + w - r - 1, y + h - r - 1, r)
-def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
- rrect(x, y, w, h, r, c)
- rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+ col(inner)
+ if r <= t:
+  fr(x + t, y + t, w - 2 * t, h - 2 * t)
+  return
+ a = min(r // 2, 2 * t)
+ fr(x + t, y + r, w - 2 * t, h - 2 * r)
+ fr(x + r, y + t, w - 2 * r, t)
+ fr(x + r, y + h - 2 * t, w - 2 * r, t)
+ if r > 2 * t:
+  fr(x + a, y + 2 * t, w - 2 * a, r - 2 * t)
+  fr(x + a, y + h - r, w - 2 * a, r - 2 * t)
 def edge(x, y, w, h, r, c, t=2, inner=BLACK):
  col(c)
- fr(x + r, y, w - 2 * r, t)
- fr(x + r, y + h - t, w - 2 * r, t)
- fr(x, y + r, t, h - 2 * r)
- fr(x + w - t, y + r, t, h - 2 * r)
- for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
-  col(c)
-  fill_circle(cx, cy, r)
-  col(inner)
-  fill_circle(cx, cy, max(r - t, 2))
-  ax = cx + 1 if sx > 0 else cx - r
-  ay = y + t if sy > 0 else cy - r
-  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
-  ax = x + t if sx > 0 else cx - r
-  ay = cy + 1 if sy > 0 else cy - r
-  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+ for bx, by, bw, bh in _corners(x, y, w, h, r, t):
+  if bw > 0 and bh > 0:
+   fr(bx, by, bw, bh)
 def halo(x, y, r, c, t=2):
  col(c)
  for i in range(t):
@@ -451,7 +442,7 @@ def mehub_draw_bar(i, on, first=False):
  y = mehub_BAR_Y + i * mehub_BAR_GAP
  c = GOLD if on else WHITE
  if first:
-  rbox(50, y, 220, mehub_BAR_H, 9, c)
+  rbox(50, y, 220, mehub_BAR_H, 9, c, 2, BLACK, False)
  else:
   edge(50, y, 220, mehub_BAR_H, 9, c)
  ctext(y + 17, mehub_CATS[i][0], c)
@@ -492,7 +483,7 @@ def mehub_show_title(name, old=None):
 def mehub_app_screen(ci, sel=0):
  cname, apps = mehub_CATS[ci]
  cls()
- rbox(90, 8, 140, 24, 9, WHITE)
+ rbox(90, 8, 140, 24, 9, WHITE, 2, BLACK, False)
  ctext(26, cname, WHITE)
  for i in range(len(apps)):
   mehub_draw_app(apps[i], i, i == sel, True)

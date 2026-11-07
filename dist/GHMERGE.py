@@ -44,8 +44,6 @@ def ctext(y, s, c=WHITE, cx=160):
 def circ(x, y, r, c):
  col(c)
  fill_circle(x, y, r)
-def lt(c, k=0.35):
- return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
 def dk(c, k=0.65):
  return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
 def ring(x, y, r, c, t=2, inner=BLACK):
@@ -67,26 +65,31 @@ def rrect(x, y, w, h, r, c):
  fill_circle(x + w - r - 1, y + r, r)
  fill_circle(x + r, y + h - r - 1, r)
  fill_circle(x + w - r - 1, y + h - r - 1, r)
-def rbox(x, y, w, h, r, c, t=2, inner=BLACK):
- rrect(x, y, w, h, r, c)
- rrect(x + t, y + t, w - 2 * t, h - 2 * t, max(r - t, 2), inner)
+def _corners(x, y, w, h, r, t):
+ if r <= t:
+  return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+ a = min(r // 2, 2 * t)
+ return ((x + r, y, w - 2 * r, t), (x + r, y + h - t, w - 2 * r, t), (x, y + r, t, h - 2 * r), (x + w - t, y + r, t, h - 2 * r), (x + a, y + t, r - a, t), (x + w - r, y + t, r - a, t), (x + a, y + h - 2 * t, r - a, t), (x + w - r, y + h - 2 * t, r - a, t), (x + t, y + a, t, r - a), (x + w - 2 * t, y + a, t, r - a), (x + t, y + h - r, t, r - a), (x + w - 2 * t, y + h - r, t, r - a))
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+ edge(x, y, w, h, r, c, t)
+ if not fill:
+  return
+ col(inner)
+ if r <= t:
+  fr(x + t, y + t, w - 2 * t, h - 2 * t)
+  return
+ a = min(r // 2, 2 * t)
+ fr(x + t, y + r, w - 2 * t, h - 2 * r)
+ fr(x + r, y + t, w - 2 * r, t)
+ fr(x + r, y + h - 2 * t, w - 2 * r, t)
+ if r > 2 * t:
+  fr(x + a, y + 2 * t, w - 2 * a, r - 2 * t)
+  fr(x + a, y + h - r, w - 2 * a, r - 2 * t)
 def edge(x, y, w, h, r, c, t=2, inner=BLACK):
  col(c)
- fr(x + r, y, w - 2 * r, t)
- fr(x + r, y + h - t, w - 2 * r, t)
- fr(x, y + r, t, h - 2 * r)
- fr(x + w - t, y + r, t, h - 2 * r)
- for cx, cy, sx, sy in ((x + r, y + r, 1, 1), (x + w - r - 1, y + r, -1, 1), (x + r, y + h - r - 1, 1, -1), (x + w - r - 1, y + h - r - 1, -1, -1)):
-  col(c)
-  fill_circle(cx, cy, r)
-  col(inner)
-  fill_circle(cx, cy, max(r - t, 2))
-  ax = cx + 1 if sx > 0 else cx - r
-  ay = y + t if sy > 0 else cy - r
-  fr(ax, ay, r, cy + r + 1 - ay if sy > 0 else y + h - t - ay)
-  ax = x + t if sx > 0 else cx - r
-  ay = cy + 1 if sy > 0 else cy - r
-  fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+ for bx, by, bw, bh in _corners(x, y, w, h, r, t):
+  if bw > 0 and bh > 0:
+   fr(bx, by, bw, bh)
 MSG = [0, 0]
 def message(lines, title=None):
  n = len(lines) + (1 if title else 0)
@@ -149,16 +152,20 @@ def home(mod, title, rules, buttons, opts=('Play', 'Back'), sel=0):
   ctext(146, 'Up/Down: how to play', GREY)
   bw = (300 - (n - 1) * 8) // n
   first = True
+  old = -1
   while True:
    for i in range(n):
+    if not first and i != sel and (i != old):
+     continue
     x = 10 + i * (bw + 8)
     c = GOLD if i == sel else WHITE
     if first:
-     rbox(x, 166, bw, 28, 10, c)
+     rbox(x, 166, bw, 28, 10, c, 2, BLACK, False)
     else:
      edge(x, 166, bw, 28, 10, c)
     text(x + bw // 2 - len(opts[i]) * 5, 186, opts[i], c)
    first = False
+   old = sel
    k = wkey()
    if k == LEFT:
     sel = (sel - 1) % n
@@ -243,6 +250,8 @@ def merge_move(b, d):
    nb[idx[n]] = row[n]
  return (nb, pts)
 def merge_draw(b, score, old=None, oscore=-1):
+ faces = []
+ nums = []
  for i in range(16):
   v = b[i]
   if old and old[i] == v:
@@ -250,19 +259,23 @@ def merge_draw(b, score, old=None, oscore=-1):
   x = merge_X0 + i % 4 * merge_S
   y = merge_Y0 + i // 4 * merge_S
   c = merge_TC.get(v, (235, 180, 20))
-  rrect(x + 2, y + 4, merge_S - 4, merge_S - 5, 5, dk(c, 0.8))
-  rrect(x + 2, y + 2, merge_S - 4, merge_S - 5, 5, c)
-  if v:
-   rect(x + 7, y + 4, merge_S - 14, 2, lt(c, 0.4))
+  faces.append((c, x + 2, y + 2, merge_S - 4, merge_S - 6))
+  faces.append((dk(c, 0.8), x + 2, y + merge_S - 4, merge_S - 4, 2))
   if v:
    s = str(v)
    if len(s) > 3:
     s = s[:2] + 'k' if v >= 10000 else s
-   tc = (60, 55, 50) if v < 8 else WHITE
-   text(x + merge_S // 2 - len(s) * 5, y + 25, s, tc)
+   nums.append(((60, 55, 50) if v < 8 else WHITE, x + merge_S // 2 - len(s) * 5, y + 24, s))
+ faces.sort()
+ for c, x, y, w, h in faces:
+  rect(x, y, w, h, c)
+ nums.sort()
+ for c, x, y, s in nums:
+  text(x, y, s, c)
  if score != oscore:
-  rrect(95, 182, 130, 24, 6, merge_BOARD)
-  ctext(200, 'Score ' + str(score), WHITE)
+  if oscore >= 0:
+   text(165, 200, str(oscore), merge_BOARD)
+  text(165, 200, str(score), WHITE)
 def merge_frame():
  cls(WHITE)
  rrect(12, 34, 64, 64, 8, dk((235, 185, 30), 0.8))
@@ -274,6 +287,8 @@ def merge_frame():
  text(250, 60, 'Arrows', (120, 110, 100))
  text(250, 78, 'slide', (120, 110, 100))
  rrect(merge_X0 - 4, merge_Y0 - 4, merge_S * 4 + 8, merge_S * 4 + 8, 8, merge_BOARD)
+ rrect(95, 182, 130, 24, 6, merge_BOARD)
+ text(105, 200, 'Score', WHITE)
 def merge_game():
  b = [0] * 16
  merge_add(b)
