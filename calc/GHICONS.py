@@ -329,7 +329,7 @@ def crypt(x, y, c):
         shape([(px + rx * math.cos(2 * math.pi * i / n), py + ry * math.sin(2 * math.pi * i / n)) for i in range(n)], col)
 
     # hair hanging behind
-    shape([(-9, -4), (-14, 12), (-12, 24), (-4, 18), (3, 25), (9, 15), (9, -4), (0, -12)], (85, 85, 90))
+    shape([(-9, -4), (-14, 12), (-12, 24), (-4, 18), (3, 25), (9, 15), (9, -4), (0, -12)], (25, 22, 30))
     # neck and narrow sloped shoulders
     nx, ny = rot(0, 11)
     poly([nx - 3, nx + 3, x + 2, x - 4], [ny, ny, y + 16, y + 16], (150, 150, 155))
