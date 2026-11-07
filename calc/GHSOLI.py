@@ -73,7 +73,7 @@ class G:
 def new():
     g = G()
     deck = [[r, s, False] for s in range(4) for r in range(1, 14)]
-    random.shuffle(deck)
+    shuffle(deck)
     g.tab = []
     for c in range(7):
         pile = [deck.pop() for i in range(c + 1)]

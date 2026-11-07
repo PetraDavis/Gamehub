@@ -2,6 +2,7 @@
 from ti_draw import *
 from ti_system import *
 import time
+import random
 
 # Key codes for the TI-84 Evo (check them with Settings > Key test).
 UP = 25
@@ -54,6 +55,19 @@ class Steer:
 
     def stop(self):
         self.d = 0
+
+
+# The calculator's random module has no shuffle or sample, so here they are.
+def shuffle(a):
+    for i in range(len(a) - 1, 0, -1):
+        j = random.randint(0, i)
+        a[i], a[j] = a[j], a[i]
+
+
+def sample(seq, k):
+    a = list(seq)
+    shuffle(a)
+    return a[:k]
 
 
 def wkey():
