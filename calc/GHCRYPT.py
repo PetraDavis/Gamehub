@@ -277,11 +277,11 @@ def bottom(g, prompt):
 
 
 # Ysolde, drawn from the character sheet in the full game (a 256 x 640 picture):
-# very thin and tall, small head tilted hard on a long neck, black lank hair,
-# a pale gaunt face with black eyes that glow small and cold blue, black tear
-# streaks, jaw hanging open, short tattered dress, arms past the knees.
+# very thin and tall, all static, small head tilted hard on a long neck,
+# lank hair hanging from it, black eyes that glow small and cold blue, black
+# tear streaks, jaw hanging open, short tattered dress, arms past the knees.
 # Built once into thin slabs (u0, u1, v0, v1, kind); kinds draw in order:
-# 0 static body, 1 hair, 2 face, 3 black, 4 eye glow.
+# 0 static body, 1 static hair (a little darker), 2 static head, 3 black, 4 eye glow.
 YS = []
 
 
@@ -348,12 +348,11 @@ def _build_ys():
     for x0, y0, sg in ((76, 420, -1), (184, 410, 1)):
         for f in range(5):
             _limb([x0, y0, x0 + sg * (f * 4 - 6), y0 + 52 + (f % 2) * 8, x0 + sg * (f * 5 - 4), y0 + 70 + f * 3], 2.6)
-    _oval(0, 0, 17, 25, 0, 4)
-    # black lank hair hanging from the tilted head
+    # lank hair hanging from the tilted head
     hair = [(-18, -6), (-27, 30), (-24, 96), (-6, 70), (8, 100), (20, 60), (17, -6), (10, -24), (-10, -24)]
     _poly_slabs([(140 + lx * ca - ly * sa, 50 + lx * sa + ly * ca) for lx, ly in hair], 1, 4)
-    # pale gaunt face, black eyes, tear streaks, open jaw
-    _oval(0, 3, 13, 21, 2, 3)
+    _oval(0, 0, 17, 25, 2, 4)
+    # black eyes, tear streaks, open jaw
     for sg in (-1, 1):
         _oval(sg * 6, -5, 3.5, 4, 3, 2, sg * .3)
         p0 = (sg * 6, 0)
@@ -366,7 +365,7 @@ def _build_ys():
     YS.sort(key=lambda r: r[4])
 
 
-COLS_YS = (None, (22, 20, 26), (215, 205, 192), (8, 6, 8), (120, 210, 255))
+COLS_YS = (None, None, None, (8, 6, 8), (120, 210, 255))
 
 
 def ys_column(x, left, wid, top, h):
@@ -386,12 +385,12 @@ def ys_column(x, left, wid, top, h):
         y1 = min(VH, int(top + h * (1 - v0)) + 1)
         if y0 >= VH or y1 <= 0:
             continue
-        if kind == 0:
+        if kind == 0 or kind == 2:
             g = random.randint(120, 245)
             c = (g, g, g + 8 if g < 248 else g)
         elif kind == 1:
-            g = random.randint(0, 30)
-            c = (g + 12, g + 10, g + 16)
+            g = random.randint(80, 205)
+            c = (g, g, g + 8)
         else:
             c = COLS_YS[kind]
         rect(a, max(0, y0), b - a, max(2 if kind == 4 else 1, y1 - max(0, y0)), c)

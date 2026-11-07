@@ -328,15 +328,42 @@ def crypt(x, y, c):
     def oval(px, py, rx, ry, col, n=14):
         shape([(px + rx * math.cos(2 * math.pi * i / n), py + ry * math.sin(2 * math.pi * i / n)) for i in range(n)], col)
 
-    # hair hanging behind
-    shape([(-9, -4), (-14, 12), (-12, 24), (-4, 18), (3, 25), (9, 15), (9, -4), (0, -12)], (25, 22, 30))
-    # neck and narrow sloped shoulders
+    def inside(px, py, xs, ys):
+        n = len(xs)
+        hit = False
+        j = n - 1
+        for i in range(n):
+            if (ys[i] > py) != (ys[j] > py) and px < xs[i] + (py - ys[i]) * (xs[j] - xs[i]) / (ys[j] - ys[i]):
+                hit = not hit
+            j = i
+        return hit
+
+    def static(xs, ys, base, n, lo=100, hi=250):
+        poly(xs, ys, base)
+        x0 = int(min(xs))
+        x1 = int(max(xs))
+        y0 = int(min(ys))
+        y1 = int(max(ys))
+        for i in range(n):
+            px = random.randint(x0, x1)
+            py = random.randint(y0, y1)
+            if inside(px + 1, py + 1, xs, ys):
+                g = random.randint(lo, hi)
+                box(px, py, 2, 2, (g, g, g + 5 if g < 250 else g))
+
+    # lank hair hanging behind, the same static as the rest of her
+    hair = [rot(px, py) for px, py in ((-9, -4), (-14, 12), (-12, 24), (-4, 18), (3, 25), (9, 15), (9, -4), (0, -12))]
+    static([p[0] for p in hair], [p[1] for p in hair], (125, 125, 132), 70, 70, 210)
+    for a0, a1 in (((-7, 0), (-11, 20)), ((-2, 2), (-3, 16)), ((4, 2), (6, 20))):
+        p0 = rot(a0[0], a0[1])
+        p1 = rot(a1[0], a1[1])
+        line(p0[0], p0[1], p1[0], p1[1], (45, 45, 52))
+    # long neck and narrow sloped shoulders
     nx, ny = rot(0, 11)
-    poly([nx - 3, nx + 3, x + 2, x - 4], [ny, ny, y + 16, y + 16], (150, 150, 155))
-    poly([x - 13, x - 2, x + 11, x + 7, x - 9], [y + 22, y + 14, y + 20, y + 23, y + 23], (150, 150, 155))
+    static([nx - 3, nx + 3, x + 2, x - 4], [ny, ny, y + 16, y + 16], (165, 165, 172), 30)
+    static([x - 13, x - 2, x + 11, x + 7, x - 9], [y + 22, y + 14, y + 20, y + 23, y + 23], (150, 150, 158), 40)
     # head
     oval(0, 0, 8.5, 12.5, (200, 200, 205))
-    # static
     for i in range(70):
         px = random.uniform(-8, 8)
         py = random.uniform(-12, 12)
@@ -344,9 +371,6 @@ def crypt(x, y, c):
             g = random.randint(110, 255)
             a, b = rot(px, py)
             box(a, b, 2, 2, (g, g, g))
-    for i in range(16):
-        g = random.randint(60, 200)
-        box(x + random.randint(-14, 8), y + random.randint(-2, 20), 2, 2, (g, g, g))
     # glitch band
     a, b = rot(0, -6)
     box(a - 6, b, 14, 2, (235, 235, 240))
