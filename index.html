@@ -74,7 +74,7 @@
 <div class="wrap">
   <header>
     <h1>GAMEHUB</h1>
-    <p class="tag">13 free apps for the TI-84 Evo, in one menu.</p>
+    <p class="tag"><span id="count">16</span> free apps for the TI-84 Evo, in one menu.</p>
   </header>
 
   <section class="hero">
@@ -160,6 +160,7 @@
     { mod: 'GHBREAK', name: 'Breakout', cat: 'Arcade', shot: 'breakout', text: 'Bounce the ball off your paddle and smash every brick.' },
     { mod: 'GHRPG', name: 'Tiny Quest', cat: 'Adventure', shot: 'tinyquest', text: 'A small adventure: explore three areas, fight monsters, level up and take on the Hollow King.' },
     { mod: 'GHFORTUN', name: 'Fortune Cards', cat: 'Create', shot: 'fortune', text: 'Pick three cards from a shuffled deck and the calculator tells your fortune: past, now and future. Just for fun!' },
+    { mod: 'GHNAMES', name: 'Name Generator', cat: 'Create', shot: 'names', text: 'Made-up names for heroes, monsters, pets, wizards and planets. Press ENTER for a new one, as many times as you like.' },
     { mod: 'GHSPACE', name: 'Lost Orbit', cat: 'Adventure', shot: 'lostorbit', text: 'A short text adventure. Wake alone on a failing space station and find the last escape pod before the air runs out.' },
     { mod: 'GHSIMON', name: 'Simon', cat: 'Puzzle', shot: 'simon', text: 'Watch the colors light up, then repeat the pattern. It gets longer every round.' },
     { mod: 'GHHANG', name: 'Hangman', cat: 'Classics', shot: 'hangman', text: 'Guess the word one letter at a time before the drawing is finished.' },
@@ -177,6 +178,8 @@
   }
   const $ = id => document.getElementById(id);
 
+  // the number at the top counts the cards, so it never goes out of date
+  $('count').textContent = GAMES.length;
   const grid = $('games');
   for (const g of GAMES) {
     const el = document.createElement('article');
