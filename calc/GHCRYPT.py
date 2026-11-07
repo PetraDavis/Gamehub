@@ -255,20 +255,7 @@ def sprites(g, zb, ca, sa):
                 continue
             x = i * CWID
             if kind == "ys":
-                head = .3 < u < .7
-                for n in range(9):
-                    v0 = n * .1
-                    if n >= 7 and not head:
-                        continue
-                    if n < 7 and abs(u - .5) > .2 + (6 - n) * .045:
-                        continue
-                    gv = random.randint(100, 245)
-                    y0 = int(top + h * (1 - v0 - .1))
-                    if y0 < VH:
-                        rect(x, max(0, y0), CWID, max(2, int(h * .1)), (gv, gv, gv))
-                if head and (.36 < u < .46 or .54 < u < .64):
-                    y0 = int(top + h * (1 - .82))
-                    rect(x, max(0, y0), CWID, max(2, int(h * .03)), (90, 190, 255))
+                ys_column(x, (scol - half) * CWID, 2 * half * CWID, top, h)
                 continue
             for u0, u1, v0, v1, c in SPR[kind][1]:
                 if u0 <= u <= u1:
@@ -287,6 +274,38 @@ def bottom(g, prompt):
     if g.flash:
         text(250, VH + 15, "LIGHT", GOLD)
     text(4, VH + 33, prompt[:31], WHITE)
+
+
+# Ysolde: tall, thin, made of static. Small head tilted hard on a long neck,
+# lank hair, short tattered dress, arms hanging past the knees, small blue eyes.
+YS = ((.40, .45, 0, .40), (.55, .60, 0, .40), (.34, .66, .40, .52), (.38, .48, .37, .41),
+      (.55, .64, .36, .40), (.39, .61, .52, .72), (.30, .35, .28, .72), (.65, .70, .30, .72),
+      (.46, .52, .72, .80), (.44, .49, .68, .88), (.49, .63, .79, .93))
+YEYE = ((.53, .56, .865, .88), (.58, .61, .85, .865))
+
+
+def ys_column(x, left, wid, top, h):
+    x1 = x + CWID
+    for parts, eye in ((YS, False), (YEYE, True)):
+        for u0, u1, v0, v1 in parts:
+            a = max(x, int(left + u0 * wid))
+            b = min(x1, int(left + u1 * wid) + 1)
+            if b - a < 1:
+                continue
+            y0 = int(top + h * (1 - v1))
+            y1 = int(top + h * (1 - v0))
+            if y0 >= VH:
+                continue
+            y1 = min(VH, y1)
+            if eye:
+                rect(a, max(0, y0), b - a, max(2, y1 - y0), (90, 190, 255))
+                continue
+            st = max(3, int(h * .05))
+            y = y0
+            while y < y1:
+                g = random.randint(110, 245)
+                rect(a, max(0, y), b - a, max(1, min(st, y1 - y)), (g, g, g))
+                y += st
 
 
 # ---------- text screens ----------

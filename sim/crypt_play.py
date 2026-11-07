@@ -23,7 +23,7 @@ g.tapheard=g.notebook=g.awake=g.armed=g.sighted=False
 g.flash=True;g.blackout=False;g.won=False;g.hidden=False;g.ys_vis=False
 g.ystate='dormant';g.ytimer=0;g.yx=g.yy=0;g.shown=None
 S.keys=[105]*3; C.use(g, go(8.5,6.5,math.pi/2)); print('power',g.power,g.locked)
-S.keys=[105]; C.use(g, go(6.4,3.5,math.pi)); print('note',g.note,g.armed)
+S.keys=[105]*4; C.use(g, go(6.4,3.5,math.pi)); print('note',g.note,g.armed)
 S.keys=['ys1']+[105]; C.sighting(g)
 S.keys=word_keys('ECHO')+['closetok',105]; C.use(g, go(12.4,6.5,0)); print('closet',g.closet)
 S.keys=[105,105]; C.use(g, go(6.3,5.5,math.pi)); print('living',g.living, C.solid(g,5.5,5.5))
