@@ -192,12 +192,12 @@
       '<img class="shot" loading="lazy" alt="' + g.name + ' on the calculator" src="site/shots/' + g.shot + '.png">' +
       '<div class="row"><button class="btn small" type="button">Send this game</button>' +
       '<a class="btn small" href="' + url(g.mod) + '" download>' + (files(g.mod).length > 1 ? 'Download ' + files(g.mod).length + ' files' : 'Download .py') + '</a></div>';
-    el.querySelector('button').addEventListener('click', () => send(files(g.mod), g.name));
+    el.querySelector('button').addEventListener('click', () => send(files(g.mod), g.name, g.mod));
     el.querySelector('a.btn').addEventListener('click', e => { if (files(g.mod).length > 1) { e.preventDefault(); download(files(g.mod)); } });
     grid.appendChild(el);
   }
 
-  $('sendAll').addEventListener('click', () => send([].concat(...GAMES.map(g => files(g.mod)), files('GAMEHUB')), 'GAMEHUB'));
+  $('sendAll').addEventListener('click', () => send([].concat(...GAMES.map(g => files(g.mod)), files('GAMEHUB')), 'GAMEHUB', 'GAMEHUB'));
 
   const ok = window.EvoSend && EvoSend.supported();
   if (!ok) {
@@ -206,7 +206,7 @@
   }
 
   let busy = false;
-  async function send(names, label) {
+  async function send(names, label, run) {
     if (busy) return;
     busy = true;
     document.querySelectorAll('button.btn').forEach(b => { b.disabled = true; });
@@ -227,7 +227,7 @@
       });
       msg.className = 'msg ok';
       msg.textContent = 'Done! ' + label + ' is on your calculator.';
-      sub.textContent = 'Open the Python app and run ' + names[names.length - 1] + '.';
+      sub.textContent = 'Open the Python app and run ' + run + '.';
     } catch (e) {
       msg.className = 'msg bad';
       if (e && (e.name === 'NotFoundError' || /No device selected|No port selected/i.test(e.message))) {
