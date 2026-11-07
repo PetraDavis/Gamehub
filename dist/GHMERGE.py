@@ -40,6 +40,10 @@ def ctext(y, s, c=WHITE, cx=160):
 def circ(x, y, r, c):
     col(c)
     fill_circle(x, y, r)
+def lt(c, k=0.35):
+    return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
+def dk(c, k=0.65):
+    return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
 def ring(x, y, r, c, t=2, inner=BLACK):
     col(c)
     fill_circle(x, y, r)
@@ -210,7 +214,10 @@ def merge_draw(b, score):
         x = merge_X0 + i % 4 * merge_S
         y = merge_Y0 + i // 4 * merge_S
         c = merge_TC.get(v, (235, 180, 20))
-        rrect(x + 2, y + 2, merge_S - 4, merge_S - 4, 5, c)
+        rrect(x + 2, y + 4, merge_S - 4, merge_S - 5, 5, dk(c, 0.8))
+        rrect(x + 2, y + 2, merge_S - 4, merge_S - 5, 5, c)
+        if v:
+            rect(x + 7, y + 4, merge_S - 14, 2, lt(c, 0.4))
         if v:
             s = str(v)
             if len(s) > 3:
@@ -218,13 +225,22 @@ def merge_draw(b, score):
             tc = (60, 55, 50) if v < 8 else WHITE
             text(x + merge_S // 2 - len(s) * 5, y + 25, s, tc)
     rect(0, 180, 320, 30, WHITE)
-    ctext(200, 'Score ' + str(score), (60, 55, 50))
+    rrect(110, 182, 100, 24, 6, merge_BOARD)
+    ctext(200, 'Score ' + str(score), WHITE)
 def merge_game():
     b = [0] * 16
     merge_add(b)
     merge_add(b)
     score = 0
     cls(WHITE)
+    rrect(12, 34, 64, 64, 8, dk((235, 185, 30), 0.8))
+    rrect(12, 32, 64, 64, 8, (235, 185, 30))
+    text(24, 70, '2048', WHITE)
+    text(12, 128, 'Join', (120, 110, 100))
+    text(12, 146, 'same', (120, 110, 100))
+    text(12, 164, 'tiles!', (120, 110, 100))
+    text(250, 60, 'Arrows', (120, 110, 100))
+    text(250, 78, 'slide', (120, 110, 100))
     rrect(merge_X0 - 4, merge_Y0 - 4, merge_S * 4 + 8, merge_S * 4 + 8, 8, merge_BOARD)
     merge_draw(b, score)
     won = False

@@ -214,8 +214,16 @@ def render(g):
         x = i * CWID
         k = light(g, i, d) * (0.8 if side else 1.0)
         if top > 0:
+            # ceiling and floor fade darker toward the far wall
+            m = top // 2
             rect(x, 0, CWID, top, shade(CEIL, max(k, .3)))
+            if m >= 2:
+                rect(x, top - m, CWID, m, shade(CEIL, max(k, .3) * .8))
             rect(x, top + h, CWID, VH - top - h, shade(FLOOR, max(k, .25)))
+            if m >= 2:
+                rect(x, top + h, CWID, m, shade(FLOOR, max(k, .25) * .75))
+                if m >= 6:
+                    rect(x, top + h + m + m // 2, CWID, 1, shade(FLOOR, max(k, .25) * .85))
         rect(x, max(0, top), CWID, min(VH, top + h) - max(0, top), shade(colour(t), k))
         wall_detail(g, t, u, top, h, x, k)
     sprites(g, zb, ca, sa)
@@ -867,10 +875,10 @@ def play():
     page("enCRYPTed", "Ashgrove Manor. Bought at government auction. Power off since the accident.\n\nIt is pitch dark. Find the power switch by the front door.")
     last = clock()
     dirty = True
-    st = Steer((UP, DOWN, LEFT, RIGHT), True)
+    st = Steer((UP, DOWN), True)
     while not g.won:
         k = key()
-        d = st.feed(k)
+        d = st.feed(k) if k not in (LEFT, RIGHT) else st.d
         t = clock()
         dt = (t - last) if now else 0.25
         last = t
@@ -891,13 +899,13 @@ def play():
             dirty = True
             while key() == SECOND:
                 pass
-        if d == LEFT:
-            g.a -= 1.6 * dt
+        if k == LEFT:
+            g.a -= 2.0 * max(dt, 0.25)
             moved = True
-        elif d == RIGHT:
-            g.a += 1.6 * dt
+        elif k == RIGHT:
+            g.a += 2.0 * max(dt, 0.25)
             moved = True
-        elif d == UP or d == DOWN:
+        if d == UP or d == DOWN:
             s = (1.6 if d == UP else -1.0) * dt
             nx = g.x + math.cos(g.a) * s
             ny = g.y + math.sin(g.a) * s
@@ -936,7 +944,7 @@ def play():
     ending()
 
 RULES = "Explore Ashgrove Manor, solve Ivy's codes and hide from Ysolde when the lights stutter."
-KEYS = ['Arrows: start walking/turning', 'Same arrow keeps going,', 'opposite arrow stops', 'ENTER: use  2nd: flashlight', 'DEL: journal  CLEAR: pause']
+KEYS = ['Up/Down: start walking', 'Press the other one to stop', 'Left/Right: turn a step', 'ENTER: use  2nd: flashlight', 'DEL: journal  CLEAR: pause']
 
 
 def main():

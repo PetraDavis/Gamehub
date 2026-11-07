@@ -61,6 +61,20 @@ def ctext(y, s, c=WHITE, cx=160):
 def circ(x, y, r, c):
     col(c)
     fill_circle(x, y, r)
+def lt(c, k=0.35):
+    return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
+def dk(c, k=0.65):
+    return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
+def block(x, y, w, h, c, e=2):
+    rect(x, y, w, h, c)
+    rect(x, y, w, e, lt(c))
+    rect(x, y, e, h, lt(c))
+    rect(x, y + h - e, w, e, dk(c))
+    rect(x + w - e, y + e, e, h - e, dk(c))
+def ball(x, y, r, c):
+    circ(x, y, r, c)
+    s = max(1, r // 3)
+    circ(x - s, y - s, s, lt(c, 0.6))
 def ring(x, y, r, c, t=2, inner=BLACK):
     col(c)
     fill_circle(x, y, r)
@@ -207,7 +221,21 @@ break_RC = ((220, 60, 60), (235, 140, 50), (230, 210, 60), (70, 190, 90), (170, 
 break_PW = 46
 break_BG = (30, 70, 170)
 def break_brick(r, c, on):
-    rect(10 + c * break_BW + 1, break_BY + r * break_BH + 1, break_BW - 2, break_BH - 2, break_RC[r] if on else break_BG)
+    if on:
+        block(10 + c * break_BW + 1, break_BY + r * break_BH + 1, break_BW - 2, break_BH - 2, break_RC[r], 2)
+    else:
+        rect(10 + c * break_BW + 1, break_BY + r * break_BH + 1, break_BW - 2, break_BH - 2, break_BG)
+def break_walls():
+    rect(0, 24, 4, 186, (200, 210, 230))
+    rect(316, 24, 4, 186, (200, 210, 230))
+    rect(3, 24, 1, 186, (120, 130, 160))
+    rect(316, 24, 1, 186, (120, 130, 160))
+def break_paddle(x, c=WHITE):
+    if c == break_BG:
+        rect(x, 192, break_PW, 8, break_BG)
+        return
+    rrect(x, 192, break_PW, 8, 3, (230, 120, 60))
+    rect(x + 4, 193, break_PW - 8, 2, (255, 200, 150))
 def break_hud(score, lives):
     rect(0, 0, 320, 22, break_BG)
     text(6, 17, 'Score ' + str(score))
@@ -215,6 +243,7 @@ def break_hud(score, lives):
 def break_game():
     cls(break_BG)
     rect(0, 22, 320, 2, WHITE)
+    break_walls()
     b = [[1] * break_COLS for r in range(break_ROWS)]
     for r in range(break_ROWS):
         for c in range(break_COLS):
@@ -228,7 +257,7 @@ def break_game():
         bx, by = (px + break_PW / 2, 180.0)
         vx = random.choice((-3.0, 3.0))
         vy = -3.0
-        rect(px, 192, break_PW, 6, WHITE)
+        break_paddle(px)
         pause(0.5)
         st = Steer((LEFT, RIGHT))
         while True:
@@ -238,19 +267,19 @@ def break_game():
             opx = px
             d = st.feed(k)
             if d == LEFT:
-                px = max(0, px - 7)
-                if px == 0:
+                px = max(4, px - 7)
+                if px == 4:
                     st.stop()
             elif d == RIGHT:
-                px = min(320 - break_PW, px + 7)
-                if px == 320 - break_PW:
+                px = min(316 - break_PW, px + 7)
+                if px == 316 - break_PW:
                     st.stop()
             obx, oby = (bx, by)
             bx += vx
             by += vy
-            if bx < 3 or bx > 316:
+            if bx < 7 or bx > 312:
                 vx = -vx
-                bx = max(3, min(316, bx))
+                bx = max(7, min(312, bx))
             if by < 26:
                 vy = -vy
                 by = 26
@@ -270,17 +299,17 @@ def break_game():
                 break_hud(score, lives)
                 if left == 0:
                     break
-            rect(int(obx) - 2, int(oby) - 2, 5, 5, break_BG)
-            if opx != px:
-                rect(opx, 192, break_PW, 6, break_BG)
-                rect(px, 192, break_PW, 6, WHITE)
-            rect(int(bx) - 2, int(by) - 2, 5, 5, WHITE)
+            rect(int(obx) - 3, int(oby) - 3, 7, 7, break_BG)
+            if opx != px or oby > 186:
+                break_paddle(opx, break_BG)
+                break_paddle(px)
+            ball(int(bx), int(by), 3, WHITE)
             if by > 210:
                 lives -= 1
                 break_hud(score, lives)
                 break
-        rect(int(bx) - 2, int(by) - 2, 5, 5, break_BG)
-        rect(0, 192, 320, 6, break_BG)
+        rect(int(bx) - 3, int(by) - 3, 7, 7, break_BG)
+        rect(4, 192, 312, 8, break_BG)
     if left == 0:
         message(['Score ' + str(score)], 'All bricks cleared!')
     else:

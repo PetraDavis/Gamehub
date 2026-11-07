@@ -405,8 +405,15 @@ def crypt_render(g):
         x = i * crypt_CWID
         k = crypt_light(g, i, d) * (0.8 if side else 1.0)
         if top > 0:
+            m = top // 2
             rect(x, 0, crypt_CWID, top, crypt_shade(crypt_CEIL, max(k, 0.3)))
+            if m >= 2:
+                rect(x, top - m, crypt_CWID, m, crypt_shade(crypt_CEIL, max(k, 0.3) * 0.8))
             rect(x, top + h, crypt_CWID, crypt_VH - top - h, crypt_shade(crypt_FLOOR, max(k, 0.25)))
+            if m >= 2:
+                rect(x, top + h, crypt_CWID, m, crypt_shade(crypt_FLOOR, max(k, 0.25) * 0.75))
+                if m >= 6:
+                    rect(x, top + h + m + m // 2, crypt_CWID, 1, crypt_shade(crypt_FLOOR, max(k, 0.25) * 0.85))
         rect(x, max(0, top), crypt_CWID, min(crypt_VH, top + h) - max(0, top), crypt_shade(crypt_colour(t), k))
         crypt_wall_detail(g, t, u, top, h, x, k)
     crypt_sprites(g, zb, ca, sa)
@@ -986,10 +993,10 @@ def crypt_play():
     crypt_page('enCRYPTed', 'Ashgrove Manor. Bought at government auction. Power off since the accident.\n\nIt is pitch dark. Find the power switch by the front door.')
     last = crypt_clock()
     dirty = True
-    st = Steer((UP, DOWN, LEFT, RIGHT), True)
+    st = Steer((UP, DOWN), True)
     while not g.won:
         k = key()
-        d = st.feed(k)
+        d = st.feed(k) if k not in (LEFT, RIGHT) else st.d
         t = crypt_clock()
         dt = t - last if crypt_now else 0.25
         last = t
@@ -1010,13 +1017,13 @@ def crypt_play():
             dirty = True
             while key() == SECOND:
                 pass
-        if d == LEFT:
-            g.a -= 1.6 * dt
+        if k == LEFT:
+            g.a -= 2.0 * max(dt, 0.25)
             moved = True
-        elif d == RIGHT:
-            g.a += 1.6 * dt
+        elif k == RIGHT:
+            g.a += 2.0 * max(dt, 0.25)
             moved = True
-        elif d == UP or d == DOWN:
+        if d == UP or d == DOWN:
             s = (1.6 if d == UP else -1.0) * dt
             nx = g.x + math.cos(g.a) * s
             ny = g.y + math.sin(g.a) * s
@@ -1054,7 +1061,7 @@ def crypt_play():
             pause(0.03)
     crypt_ending()
 crypt_RULES = "Explore Ashgrove Manor, solve Ivy's codes and hide from Ysolde when the lights stutter."
-crypt_KEYS = ['Arrows: start walking/turning', 'Same arrow keeps going,', 'opposite arrow stops', 'ENTER: use  2nd: flashlight', 'DEL: journal  CLEAR: pause']
+crypt_KEYS = ['Up/Down: start walking', 'Press the other one to stop', 'Left/Right: turn a step', 'ENTER: use  2nd: flashlight', 'DEL: journal  CLEAR: pause']
 def crypt_main():
     while True:
         c = home('GHCRYPT', 'enCRYPTed DEMO', crypt_RULES, crypt_KEYS, ('Start', 'Back'))

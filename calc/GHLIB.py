@@ -95,6 +95,32 @@ def circ(x, y, r, c):
     fill_circle(x, y, r)
 
 
+def lt(c, k=0.35):
+    # a lighter shade of c
+    return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
+
+
+def dk(c, k=0.65):
+    # a darker shade of c
+    return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
+
+
+def block(x, y, w, h, c, e=2):
+    # a raised block: light top and left edges, dark bottom and right edges
+    rect(x, y, w, h, c)
+    rect(x, y, w, e, lt(c))
+    rect(x, y, e, h, lt(c))
+    rect(x, y + h - e, w, e, dk(c))
+    rect(x + w - e, y + e, e, h - e, dk(c))
+
+
+def ball(x, y, r, c):
+    # a round ball with a small shine
+    circ(x, y, r, c)
+    s = max(1, r // 3)
+    circ(x - s, y - s, s, lt(c, 0.6))
+
+
 def ring(x, y, r, c, t=2, inner=BLACK):
     col(c)
     fill_circle(x, y, r)

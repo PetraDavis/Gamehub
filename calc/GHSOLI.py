@@ -44,18 +44,26 @@ def suit(x, y, s):
 
 def card(x, y, cd, h=CHT, sel=False):
     if cd is None:
-        rbox(x, y, CW, CHT, 4, (60, 110, 80), 1, FELT)
+        rbox(x, y, CW, CHT, 4, GOLD if sel else (60, 110, 80), 2 if sel else 1, FELT)
         return
     r, s, up = cd
     edge = GOLD if sel else BLACK
+    e = 2 if sel else 1
     rrect(x, y, CW, h, 4, edge)
     if not up:
-        rrect(x + 1, y + 1, CW - 2, h - 2, 3, BACK)
+        rrect(x + e, y + e, CW - 2 * e, h - 2 * e, 3, BACK)
+        rect(x + 3, y + 3, CW - 6, 1, lt(BACK, 0.5))
+        if h >= 12:
+            rect(x + 4, y + 4, CW - 8, h - 8, lt(BACK, 0.15))
+            for i in range(x + 6, x + CW - 6, 6):
+                rect(i, y + 6, 2, h - 12, BACK)
         return
-    rrect(x + 1, y + 1, CW - 2, h - 2, 3, (255, 245, 200) if sel else CARD)
+    rrect(x + e, y + e, CW - 2 * e, h - 2 * e, 3, CARD)
     t = RANKS[r]
     text(x + 3, y + 15, t, RED if s < 2 else BLACK)
     suit(x + 31 - (5 if len(t) > 1 else 0) + (5 if len(t) > 1 else 0), y + 9, s)
+    if h >= CHT:
+        suit(x + CW // 2, y + 22, s)
 
 
 class G:
@@ -90,7 +98,7 @@ def draw_col(g, c, cur, depth, held):
     rect(x, TABY, CW + 1, 210 - TABY, FELT)
     pile = g.tab[c]
     if not pile:
-        card(x, TABY, None)
+        card(x, TABY, None, CHT, cur == 7 + c)
     up = gap(pile)
     for i in range(len(pile)):
         cd = pile[i]
@@ -112,7 +120,7 @@ def draw_top(g, cur, held):
     if g.waste:
         card(x, TOPY, g.waste[-1], CHT, cur == 1 or (held and held[0] == 1))
     else:
-        card(x, TOPY, None)
+        card(x, TOPY, None, CHT, cur == 1)
     for f in range(4):
         x = cx(3 + f)
         p = g.found[f]

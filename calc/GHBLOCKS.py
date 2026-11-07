@@ -8,6 +8,8 @@ CH = 20
 C = 9
 OUT = (50, 20, 70)
 WELL = (35, 30, 90)
+DOT = (60, 55, 125)
+PANEL = (70, 35, 100)
 X0 = 115
 Y0 = 22
 SHAPES = (
@@ -62,11 +64,14 @@ def sq(x, y, c):
     py = Y0 + y * C
     if c == WELL:
         rect(px, py, C, C, WELL)
+        rect(px + 4, py + 4, 1, 1, DOT)
     else:
+        rect(px, py, C, C, dk(c, 0.55))
         rect(px, py, C - 1, C - 1, c)
-        col((min(255, c[0] + 70), min(255, c[1] + 70), min(255, c[2] + 70)))
+        col(lt(c, 0.45))
         draw_line(px, py, px + C - 2, py)
         draw_line(px, py, px, py + C - 2)
+        rect(px + 2, py + 2, 2, 2, lt(c, 0.7))
 
 
 def draw_piece(p, c=None):
@@ -82,24 +87,36 @@ def board(b):
 
 
 def side(score, lines, nxt):
-    rect(230, 30, 90, 150, OUT)
-    text(232, 44, "NEXT", (175, 160, 210))
+    for y, h in ((26, 64), (96, 40), (142, 40)):
+        rbox(226, y, 88, h, 6, (150, 110, 190), 2, PANEL)
+    text(234, 44, "NEXT", (200, 185, 230))
     for x, y in get((nxt, 0, 0, 0)):
-        rect(240 + x * 9, 56 + y * 9, 8, 8, COLS[nxt])
-    text(232, 110, "SCORE", (175, 160, 210))
-    text(232, 128, str(score))
-    text(232, 156, "LINES", (175, 160, 210))
-    text(232, 174, str(lines))
+        c = COLS[nxt]
+        rect(244 + x * 9, 54 + y * 9, 9, 9, dk(c, 0.55))
+        rect(244 + x * 9, 54 + y * 9, 8, 8, c)
+        rect(245 + x * 9, 55 + y * 9, 2, 2, lt(c, 0.7))
+    text(234, 114, "SCORE", (200, 185, 230))
+    text(234, 131, str(score))
+    text(234, 160, "LINES", (200, 185, 230))
+    text(234, 177, str(lines))
 
 
 def game():
     b = [[0] * CW for i in range(CH)]
     cls(OUT)
+    for i in range(0, 210, 30):
+        rect(0, i, 320, 15, (58, 25, 80))
     rbox(X0 - 4, Y0 - 4, CW * C + 8, CH * C + 8, 4, WHITE, 2, WELL)
-    text(6, 44, "STACK", GOLD)
-    text(6, 62, "DROP", GOLD)
-    text(6, 160, "2nd:", (175, 160, 210))
-    text(6, 178, "drop", (175, 160, 210))
+    board(b)
+    rbox(4, 26, 96, 56, 6, GOLD, 2, PANEL)
+    text(14, 48, "STACK", GOLD)
+    text(14, 68, "DROP", GOLD)
+    for i, cc in enumerate(COLS[:5]):
+        rect(12 + i * 16, 96, 12, 12, dk(cc, 0.55))
+        rect(12 + i * 16, 96, 11, 11, cc)
+    rbox(4, 150, 96, 40, 6, (150, 110, 190), 2, PANEL)
+    text(12, 167, "2nd key:", (200, 185, 230))
+    text(12, 184, "drop it", (200, 185, 230))
     score = 0
     lines = 0
     nxt = random.randint(0, 6)

@@ -42,6 +42,8 @@ def ctext(y, s, c=WHITE, cx=160):
 def circ(x, y, r, c):
     col(c)
     fill_circle(x, y, r)
+def lt(c, k=0.35):
+    return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
 def ring(x, y, r, c, t=2, inner=BLACK):
     col(c)
     fill_circle(x, y, r)
@@ -213,18 +215,26 @@ def soli_suit(x, y, s):
         fill_rect(x - 1, y + 2, 2, 4)
 def soli_card(x, y, cd, h=soli_CHT, sel=False):
     if cd is None:
-        rbox(x, y, soli_CW, soli_CHT, 4, (60, 110, 80), 1, soli_FELT)
+        rbox(x, y, soli_CW, soli_CHT, 4, GOLD if sel else (60, 110, 80), 2 if sel else 1, soli_FELT)
         return
     r, s, up = cd
     edge = GOLD if sel else BLACK
+    e = 2 if sel else 1
     rrect(x, y, soli_CW, h, 4, edge)
     if not up:
-        rrect(x + 1, y + 1, soli_CW - 2, h - 2, 3, soli_BACK)
+        rrect(x + e, y + e, soli_CW - 2 * e, h - 2 * e, 3, soli_BACK)
+        rect(x + 3, y + 3, soli_CW - 6, 1, lt(soli_BACK, 0.5))
+        if h >= 12:
+            rect(x + 4, y + 4, soli_CW - 8, h - 8, lt(soli_BACK, 0.15))
+            for i in range(x + 6, x + soli_CW - 6, 6):
+                rect(i, y + 6, 2, h - 12, soli_BACK)
         return
-    rrect(x + 1, y + 1, soli_CW - 2, h - 2, 3, (255, 245, 200) if sel else soli_CARD)
+    rrect(x + e, y + e, soli_CW - 2 * e, h - 2 * e, 3, soli_CARD)
     t = soli_RANKS[r]
     text(x + 3, y + 15, t, RED if s < 2 else BLACK)
     soli_suit(x + 31 - (5 if len(t) > 1 else 0) + (5 if len(t) > 1 else 0), y + 9, s)
+    if h >= soli_CHT:
+        soli_suit(x + soli_CW // 2, y + 22, s)
 class soli_G:
     pass
 def soli_new():
@@ -251,7 +261,7 @@ def soli_draw_col(g, c, cur, depth, held):
     rect(x, soli_TABY, soli_CW + 1, 210 - soli_TABY, soli_FELT)
     pile = g.tab[c]
     if not pile:
-        soli_card(x, soli_TABY, None)
+        soli_card(x, soli_TABY, None, soli_CHT, cur == 7 + c)
     up = soli_gap(pile)
     for i in range(len(pile)):
         cd = pile[i]
@@ -271,7 +281,7 @@ def soli_draw_top(g, cur, held):
     if g.waste:
         soli_card(x, soli_TOPY, g.waste[-1], soli_CHT, cur == 1 or (held and held[0] == 1))
     else:
-        soli_card(x, soli_TOPY, None)
+        soli_card(x, soli_TOPY, None, soli_CHT, cur == 1)
     for f in range(4):
         x = soli_cx(3 + f)
         p = g.found[f]

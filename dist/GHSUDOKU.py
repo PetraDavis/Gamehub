@@ -235,7 +235,7 @@ def sudoku_clash(b, i):
 def sudoku_cell(b, fixed, i, cur):
     x = sudoku_X0 + i % 9 * sudoku_S
     y = sudoku_Y0 + i // 9 * sudoku_S
-    bg = (250, 225, 140) if i == cur else WHITE
+    bg = (250, 225, 140) if i == cur else (236, 238, 246) if fixed[i] else WHITE
     rect(x + 1, y + 1, sudoku_S - 2, sudoku_S - 2, bg)
     v = b[i]
     if v:
@@ -257,7 +257,8 @@ def sudoku_game(holes):
     fixed = [v != 0 for v in b]
     cls(WHITE)
     sudoku_grid()
-    text(214, 30, 'SUDOKU', sudoku_INK)
+    rbox(208, 12, 106, 30, 8, sudoku_PEN, 2, (225, 235, 252))
+    text(222, 33, 'SUDOKU', sudoku_PEN)
     text(214, 70, '0-9 type', GREY)
     text(214, 90, 'ENTER +1', GREY)
     text(214, 110, 'DEL erase', GREY)
