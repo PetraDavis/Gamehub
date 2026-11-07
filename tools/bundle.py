@@ -266,9 +266,32 @@ def build_game(g):
     return emit(parts, '# %s from GAMEHUB, on its own. Run it.' % g)
 
 
+def build_single():
+    # GHONE: the whole game center in ONE file. The menu and helpers are code;
+    # each game is kept as text and only turned into code when it is picked,
+    # because text takes far less calculator memory than ready-to-run code.
+    mods = mods_map(GAMES)
+    hub = [convert(LIB, mods), convert('GHICONS', mods), convert('GHSAVE', mods), convert('GAMEHUB', mods)]
+    games = [convert(g, mods) for g in GAMES]
+    for g, t in zip(GAMES, games):
+        t.body.append(ast.parse(mods[g] + 'main()').body[0])
+    # keep every helper any game uses, then hand only the menu over as code
+    shake(hub + games)
+    src = emit(hub, '# GHONE - all of GAMEHUB in one file (test). Run this file.')
+    # the menu's own main() call sits at the end; put the games before it
+    lines = src.rstrip('\n').split('\n')
+    call = lines.pop()
+    out = ['GAMESRC = {}']
+    for g, t in zip(GAMES, games):
+        code = emit([t], '').strip('\n')
+        assert "'''" not in code and not code.endswith('\\')
+        out.append("GAMESRC[%r] = r'''%s'''" % (g, code))
+    return '\n'.join(lines + out + [call]) + '\n'
+
+
 if __name__ == '__main__':
     os.makedirs(DIST, exist_ok=True)
-    out = {'GAMEHUB': build_hub()}
+    out = {'GAMEHUB': build_hub(), 'GHONE': build_single()}
     for g in GAMES:
         out[g] = build_game(g)
     for name, src in out.items():

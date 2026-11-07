@@ -528,6 +528,21 @@ def mehub_run_app(mod):
   return
  gc.collect()
  try:
+  src = GAMESRC[mod]
+ except Exception:
+  src = None
+ if src:
+  try:
+   ns = dict(globals())
+   exec(src, ns)
+  except Exception as e:
+   cls()
+   message([str(e)[:26]], 'Could not run')
+  ns = None
+  src = None
+  gc.collect()
+  return
+ try:
   m = __import__(mod)
   if not getattr(m, 'RAN', False):
    m.main()
