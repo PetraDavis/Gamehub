@@ -1,5 +1,6 @@
 # Star Patrol: aliens drift down toward the planet. Your ship fires on its
-# own; Left/Right glide it under them. Don't let an alien reach the bottom.
+# own; each Left/Right press moves it one step. Don't let an alien reach the
+# bottom.
 from GHLIB import *
 import random
 
@@ -19,7 +20,7 @@ AW, AH = 16, 10
 MAXA = 3         # aliens on screen at once
 FIRE = 0.35      # seconds between shots
 SHOT_V = 260.0   # pixels per second
-SHIP_V = 160.0
+STEP = 16        # pixels per Left/Right press
 
 
 # Every drawing call is slow on the calculator and so is every colour change,
@@ -105,7 +106,6 @@ def game():
     shots = []       # [x, y, drawn y]
     wait = 1.0       # seconds until the next alien
     reload = 0.0
-    st = Steer((LEFT, RIGHT), True)
     last = now() if now else 0
     while lives > 0:
         k = key()
@@ -130,14 +130,12 @@ def game():
             last = t
         else:
             dt = 0.15
-        d = st.feed(k)
-        if d == LEFT:
-            sx -= SHIP_V * dt
-        elif d == RIGHT:
-            sx += SHIP_V * dt
-        if sx < 4 or sx > 316 - SW:
-            sx = max(4.0, min(316.0 - SW, sx))
-            st.stop()
+        # one step per press: the ship stops as soon as you let go
+        if k == LEFT:
+            sx -= STEP
+        elif k == RIGHT:
+            sx += STEP
+        sx = max(4.0, min(316.0 - SW, sx))
         speed = min(80.0, 22.0 + score * 1.5)
         # new aliens and shots
         wait -= dt
@@ -216,8 +214,8 @@ def game():
     message(["You stopped " + str(score) + " aliens."], "Game over")
 
 
-RULES = "Aliens are drifting down toward the planet. Your ship fires by itself: glide under them and stop them before they reach the bottom. 3 lives."
-KEYS = ["Left/Right: glide", "Opposite arrow: stop", "CLEAR: quit"]
+RULES = "Aliens are drifting down toward the planet. Your ship fires by itself: move under them and stop them before they reach the bottom. 3 lives."
+KEYS = ["Left/Right: move a step", "CLEAR: quit"]
 
 
 def main():

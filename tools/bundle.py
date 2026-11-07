@@ -316,6 +316,7 @@ def peel(rest, tail):
             break
         side.difference_update(bad)
     size = {id(n): node_words(n) for n in rest}
+    order = {id(n): k for k, n in enumerate(rest)}
     budget = LIMIT - sum(size[id(n)] for n in rest if id(n) not in side) - words(emit([ast.Module(body=tail, type_ignores=[])], ''))
     while True:
         needed = set()
@@ -324,7 +325,8 @@ def peel(rest, tail):
         free = [i for i in side if i not in needed and size[i] <= budget]
         if not free:
             break
-        i = max(free, key=lambda i: size[i])
+        # biggest first; ties go by place in the file so every build is the same
+        i = max(free, key=lambda i: (size[i], -order[i]))
         side.discard(i)
         budget -= size[i]
     return [n for n in rest if id(n) not in side], [n for n in rest if id(n) in side]
