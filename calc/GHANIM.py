@@ -10,10 +10,12 @@ N = CWD * CHG
 P = 6
 CX = 6
 CY = 26
-PAL = ((0, 0, 0), (255, 255, 255), (128, 128, 128), (200, 200, 200),
+PAL = ((255, 255, 255), (0, 0, 0), (128, 128, 128), (200, 200, 200),
        (220, 40, 40), (245, 140, 30), (250, 220, 50), (60, 190, 70),
        (20, 100, 40), (80, 200, 230), (40, 80, 200), (20, 30, 90),
        (150, 60, 190), (245, 140, 190), (130, 80, 40), (245, 200, 160))
+INK = (20, 20, 20)
+HI = (200, 120, 0)
 MAXB = 60000
 KEYGAP = 15
 
@@ -161,8 +163,8 @@ def paint(s, i, v):
     y = CY + (i // CWD) * P
     if v >= 16:
         c = PAL[v - 16]
-        rect(x, y, P, P, BLACK)
-        rect(x + 2, y + 2, P - 4, P - 4, (c[0] // 2, c[1] // 2, c[2] // 2))
+        rect(x, y, P, P, PAL[0])
+        rect(x + 1, y + 1, P - 2, P - 2, ((c[0] + 510) // 3, (c[1] + 510) // 3, (c[2] + 510) // 3))
     else:
         rect(x, y, P, P, PAL[v])
     s.shown[i] = v
@@ -179,7 +181,7 @@ def cursor(s):
     x = CX + s.cx * P
     y = CY + s.cy * P
     v = s.cur[s.cy * CWD + s.cx]
-    col(BLACK if v in (1, 3, 6, 15) else WHITE)
+    col(BLACK if v in (0, 3, 6, 15) else WHITE)
     draw_rect(x + 1, y + 1, P - 3, P - 3)
 
 
@@ -192,11 +194,11 @@ def palette(s, sel=-1):
     for c in range(16):
         x = 210 + (c % 4) * 26
         y = 30 + (c // 4) * 26
-        rect(x - 2, y - 2, 26, 26, BLACK)
+        rect(x - 2, y - 2, 26, 26, WHITE)
         if c == s.col:
-            rbox(x - 2, y - 2, 26, 26, 5, GOLD)
+            rbox(x - 2, y - 2, 26, 26, 5, GOLD, 2, WHITE)
         if c == sel:
-            rbox(x - 2, y - 2, 26, 26, 5, WHITE)
+            rbox(x - 2, y - 2, 26, 26, 5, INK, 2, WHITE)
         rect(x + 1, y + 1, 20, 20, PAL[c])
         if c == 0:
             col(GREY)
@@ -204,29 +206,29 @@ def palette(s, sel=-1):
 
 
 def topbar(s):
-    rect(0, 0, 320, 22, BLACK)
-    text(4, 17, "Frame " + str(s.ci + 1) + "/" + str(len(s.F)))
+    rect(0, 0, 320, 22, WHITE)
+    text(4, 17, "Frame " + str(s.ci + 1) + "/" + str(len(s.F)), INK)
     text(160, 17, str(s.fps) + "fps", GREY)
     pct = used(s) * 100 // MAXB
     text(236, 17, "Mem " + str(pct) + "%", RED if pct > 90 else GREY)
 
 
 def botbar(s):
-    rect(0, 176, 320, 34, BLACK)
+    rect(0, 176, 320, 34, WHITE)
     m = ("Pen up", "PEN DOWN", "ERASER")[s.pen]
-    text(6, 190, m, GOLD if s.pen else WHITE)
+    text(6, 190, m, HI if s.pen else INK)
     text(6, 205, "ENTER pen DEL eraser 2nd menu", GREY)
 
 
 def full(s):
-    cls()
+    cls(WHITE)
     rect(CX - 2, CY - 2, CWD * P + 4, CHG * P + 4, DARK)
     s.shown = bytearray([255] * N)
     refresh(s)
     palette(s)
     topbar(s)
     botbar(s)
-    rect(208, 136, 104, 36, BLACK)
+    rect(208, 136, 104, 36, WHITE)
     text(210, 150, "Onion " + ("on" if s.onion else "off"), GREY)
     text(210, 168, "Saved " + (str(s.slot) if s.slot else "-"), GREY)
     cursor(s)
@@ -324,8 +326,8 @@ def play(s):
     commit(s)
     onion = s.onion
     s.onion = False
-    rect(0, 176, 320, 34, BLACK)
-    text(6, 190, "Playing. Up/Down: speed", GOLD)
+    rect(0, 176, 320, 34, WHITE)
+    text(6, 190, "Playing. Up/Down: speed", HI)
     text(6, 205, "Any other key stops", GREY)
     i = 0
     fr = bytearray(N)
@@ -336,8 +338,8 @@ def play(s):
         for p in range(N):
             if s.shown[p] != fr[p]:
                 paint(s, p, fr[p])
-        rect(0, 0, 150, 22, BLACK)
-        text(4, 17, "Frame " + str(i + 1) + "/" + str(len(s.F)))
+        rect(0, 0, 150, 22, WHITE)
+        text(4, 17, "Frame " + str(i + 1) + "/" + str(len(s.F)), INK)
         t = 0
         steps = max(1, 12 // s.fps)
         stop = False

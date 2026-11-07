@@ -22,17 +22,17 @@
  {
   "file": "GHANIM.py",
   "name": "GHANIM",
-  "bytes": 15617
+  "bytes": 15707
  },
  {
   "file": "GHBLOCKS.py",
   "name": "GHBLOCKS",
-  "bytes": 4746
+  "bytes": 5006
  },
  {
   "file": "GHBREAK.py",
   "name": "GHBREAK",
-  "bytes": 2853
+  "bytes": 2888
  },
  {
   "file": "GHCRYPT.py",
@@ -42,22 +42,22 @@
  {
   "file": "GHFLAP.py",
   "name": "GHFLAP",
-  "bytes": 2514
+  "bytes": 2638
  },
  {
   "file": "GHHANG.py",
   "name": "GHHANG",
-  "bytes": 2939
+  "bytes": 3045
  },
  {
   "file": "GHMERGE.py",
   "name": "GHMERGE",
-  "bytes": 3009
+  "bytes": 3069
  },
  {
   "file": "GHPONG.py",
   "name": "GHPONG",
-  "bytes": 2619
+  "bytes": 2668
  },
  {
   "file": "GHRPG.py",
@@ -67,7 +67,7 @@
  {
   "file": "GHSIMON.py",
   "name": "GHSIMON",
-  "bytes": 1863
+  "bytes": 3061
  },
  {
   "file": "GHSOLI.py",
@@ -77,11 +77,11 @@
  {
   "file": "GHSUDOKU.py",
   "name": "GHSUDOKU",
-  "bytes": 3667
+  "bytes": 3719
  },
  {
   "file": "GHTTT.py",
   "name": "GHTTT",
-  "bytes": 2925
+  "bytes": 2957
  }
 ]

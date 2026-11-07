@@ -2,26 +2,75 @@
 from GHLIB import *
 import random
 
-# arrow key -> pad index; pads: 0 up, 1 right, 2 down, 3 left
+import math
+
+# Looks like the round toy: four colored quarters around a dark center.
+# arrow key -> pad, going clockwise from the top left
+CX = 160
+CY = 116
+RO = 84
+RI = 36
 PADS = (
-    (UP, 160, 60, (40, 160, 60), (120, 255, 140)),
-    (RIGHT, 225, 110, (170, 40, 40), (255, 120, 120)),
-    (DOWN, 160, 160, (40, 70, 170), (120, 170, 255)),
-    (LEFT, 95, 110, (170, 140, 30), (255, 230, 100)),
+    (UP, 2, (30, 130, 50), (110, 255, 130)),
+    (RIGHT, 3, (150, 30, 30), (255, 110, 110)),
+    (DOWN, 0, (30, 60, 150), (120, 170, 255)),
+    (LEFT, 1, (160, 130, 20), (255, 235, 100)),
 )
+SHAPE = []
+
+
+def shapes():
+    # quarter q spans angle q*90 .. q*90+90 (0 = bottom right, screen y down)
+    for q in range(4):
+        xs = []
+        ys = []
+        for i in range(9):
+            a = math.pi / 2 * (q + i / 8)
+            xs.append(int(CX + RO * math.cos(a)))
+            ys.append(int(CY + RO * math.sin(a)))
+        for i in range(8, -1, -1):
+            a = math.pi / 2 * (q + i / 8)
+            xs.append(int(CX + RI * math.cos(a)))
+            ys.append(int(CY + RI * math.sin(a)))
+        SHAPE.append((xs, ys))
+
+
+def gaps():
+    d = (15, 15, 15)
+    rect(CX - 4, CY - RO - 1, 8, RO - RI + 1, d)
+    rect(CX - 4, CY + RI, 8, RO - RI + 1, d)
+    rect(CX - RO - 1, CY - 4, RO - RI + 1, 8, d)
+    rect(CX + RI, CY - 4, RO - RI + 1, 8, d)
+    col(d)
+    for r in (RI, RI + 1, RI + 2):
+        draw_circle(CX, CY, r)
 
 
 def pad(i, lit):
-    k, x, y, dim, bright = PADS[i]
-    circ(x, y, 30, bright if lit else dim)
-    if lit:
-        ring(x, y, 30, WHITE, 3, bright)
+    k, q, dim, bright = PADS[i]
+    col(bright if lit else dim)
+    xs, ys = SHAPE[q]
+    fill_poly(xs, ys)
+    gaps()
+
+
+def body():
+    if not SHAPE:
+        shapes()
+    circ(CX, CY, RO + 8, (60, 60, 65))
+    circ(CX, CY, RO + 5, (15, 15, 15))
+    for i in range(4):
+        pad(i, False)
+    ring(CX, CY, RI, (15, 15, 15), 3, (70, 70, 75))
 
 
 def score(n):
     rect(0, 0, 320, 22, BLACK)
     text(6, 17, "Score " + str(n))
     text(204, 17, "CLEAR quit", GREY)
+    circ(CX, CY, RI - 6, (25, 25, 28))
+    s = str(n)
+    text(CX - len(s) * 5, CY + 7, s, WHITE)
 
 
 def flash(i, t):
@@ -33,8 +82,7 @@ def flash(i, t):
 
 def game():
     cls()
-    for i in range(4):
-        pad(i, False)
+    body()
     seq = []
     while True:
         score(len(seq))

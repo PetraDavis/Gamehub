@@ -9,46 +9,45 @@ WORDS = ("PLANET ROCKET GALAXY COMET ORBIT JUNGLE TIGER PARROT DOLPHIN OCTOPUS "
          "PENCIL ERASER NOTEBOOK BACKPACK LOCKER SCIENCE HISTORY ALGEBRA GEOMETRY CALCULUS "
          "PIZZA PANCAKE WAFFLE NOODLE BURRITO PRETZEL COOKIE MUFFIN BANANA AVOCADO").split()
 ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+INK = (20, 20, 20)
+POST = (225, 175, 20)
+USED = (190, 190, 190)
 
 
 def letter_box(i, used, sel):
     x = 4 + (i % 13) * 24
     y = 150 + (i // 13) * 28
-    c = GOLD if i == sel else (DARK if ABC[i] in used else WHITE)
-    rect(x, y, 22, 24, BLACK)
-    rbox(x, y, 22, 24, 5, c)
+    c = GOLD if i == sel else (USED if ABC[i] in used else INK)
+    rect(x, y, 22, 24, WHITE)
+    rbox(x, y, 22, 24, 5, c, 2, WHITE)
     text(x + 6, y + 18, ABC[i], c)
 
 
 def word_line(w, used):
-    rect(120, 60, 200, 30, BLACK)
+    rect(120, 60, 200, 30, WHITE)
     s = ""
     for ch in w:
         s += (ch if ch in used else "_") + " "
-    text(310 - len(s) * 10, 85, s.strip())
+    text(310 - len(s) * 10, 85, s.strip(), INK)
 
 
 def figure(n):
-    col(WHITE)
     if n == 0:
-        rect(10, 136, 70, 3, WHITE)
-        rect(25, 20, 3, 116, WHITE)
-        rect(25, 20, 50, 3, WHITE)
-        rect(72, 20, 3, 15, WHITE)
+        rect(8, 134, 74, 5, POST)
+        rect(24, 18, 5, 116, POST)
+        rect(24, 18, 52, 5, POST)
+        col(POST)
+        for o in range(4):
+            draw_line(29 + o, 44, 50 + o, 23)
+        rect(72, 23, 3, 13, (140, 90, 40))
         return
-    col(GOLD)
+    col(INK)
     if n == 1:
-        draw_circle(73, 46, 10)
-    elif n == 2:
-        draw_line(73, 56, 73, 95)
-    elif n == 3:
-        draw_line(73, 65, 60, 82)
-    elif n == 4:
-        draw_line(73, 65, 86, 82)
-    elif n == 5:
-        draw_line(73, 95, 62, 118)
-    elif n == 6:
-        draw_line(73, 95, 84, 118)
+        ring(73, 46, 10, INK, 2, WHITE)
+        return
+    a = ((73, 56, 73, 95), (73, 65, 60, 82), (73, 65, 86, 82), (73, 95, 62, 118), (73, 95, 84, 118))[n - 2]
+    for o in (0, 1):
+        draw_line(a[0] + o, a[1], a[2] + o, a[3])
 
 
 def game():
@@ -56,7 +55,7 @@ def game():
     used = ""
     bad = 0
     sel = 0
-    cls()
+    cls(WHITE)
     figure(0)
     for i in range(26):
         letter_box(i, used, sel)

@@ -6,6 +6,7 @@ LINES = ((0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4
 X0 = 85
 Y0 = 28
 S = 50
+INK = (20, 20, 20)
 
 
 def winner(b):
@@ -34,33 +35,33 @@ def cpu(b):
 def cell(b, i, cur):
     x = X0 + (i % 3) * S
     y = Y0 + (i // 3) * S
-    rect(x + 3, y + 3, S - 6, S - 6, BLACK)
+    rect(x + 3, y + 3, S - 6, S - 6, WHITE)
     if i == cur:
-        rbox(x + 3, y + 3, S - 6, S - 6, 6, GOLD)
+        rbox(x + 3, y + 3, S - 6, S - 6, 6, GOLD, 3, WHITE)
     m = b[i]
     if m == 1:
-        col(WHITE)
+        col(INK)
         for o in (-1, 0, 1):
             draw_line(x + 12 + o, y + 12, x + S - 12 + o, y + S - 12)
             draw_line(x + S - 12 + o, y + 12, x + 12 + o, y + S - 12)
     elif m == 2:
-        ring(x + S // 2, y + S // 2, 15, GOLD, 3)
+        ring(x + S // 2, y + S // 2, 15, INK, 3, WHITE)
 
 
 def grid():
     for i in (1, 2):
-        rect(X0 + i * S - 1, Y0, 3, S * 3, WHITE)
-        rect(X0, Y0 + i * S - 1, S * 3, 3, WHITE)
+        rect(X0 + i * S - 1, Y0, 3, S * 3, INK)
+        rect(X0, Y0 + i * S - 1, S * 3, 3, INK)
 
 
 def status(s):
-    rect(0, 186, 320, 24, BLACK)
-    ctext(203, s, WHITE)
+    rect(0, 186, 320, 24, WHITE)
+    ctext(203, s, INK)
 
 
 def game(vs_cpu):
     b = [0] * 9
-    cls()
+    cls(WHITE)
     grid()
     cur = 4
     turn = 1
