@@ -90,6 +90,20 @@ def edge(x, y, w, h, r, c, t=2, inner=BLACK):
   ax = x + t if sx > 0 else cx - r
   ay = cy + 1 if sy > 0 else cy - r
   fr(ax, ay, cx + r + 1 - ax if sx > 0 else x + w - t - ax, r)
+def vacate(ox, oy, nx, ny, w, h, c):
+ if abs(nx - ox) >= w or abs(ny - oy) >= h:
+  rect(ox, oy, w, h, c)
+  return
+ if ny > oy:
+  rect(ox, oy, w, ny - oy, c)
+ elif ny < oy:
+  rect(ox, ny + h, w, oy - ny, c)
+ y0 = max(oy, ny)
+ y1 = min(oy, ny) + h
+ if nx > ox:
+  rect(ox, y0, nx - ox, y1 - y0, c)
+ elif nx < ox:
+  rect(nx + w, y0, ox - nx, y1 - y0, c)
 def pause(s):
  time.sleep(s)
 MSG = [0, 0]
@@ -302,6 +316,7 @@ anim_P = 6
 anim_CX = 6
 anim_CY = 26
 anim_PAL = ((255, 255, 255), (0, 0, 0), (128, 128, 128), (200, 200, 200), (220, 40, 40), (245, 140, 30), (250, 220, 50), (60, 190, 70), (20, 100, 40), (80, 200, 230), (40, 80, 200), (20, 30, 90), (150, 60, 190), (245, 140, 190), (130, 80, 40), (245, 200, 160))
+anim_COL = anim_PAL + tuple((((r + 1020) // 5, (g + 1020) // 5, (b + 1020) // 5) for r, g, b in anim_PAL))
 anim_INK = (20, 20, 20)
 anim_HI = (200, 120, 0)
 anim_MAXB = 60000
@@ -425,20 +440,10 @@ def anim_want(s, i):
 def anim_paint(s, i, v):
  x = anim_CX + i % anim_CWD * anim_P
  y = anim_CY + i // anim_CWD * anim_P
- if v >= 16:
-  c = anim_PAL[v - 16]
-  w = anim_PAL[0]
-  rect(x, y, anim_P, 1, w)
-  rect(x, y + anim_P - 1, anim_P, 1, w)
-  rect(x, y + 1, 1, anim_P - 2, w)
-  rect(x + anim_P - 1, y + 1, 1, anim_P - 2, w)
-  rect(x + 1, y + 1, anim_P - 2, anim_P - 2, ((c[0] + 510) // 3, (c[1] + 510) // 3, (c[2] + 510) // 3))
- else:
-  rect(x, y, anim_P, anim_P, anim_PAL[v])
+ rect(x, y, anim_P, anim_P, anim_COL[v])
  s.shown[i] = v
 def anim_refresh(s, src=None):
  runs = {}
- onion = []
  hide = s.hide
  for r in range(anim_CHG):
   base = r * anim_CWD
@@ -446,9 +451,7 @@ def anim_refresh(s, src=None):
   while c < anim_CWD:
    i = base + c
    v = src[i] if src is not None else anim_want(s, i)
-   if v >= 16 or (i == hide and s.shown[i] == v):
-    if s.shown[i] != v:
-     onion.append((i, v))
+   if i == hide and s.shown[i] == v:
     c += 1
     continue
    e = c
@@ -470,9 +473,7 @@ def anim_refresh(s, src=None):
    c = e
  for v in runs:
   for c, r, n in runs[v]:
-   rect(anim_CX + c * anim_P, anim_CY + r * anim_P, n * anim_P, anim_P, anim_PAL[v])
- for i, v in onion:
-  anim_paint(s, i, v)
+   rect(anim_CX + c * anim_P, anim_CY + r * anim_P, n * anim_P, anim_P, anim_COL[v])
 def anim_cursor(s):
  x = anim_CX + s.cx * anim_P
  y = anim_CY + s.cy * anim_P
@@ -671,11 +672,28 @@ def anim_play(s):
   pass
  s.cur = anim_dec(s, s.ci)
  anim_update(s)
-anim_ITEMS = ('Color', 'Fill area', 'Undo', 'Clear frame', 'Next frame', 'Prev frame', 'Add copy', 'Add blank', 'Del frame', 'Play', 'Speed', 'Onion skin', 'Save', 'Load', 'New', 'Quit')
+anim_ITEMS = ('Color', 'Fill area', 'Undo', 'Wipe frame', 'Next frame', 'Prev frame', 'Add copy', 'Add blank', 'Del frame', 'Play', 'Speed', 'Onion skin', 'Save', 'Load', 'New', 'Quit')
 anim_MX = 202
 anim_MY = 24
 anim_MH = 25
 anim_MV = 6
+anim_MW = 108
+anim_SBX = anim_MX + anim_MW + 4
+anim_SBH = anim_MV * anim_MH - 3
+anim_THH = anim_SBH * anim_MV // 16
+def anim_thumb_y(top):
+ return anim_MY + (anim_SBH - anim_THH) * top // (16 - anim_MV)
+def anim_scrollbar(top, old=None):
+ if old is None:
+  rect(anim_SBX, anim_MY, 5, anim_SBH, DARK)
+ elif old == top:
+  return
+ else:
+  a, b = (anim_thumb_y(old), anim_thumb_y(top))
+  vacate(anim_SBX, a, anim_SBX, b, 5, anim_THH, DARK)
+  vacate(anim_SBX, b, anim_SBX, a, 5, anim_THH, WHITE)
+  return
+ rect(anim_SBX, anim_thumb_y(top), 5, anim_THH, WHITE)
 def anim_mbox(x, y, w, h, c):
  rect(x + 4, y, w - 8, 2, c)
  rect(x + 4, y + h - 2, w - 8, 2, c)
@@ -689,7 +707,7 @@ def anim_mrow(s, r, i, on):
  y = anim_MY + r * anim_MH
  c = GOLD if on else WHITE
  if s.lab.get(('mb', r)) != c:
-  anim_mbox(anim_MX + 1, y, 116, 22, c)
+  anim_mbox(anim_MX + 1, y, anim_MW, 22, c)
   s.lab['mb', r] = c
  anim_label(s, ('m', r), anim_MX + 5, y + 16, anim_ITEMS[i], c, BLACK)
 def anim_menu(s, sel):
@@ -701,6 +719,7 @@ def anim_menu(s, sel):
  top = min(max(0, sel - 2), 16 - anim_MV)
  for r in range(anim_MV):
   anim_mrow(s, r, top + r, top + r == sel)
+ anim_scrollbar(top)
  while True:
   k = wkey()
   old = sel
@@ -720,6 +739,7 @@ def anim_menu(s, sel):
    nt = sel
   elif sel >= top + anim_MV:
    nt = sel - anim_MV + 1
+  anim_scrollbar(nt, top)
   top = nt
   for r in range(anim_MV):
    anim_mrow(s, r, top + r, top + r == sel)

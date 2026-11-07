@@ -14,6 +14,8 @@ PAL = ((255, 255, 255), (0, 0, 0), (128, 128, 128), (200, 200, 200),
        (220, 40, 40), (245, 140, 30), (250, 220, 50), (60, 190, 70),
        (20, 100, 40), (80, 200, 230), (40, 80, 200), (20, 30, 90),
        (150, 60, 190), (245, 140, 190), (130, 80, 40), (245, 200, 160))
+# the onion skin: each colour mixed with 4 parts white, a faint afterimage
+COL = PAL + tuple(((r + 1020) // 5, (g + 1020) // 5, (b + 1020) // 5) for r, g, b in PAL)
 INK = (20, 20, 20)
 HI = (200, 120, 0)
 MAXB = 60000
@@ -164,17 +166,7 @@ def want(s, i):
 def paint(s, i, v):
     x = CX + (i % CWD) * P
     y = CY + (i // CWD) * P
-    if v >= 16:
-        # a faint copy of the last frame: white rim, pale middle
-        c = PAL[v - 16]
-        w = PAL[0]
-        rect(x, y, P, 1, w)
-        rect(x, y + P - 1, P, 1, w)
-        rect(x, y + 1, 1, P - 2, w)
-        rect(x + P - 1, y + 1, 1, P - 2, w)
-        rect(x + 1, y + 1, P - 2, P - 2, ((c[0] + 510) // 3, (c[1] + 510) // 3, (c[2] + 510) // 3))
-    else:
-        rect(x, y, P, P, PAL[v])
+    rect(x, y, P, P, COL[v])
     s.shown[i] = v
 
 
@@ -182,7 +174,6 @@ def refresh(s, src=None):
     # paint the cells that differ from s.shown; src is a frame (for playback),
     # or None for the frame being edited with its onion skin
     runs = {}
-    onion = []
     hide = s.hide
     for r in range(CHG):
         base = r * CWD
@@ -190,9 +181,7 @@ def refresh(s, src=None):
         while c < CWD:
             i = base + c
             v = src[i] if src is not None else want(s, i)
-            if v >= 16 or (i == hide and s.shown[i] == v):
-                if s.shown[i] != v:
-                    onion.append((i, v))
+            if i == hide and s.shown[i] == v:
                 c += 1
                 continue
             e = c
@@ -214,9 +203,7 @@ def refresh(s, src=None):
             c = e
     for v in runs:
         for c, r, n in runs[v]:
-            rect(CX + c * P, CY + r * P, n * P, P, PAL[v])
-    for i, v in onion:
-        paint(s, i, v)
+            rect(CX + c * P, CY + r * P, n * P, P, COL[v])
 
 
 def cursor(s):
@@ -461,7 +448,7 @@ def play(s):
 
 
 # ---------- menus ----------
-ITEMS = ("Color", "Fill area", "Undo", "Clear frame",
+ITEMS = ("Color", "Fill area", "Undo", "Wipe frame",
          "Next frame", "Prev frame", "Add copy", "Add blank",
          "Del frame", "Play", "Speed", "Onion skin",
          "Save", "Load", "New", "Quit")
@@ -469,6 +456,29 @@ MX = 202
 MY = 24
 MH = 25
 MV = 6
+MW = 108           # menu box width; the scroll bar sits to its right
+SBX = MX + MW + 4  # scroll bar track
+SBH = MV * MH - 3
+THH = SBH * MV // 16
+
+
+def thumb_y(top):
+    return MY + (SBH - THH) * top // (16 - MV)
+
+
+def scrollbar(top, old=None):
+    # a dark track with a white thumb; when the list scrolls only the strip
+    # the thumb left is painted dark again
+    if old is None:
+        rect(SBX, MY, 5, SBH, DARK)
+    elif old == top:
+        return
+    else:
+        a, b = thumb_y(old), thumb_y(top)
+        vacate(SBX, a, SBX, b, 5, THH, DARK)
+        vacate(SBX, b, SBX, a, 5, THH, WHITE)
+        return
+    rect(SBX, thumb_y(top), 5, THH, WHITE)
 
 
 def mbox(x, y, w, h, c):
@@ -488,7 +498,7 @@ def mrow(s, r, i, on):
     y = MY + r * MH
     c = GOLD if on else WHITE
     if s.lab.get(("mb", r)) != c:
-        mbox(MX + 1, y, 116, 22, c)
+        mbox(MX + 1, y, MW, 22, c)
         s.lab[("mb", r)] = c
     label(s, ("m", r), MX + 5, y + 16, ITEMS[i], c, BLACK)
 
@@ -503,6 +513,7 @@ def menu(s, sel):
     top = min(max(0, sel - 2), 16 - MV)
     for r in range(MV):
         mrow(s, r, top + r, top + r == sel)
+    scrollbar(top)
     while True:
         k = wkey()
         old = sel
@@ -522,6 +533,7 @@ def menu(s, sel):
             nt = sel
         elif sel >= top + MV:
             nt = sel - MV + 1
+        scrollbar(nt, top)
         top = nt
         for r in range(MV):
             mrow(s, r, top + r, top + r == sel)

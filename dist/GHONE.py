@@ -833,8 +833,8 @@ a_N=`#9$*`#6$
 a_P=6
 a_CX`#*%Y=26
 a_PAL=((255,`#&&),(0,0,0),(128,`#&&),(200,`#&&),(220,40,4`#/$45,140,3`#0$50,220,50),(60,190,7`#<$0,10`#U&8`#p&`#U$40,`#3%`#H%30,9`$H$50,`#e%`$-+`#1%13`#V$`$G)200,160))
-a_INK=(20,`#%$)
-a_HI=`%-$120,`#4$MAXB=60000
+a_COL=`%H$+tuple((((r+1020)//5,(g`#/+b`#/))for r,g,b in `#d$`#r$INK=(20,`#%$)
+a_HI=`%|$120,`#4$MAXB=60000
 a_KEYGAP=15
 def a_enc_key(fr):
  out=bytearray([1])
@@ -870,44 +870,43 @@ class a_Studio:
   nx=`)D)+1)
 `#F%]`%I%`&6+s.cur,s.prv`%O(`*_$None`%d%nx is`$i$`&L(`$8(`&=-`#n%nx`$5$`%6$=False`%^&used`%[%t=0`*>%f in s.F:
 `/L$len(f)+2`&?)t`#_&wan`$x$):
- v=`$2$`6c$if v==`*,(onion`6Q$s.ci>0`&0&pr`4s(`#{&16+`#9(`$4)v`$4&pai`$5%,`*<$x=a_CX+i%`<&(P
- y=a_CY+i//`#8+if v>=16`8N%`<4$[v-16]
-  w`#3&0]`$N$ct(x,y,a_P,1,w)`#7++a_P-1`#=51,`#;$-2`#;,`#S&`#A8`#=%`#;%`#)%((c[0]+510)//3,(c[1`#1-2`#1)))
-`6T)`%#-`#&&AL[v]`)O$shown[i]=`&[(refresh(s,src`+g$):
+ v=`$2$`6c$if v==`*,(onion`6Q$s.ci>0`&0&pr`4s(`#{&16+`#9(`$4)v`$4&pai`$5%,`*<$x=a_CX+i%`<v(P
+ y=a_CY+i//`#8+rect(x,y,a_P`#&&COL[v]`&$$shown[i]=`$1(refresh(s,src`);$):
  runs={}
- `(g$=[]
- hide=s.hide`)w%r`07*`@-$`07$base=r*`(+$`&w$`4j*c<`#9$`9Q%=base+`49$v=src[i]if src`+r,`,5%`*_+`:3&`(}$ or(i==hide`*a&`%M)=`)v$`#O%`#:*!=v`#9%`%F%`7[((i,v)`$#$ c`:y(`;v+ e`6-%`-#, `%D(e`%D+ j`%E%`#B$ w`%F$j`%FBj`$E%if w!=v or(j`%F3j`%F+`;y)`%Q-j`%Q+`$x%Tr`%2% `#k,v`#5$e`%Z&if`#O%`&F)v`):$uns`#o&runs[v]`&D)c,r,e-c`&H&`=X*`#L(=[`#F)`:/&`*:&`#~-for c,r,n`#8([v`>Y%`+r$`.o$c*`+q%CY+r`#.$n`#4&`,+-for i,`$%$`):$`7J%`/h,`4M(ursor`1p%`/x&s.cx`/u-s.cy`#4%`1S(`#5&CWD`#Q$]
- col(BLACK`&E((0,3,6,15)`)=$WHITE)
- draw_`.3,`/$(`..$`-M&`$&-`3e(n`$w,`6,$`#I-`#c(-1
-`%[-`-&+`%g(label(s,key,x,y,t,c,bg=`$o%:
- old=s.lab.get(key`$h$lab[key]=(t,c`62%old`9X,tex`%H%`#D%`8&)o,oc=old`(V%k`/p*max(len(o),len(t))`<6%=o[k]if k`8J$o`&Z%' '
-  b=t`#?,t`#?,if a!=b`Eo(a!=' '`+;%`37&k*10,y-12,10,16,bg`01(b`#P+`%9%`#P&,b`%>%`F;$oc!`IQ%`#S,`#R3`(&%swatch(s,c,sel=-`>d$x=210+c%4*26
- y=30+c//`#1%e=`LE$ if c==sel`/e%GOLD`#7(.co`#9&`(p$
-`%K&-2,y-2,26,2,e`<m$`#9(+2`#:5,2,2`#7,+2`#8,`8v(lette`+%%`.D$`(|*16`(l$`%?.`%@/`7I.`Ni%`.M%c]`LX$`%D$`=W$`-B$GREY`(O$`-&.`OD& `&l-`$p(topba`,r&pct=`<m)*100//`Oj%
-`,P+'fr',4,17,'Frame '+str`<6$+1)+'/`#3%`?T(),`(R$)`#h.ps',160,17,`#b%fps)+`#;%`%7&`#R+mem',236`$?$Mem`$=&pct)+'%',RE`)E$pct>9`?w&`#j%`%T%bot`%T$,a`9]$,b`9e)if a`.*,a=('Pen up','PEN DOWN','ERASER')[s.pen]
-  ca=a_HI`5d%pen`6^(INK`;U*`#H&`%=-b1',6`U9$a,ca`%Y.b2',6,206,b or 'ENTER pen DEL eraser 2nd menu`&A(`--&id`*w&`5#&MX,22,320-`#/$154,`3/(`19%pop('on',`C<&`#9+sv`#9)`+{,
-`$2&`.Y$s`$D,`#5&:`%?-on',210,150,'O`BI$'+`$=$`&M$`B[%`0w%off')`)a3sv`#h&68,'Saved '+(`*?%slot)`:#%lot`#n&-`#l)`$i%full`$e%cls(`%t(`8<)`5x$CY`#*%`Bz%+4,2,DARK`#K3+`?N$`8q(`#SB,`#*$`#U&`#G0+`#h)`#O9`<)&`MF1`72+`(w$`A_$`B%+`(k)`#.&`/4)
-`,k+`#0$`8B)`8T(pda`1O(`8d-`$*2`#z-`*#,`$.@set_px`92$c`..&`Hk(!=c`YI&`L=/ s.undo`%}+`#V$)`Jr$`#a%`A[$`J^(`?d&s.changed`#4%`)|&i`)|(i0`;*2`:9%`#x$0]
- new`5p%`:-(==new`My,`$f9stack=`#l%`YD&tack`%R$=`#.$`-r$`4]&`%v*old`4g&`D.)`%U)new`5q$`Jx&`#_%x>`5=%`#y%`Aa&i-1`$#&x`DN%-`RR$`#H/`O@$`Ny%`eu%`#n4`#<$`#K(<a_N`#5%`#t4`#N(`(G.`(F5go`EN$`*x$`R#)`($$j`:#$i+`$}$`N+$`(Q%`%|(`(+-prv`7e%`Uz%`QC(`U}&`3x(`#[%`R,(`Fm$`#~%`#6)-1)if j`Qu(`-w2c`]1$`)T&`SK$`]+&dd_frame(s,blank`6:(`8z(>`8u%:
-  message(['Memory is full.'`2#%, or delete `#y$s.'],"Can't add"`%*%broke`,?(`+<(`&_.`UD*`Tq,`UJ/`TR)`,C%`%g.if `%@$`&(0`,:).F.insert(i`P6$`Tv1ew)`UR4`Y})i+2`Vj+`#5(`Ug-new`Ue(`)o+`)4%`,i$`(W$i+`2O$`*t3del`(](`(V&`%o(`bk&`0O?`3i1`0Y0`YQ3`(0Fp`#K*`+/%`Y%-
- del`Ya&`Y1<`&F(key(nx)if p`=B(`<^(`]j+`&e%`/>%`$^(`1-%`#1(`64%`Pk-`&|%`(4(`bq*`(S(`%88`-D3`(a2play`6O(`+u+`6]1`@*)'Playing. Up/Down: speed','Any other key stops'`o}(`d>3`4%%Tru`&h$`3p$F[i`+E%1 or i`D_(`#b3`de0i`E:$`W],`b-$`D:B`D7? steps=max(1,12//`D-%`#<$op`UO)for q`GT*`#X$`TG%k=key`6E$ if k==UP`.)&fps<12`KE%`#1$`Vf(`:X-`KL&k==DOW`of%`#P$>`6/%`#0%`ff%`#^7`#W$k`+q$in(UP,DOWN`V2&`%6$`Uj)`V?)pause(1/12`8L(top`#U$`#F(i=`&R$%`&J(`hU)ey(`$%$`jX$`+j/s.ci`*l%`=X(
-a_ITEMS=('Color','Fill area','Undo','Clear`3~%','Next`#0)Prev`#0)Add copy`#.&`3*$','Del`#S*lay','S`+i&`Ct%skin`5;&','Load`$1$w','Quit'`xa$X=202
-a_MY`|#%MH=25
-a_MV=6`-O&mbox`L,$w,h`>v%`L}&4,y,w-8,2`Pc$`#8*+h-2`#<1,y`C/$h-8`#Q,w`O;$`#<3`OR$,2`$%.w-4`#:42`$=$4`#Q6`#<+`%@&row(s,r,i,o`pt$y=a_M`Yn%MH
- c=`QV(`G@(`QP&`.w$`V?(('mb',r))`Al&`&?&a_MX+1,y,116,2`$Y%`Vg&`#T%`A_$`.j*('m',r),`#[$5,y+16,`*J&[i],c,`Yt$`%,)enu(s,sel`K%>`#X&`e12MV`+|$`K(*`%8(`K,(`#>.`#=,`2t,MENU `2q*pick',`M9%: do it  2nd: close')
- top=min`Xk$0,sel-2),16-`$^$`$u:`(o+top+`#)&`VD$`3W1k=w`12(`Dr$el`/5%`1;$`Ae%el=(sel-1)%16`XK(`0}&`#E-+`#E. in(LEFT,RIGHT`0]%`#N)8`#r/OK`0J-`#g*CLR,SECOND`#g*-`2&$`#O(nt=top`1:&el<`1=(nt`%@&`#r$sel>=top+a_MV`#C+`&g$+1
- `(-$nt`4T&`&r4`&s?`K|-`Jd+`p6&sel`9>(ick_col`bF(sel`Hx(`X#+sel`+j$`*R.Arrows`*K% a colour`*T*use`*U$CLEAR: back'`)ZLLEFT`)]>`)3$`)^<`*F24`*FA`#E0`)v&`L:&ol`MW%col`$y&`&@,old`7k$`*H.==CLR`7..`)l$`Kh*`#h.`(*&`#:-`(A,`#8,`#4/.co`(g.`_m)ick_`>*$`Tk*)
- c`Pu$80,'PLAYBACK SPEED',GOLD`#D)140`)=& done`]6)`S1*`)<.t='<`^Q)`]o%`HV& a second >'`={.sp`^L$-`fb%*5,110,t`YR%`2U)`*=,`*3*`<I1`<H+`*9-`=T2`=S+`/8*OK,CLR`-l%`Et&`&_,lot(titl`^~$opts`uY$for sl`d^+,S_SLOTS+`g($ inf=S_info(s`)E$opts`OQ('Slot`&J(l)+(':`@q(nf[0]`&Y%'if inf`Z0&: empty'))`$P%`#q)Cancel')
- c=choose`${%,opt`O|&c<0 or c==`$q&`T,* 0`/y)c+1`%l(rogress(k,`9H$`7B$60,1`f%$0,30`(d)rbox`#>,16,6`_[)`#[%4,124,max(2,192*(k+1)//n),8`+,&`K9&o_sav`Y,)`FY+sl=`(M,'SAVE TO`F($`X3&l`VM,`,J-100`>p$ing...`,F)data`E|+`7^&f in s.F:
+ hide=s.hide`&A%r`-]*`>F$`-]$base=r*`$P$`9n$`24*c<`#9$`6x%=base+`1_$v=src[i]if src`)<,`)Z%`(*+`7X&i==hide`&}&`%:)=v`2e%c`7e(`8b+ e`2t%`)k, `$f(e`$f+ j`$g%`#B$ w`$h$j`$hBj`$h$ if w!=v or(j`$q3j]==`)*$`8e,`#Y$`#E*!`%8(`$x&Tr`%2% `#k,v`#5$e`%Z&if`#O%`#[%if v`(Z$uns`#o&runs[v]`7j((c,r,e-c)`%%%`:D*`#L(=[`#F)`6v&`)Z&`#~-for c,r,n`#8([v`;E%`+-$`+Y$c*`+,&Y+r`#.$n`#4&`+A,`0p&ursor`.6%`,>&s.cx`,;-s.cy`#4%`-v(`#5&CWD`#Q$]
+ col(BLACK`%|((0,3,6,15)`(t$WHITE)
+ draw_`-$,-2`#)%`,{$`,I&`$&-`0+(n`$w,`2M$`#I-`#c(-1
+`.h-`+~+`%g(label(s,key,x,y,t,c,bg=`$o%:
+ old=s.lab.get(key`$h$lab[key]=(t,c`2S%old`5{,tex`%H%`#D%`4H)o,oc=old`)3%k`.l*max(len(o),len(t))`8W%=o[k]if k`4m$o`&Z%' '
+  b=t`#?,t`#?,if a!=b`B5(a!=' '`*r%`(1%+k*10,y-12,10,16,bg`/-(b`#P+`%9%`#P&,b`%>%`B]$oc!`Et%`#S,`#R3`(&%swatch(s,c,sel=-`;*$x=210+c%4*26
+ y=30+c//`#1%e=`Hh$ if c==sel`/?%GOLD`#7(.co`#9&`(p$`3[(-2,y-2,26,2,e`93$`#9(+2`#:5,2,2`#7,+2`#8,`5<(lette`+%%`-{$`(|*16`(l$`%?.`%@/`$$(1,y+1`K,%,`KD$[c]`H{$`%D$`9z$`-B$GREY`(O$`-&.`Kg& `&l-`$p(topba`,r&pct=`93)*100//`L0%
+`,P+'fr',4,17,'Frame '+str`8W$+1)+'/`#3%`;w(),`(R$)`#h.ps',160,17,`#b%fps)+`#;%`%7&`#R+mem',236`$?$Mem`$=&pct)+'%',RE`)E$pct>9`<=&`#j%`%T%bot`%T$,a`8N$,b`8U)if a`.*,a=('Pen up','PEN DOWN','ERASER')[s.pen]
+  ca=a_HI`5>%pen`69(INK
+`4-)`#H&`%=-b1',6`RN$a,ca`%Y.b2',6,206,b or 'ENTER pen DEL eraser 2nd menu`&A(`--&id`*w&`4Y&MX,22,320-`#/$154,`3/(`19%pop('on',`?^&`#9+sv`#9)`+{,
+`$2&`.Y$s`$D,`#5&:`%?-on',210,150,'O`>l$'+`$=$`&M$`>~%`0w%off')`)a3sv`#h&68,'Saved '+(`*?%slot)`9Y%lot`#n&-`#l)`$i%full`$e%cls(`%t(`7s)`5x$CY`#*%`?@%+4,2,DARK`#K3+`>J$`8K(`#SB,`#*$`#U&`#G0+`#h)`#O9`;_&`Ii1`72+`(w$`@P$`@s+`(k)`#.&`/4)
+`,k+`#0$`8B)`8T(pda`1O(`8d-`$*2`#z-`*#,`$.@set_px`92$c`..&`E1(!=c`Ul&`H_/ s.undo`%}+`#V$)`G8$`#a%`A7$`G$(`?>&s.changed`#4%`)|&i`)|(i0`;*2`:9%`#x$0]
+ new`5p%`:-(==new`J?,`$f9stack=`#l%`Ug&tack`%R$=`#.$`-r$`4]&`%v*old`4g&`Ce)`%U)new`5q$`G>&`#_%x>`5=%`#y%`A;&i-1`$#&x`D*%-`Nu$`#H/`Kc$`K?%`c/%`#n4`#<$`#K(<a_N`#5%`#t4`#N(`(G.`(F5go`E*$`*x$`NE)`($$j`:#$i+`$}$`JL$`(Q%`%|(`(+-prv`7e%`R@%`Mf(`RC&`3x(`#[%`NM(`FG$`#~%`#6)-1)if j`N;(`-w2c`XR$`)T&`On$`XL&dd_frame(s,blank`6:(`8z(>`8u%:
+  message(['Memory is full.'`2#%, or delete `#y$s.'],"Can't add"`%*%broke`,?(`+<(`&_.`Qg*`Q7,`Qm/`Pu)`,C%`%g.if `%@$`&(0`,:).F.insert(i+1,`Q<3ew)`Qu4`VC)i+2`S0+`#5(`R--new`R+(`)o+`)4%`,i$`(W$i+`2O$`*t3del`(](`(V&`%o(`^1&`0O?`3i1`0Y0`Ut3`(0Fp`#K*`+/%`UG-
+ del`V&&`UR<`&F(key(nx)if p`=B(`<^(`Y0+`&e%`/>%`$^(`1-%`#1(`64%`PE-`&|%`(4(`^7*`(S(`%88`-D3`(a2play`6O(`+u+`6]1`@*)'Playing. Up/Down: speed','Any other key stops'`lC(`_a3`4%%Tru`&h$`3p$F[i`+E%1 or i`D_(`#b3`a+0i`E:$`VN,`]N$`D:B`D7? steps=max(1,12//`D-%`#<$op`U+)for q`GT*`#X$`S~%k=key`6E$ if k==UP`.)&fps<12`KE%`#1$`V@(`:X-`KL&k==DOW`l,%`#P$>`6/%`#0%`c,%`#^7`#W$k`+q$in(UP,DOWN`Ui&`%6$`UD)`Uv)pause(1/12`8L(top`#U$`#F(i=`&R$%`&J(`dx)ey(`$%$`f{$`+j/s.ci`*l%`=X(
+a_ITEMS=('Color','Fill area','Undo','Wip`3}&','Next`#0)Prev`#0)Add copy`#.&`3)$','Del`#S*lay','S`+h&`Cs%skin`5:&','Load`$1$w','Quit'`u%$X=202
+a_MY`y8%MH=25
+a_MV`y*$MW=108
+a_SBX=a_MX+a_MW+4`#5$H=a_MV*a_MH-3
+a_THH=`#;$*a_MV//16`LG(humb_y(top`GB%`fZ&MY+(`#T$-`#b$)*top//(16-a_MV`@?)crollbar(top,old`JT,`T^/`Cd&SBX,a_MY,5,`$*$`CU(`RQ%ld==`)a&`3S(`:M(a,b=(`$}*old),`%1.)
+  vacate`$2(`$-$X,b`$7$TH`$7)`#J.b`#J&a`#J)`G.(`$O)`%.-`$>,`#V0`&0%mbox`Pa$w,h`CN%`QU&4,y,w-8,2`U;$`#8*+h-2`#<1,y`Gd$h-8`#Q,w`Sp$`#<3`T,$,2`$%.w-4`#:42`$=$4`#Q6`#<+`%@&row(s,r,i,o`qo$y=`*/$r`*p$
+ c=`V0(`Ku(`V*&`3O$`Zt(('mb',r))`FD&`&?&`+q$1`^+$MW,2`$Z%`[@&`#U%`F9$`3C*('m',r),`#]$5,y+16,`/$&[i],c,`_M$`%-)enu(s,sel`OZ>`#X&`hc2MV`0U$`O]*`%9(`Ob(`#>.`#=,`7M,MENU `7J*pick',`Qo%: do it  2nd: close')
+ top=min`^D$0,sel-2),`.*)`$u9`(p+top+`#)&`Zz$`KL%`.^,`8D1k=w`5z(`I^$el`3}%`6($`FP%el=(sel-1)%16`^8(`5j&`#E-+`#E. in(LEFT,RIGHT`5I%`#N)8`#r/OK`57-`#g*CLR,SECOND`#g*-`6o$`#O(nt=top`6&&el<`6*(nt`%@&`#r$sel>=top+a_MV`#C+`&y$+1`[?%`&C)nt,`&F%`(U$nt`9W&`(?4`(@B`Q#*`Og+`3h&sel`>A(ick_col`gI(sel`M{(`^&+sel`,7$`*|.Arrows`*u% a colour`*~*use`+#$CLEAR: back'`)rLLEFT`)t>`)I$`)u<`*]24`*]A`#E0`*1&`Q=&ol`RZ%col`$y&`&@,old`<n$`*_.==CLR`<1.`*&$`Pk*`#h.`(*&`#:-`(A,`#8,`#4/.co`(g.`ep)ick_`C-$`Yn*)
+ c`Ux$80,'PLAYBACK SPEED',GOLD`#D)140`)=& done`c9)`X4*`)<.t='<`dT)`cr%`MY& a second >'`B~.sp`dO$-`ke%*5,110,t`7|%`3#)`*=,`*3*`AL1`AK+`*9-`BW2`BV+`/N*OK,CLR`-l%`9t&`&_,lot(titl`<N$opts=[]`2q%sl`ib+,S_SLOTS+`l+$ inf=S_info(s`)E$opts`TT('Slot`&J(l)+(':`Et(nf[0]`&Y%'if inf`a3&: empty'))`$P%`#q)Cancel')
+ c=choose`${%,opt`U#&c<0 or c==`$q&`>$* 0`/y)c+1`%l(rogress(k,`9s$`7l$60,1`k)$0,30`(d)rbox`#>,16,6`=^)`#[%4,124,max(2,192*(k+1)//n),8`+,&`P<&o_sav`_/)`K]+sl=`(M,'SAVE TO`K+$`^6&l`@F,`,J-100`Ct$ing...`,F)data`K#+`8,&f in s.F:
  `#E$`($(len(f)//256)`#>5%`#=,extend(f)
- tr`Yq$S`%L&l,data`oj$s.F),`+E$,`(1*`:P%slot=sl`Yr-`F5(`Rc)`F}-`-v*sav`Ad$to `bX$`*u*'.']`c-&')
- except E`#*$ion as `.z$`Sl*Could`&z%ave:'`j#$e)[:24]],'Error'`)$+loa`0j&`(s0LOAD FROM`(u- or`#-$`-+*`),,`Zm%`%r%`.v$`$e*Un`%X$ `#A%s will','be lost. `6w&l`DG%`6v&c`-+%]`Da%?')!`5(&`*D:Load`*E/`)7&`)-$`(2%,fps=S`%p&l`)3.`(#Mload`(#9`$s*F`0z$p`NY$`v[.`$Z%`&^$n=data[p]*256+`#/%+1]
-  F`+o(bytes(`#>&2:p+2+n]`}^$p+=2+`X[$reset(s,F,`MR%`+P*`)[%`#C.:`Wy$=F
-`3U%=fp`Jl%`PS$`Jt.0`R_)`RF2`SD0`,^.`]%,`$Z(0`f7(tudio`L6$s=a_S`#2&`%;,[`UD*`$D.)],6`Sn%x=16`#,$y=12`#,$ol=`U,$pen`%<%`m*$`ay)`iy0[255]*`j#;msel=0
-`li*
+ tr`_t$S`%L&l,data`tm$s.F),`+E$,`(1*`:z%slot=sl`_u-`K8(`Wf)`L$-`-v*sav`Fh$to `g[$`*u*'.']`h0&')
+ except E`#*$ion as `.z$`Xo*Could`&z%ave:'`o&$e)[:24]],'Error'`)$+loa`0j&`(s0LOAD FROM`(u- or`#-$`-+*`),,`ap%`%r%`.v$`$e*Un`%X$ `#A%s will','be lost. `6w&l`IK%`6v&c`-+%]`Ie%?')!`5(&`*D:Load`*E/`)7&`)-$`(2%,fps=S`%p&l`)3.`(#Mload`(#9`$s*F`0z$p`S]$`{_.`$Z%`&^$n=data[p]*256+`#/%+1]
+  F`+o(bytes(`#>&2:p+2+n]`I7$p+=2+`^_$reset(s,F,`RU%`+P*`)[%`#C.:`]|$=F
+`3U%=fp`Oo%`UV$`Ow.0`Wc)`WI2`XG0`,^.`c),`$Z(0`Ly(tudio`Q9$s=a_S`#2&`%;,[`ZG*`$D.)],6`Xq%x=16`#,$y=12`#,$ol=`Z/$pen`%<%`r-$`f|)`n|0[255]*`o&;msel=0
+`ql*
  held=0
- hc=0`>P2`85.hel`,o%`f)$ hc`7[(`b-%`#i& rep=k!`#Q%or(hc>3`#Y$hc%1==`v_$`$@$`<q&not`#v&`PP%0.0`eS$`fg,`Dc2,`QI(and re`C^%`V|/`:;3c`g8(`#/$`Ra&`:;4c`gB.`#5$`Sq&`@^*`#O(y`#z+y`#z/`T,+cy<`o&$`#y+y`#y&`uw(`#<%`]|$`k?.`?k%`m0*`}.%`#Z(==1`:-%`&x$ `t=$int`#M$a_wa`#.%`-i$`n.-`($1not`&h)`(?/==OK or`%E$EL`#E$want_pen=1`#E*`$Q$2`=j%`+n$`$q+`#S(`#H%`#1(`%su`uE%hown`mH$`%v+`$+%`*72`&01`Hs-`Xn1`&41CLR`)L&`%7(`.b)`#q1`#b1`L*%`&w&`Es(`#e+c=`QS)m`Ec(if c>`^w&`/)%c`#Y%`iy%`:5(`#K$`_D(`Jz0`+])c`fu& `rX*`#?,2`%L&undo`eE0  u=`#=%`,/&`g]8`g_(u`#/&`gS-`$5)3`,x(`#l@`b[1`#y:4`*e&`:V$`hB,`)u)`py$`#@%`#p%`1t)`cZ$`o%+`&r$`&5-5`/.(i`/V(`#u+`sg%`#O)6`#D(`#x>7`#J4Tru`#I.8`#I(`l4,`#D,9`)[)`gt%`)U-`)z.`KI(`&b&`pL-`#W*`1V)`6k%`yp%`#/$`#J-`dn&`D_,`#}>`)[&`@4,`#T>`)8-`:$%`(o&`#V0`{f*`@:(or`@9Rn`bV$`@81New?')`Q<)`i[%`:oF`%>+5`%>)`$udquit`$v4Quit`$w.`@>(`&L3`&q$`#6$`/f)`;S(`%((!`*l*`gY,RULES='Draw a picture, add`F{&,`-/$play them`Vs$. Saves stay on the calculator.'
-a_KEYS=[`Wv)move `%f(pen','DEL: eraser`_N&menu','Menu:`XF$rs,`$P)play,','`,S$,`Gb$`$f$`Eg$]`c6(ain`@<$`>0.c=home('GHANIM','ANIMATION STUDIO',`%}&,`%+%,(`iR(B`YU$`>m&c<`.-%`(I)`AW*
+ hc=0`>P2`85.hel`,o%`k,$ hc`7[(`Na%`#i& rep=k!`#Q%or(hc>3`#Y$hc%1==`{c$`$@$`<q&not`#v&`US%0.0`jV$`kj,`Dy2,`VL(and re`Cu%`]#/`:;3c`l;(`#/$`Wd&`:;4c`lE.`#5$`Xt&`@^*`#O(y`#z+y`#z/`Y/+cy<`t*$`#y+y`#y&`zz(`#<%`d#$`pB.`?k%`r3*`*+$`#Z)==1`:-%`&x$ `y@$int`#M$a_wa`#.%`-i$`s1-`($1not`&h)`(?/==OK or`%E$EL`#E$want_pen=1`#E*`$Q$2`=j%`+n$`$q+`#S(`#H%`#1(`%su`zH%hown`rK$`%v+`$+%`*72`&01`Hs-`^q1`&41CLR`)L&`%7(`.b)`#q1`#b1`L@%`&w&`Es(`#e+c=`Q})m`Ec(if c>`dz&`/)%c`#Y%`n|%`:5(`#K$`eG(`Jz0`+])c`kx& `w[*`#?,2`%L&undo`jH0  u=`#=%`,/&`la8`lc(u`#/&`lV-`$5)3`,x(`#l@`g_1`#y:4`*e&`:V$`mE,`)u)`u|$`#@%`#p%`1t)`h^$`t)+`&r$`&5-5`/.(i`/V(`#u+`xj%`#O)6`#D(`#x>7`#J4Tru`#I.8`#I(`q7,`#D,9`)[)`lw%`)U-`)z.`KI(`&b&`uO-`#W*`1V)`6k%`~s%`#/$`#J-`iq&`D_,`#}>`)[&`@4,`#T>`)8-`:$%`(o&`#V0`@^)`@:)or`@9Rn`gZ$`@81New?')`Q<)`n_%`:oF`%>+5`%>)`$udquit`$v4Quit`$w.`@>(`&L3`&q$`#6$`/f)`;S(`%((!`*l*`l],RULES='Draw a picture, add`F{&,`-/$play them`Vs$. Saves stay on the calculator.'
+a_KEYS=[`Wv)move `%f(pen','DEL: eraser`_x&menu','Menu:`XF$rs,`$P)play,','`,S$,`Gb$`$f$`Eg$]`c_(ain`@<$`>0.c=home('GHANIM','ANIMATION STUDIO',`%}&,`%+%,(`nV(B`YU$`>m&c<`.-%`(I)`AW*
 `$G('''
 GAMESRC['GHBLOCKS']=r'''import random
 b_CW=10
