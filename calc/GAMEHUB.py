@@ -155,8 +155,8 @@ def wipe():
     cls()
     ctext(40, "DELETE ALL SAVES", GOLD)
     ctext(70, "This erases every")
-    ctext(90, "Animation Studio")
-    ctext(110, "animation.")
+    ctext(90, "Animation Studio animation")
+    ctext(110, "and your Dragon Tamer dragons.")
     ctext(150, "ENTER: delete", RED)
     ctext(175, "CLEAR: keep them")
     if wkey() != OK:

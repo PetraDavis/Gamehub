@@ -1,4 +1,4 @@
-# GAMEHUB save helper. Only the Animation Studio saves anything.
+# GAMEHUB save helper. Only the Animation Studio and Dragon Tamer save.
 # An animation in slot s is stored in calculator lists named A<s>H (header)
 # and A<s>000, A<s>001, ... (data). Each number holds 5 bytes.
 from ti_system import store_list, recall_list
@@ -95,4 +95,11 @@ def wipe():
                 pass
         store_list(hname(s), [0])
         n += 1
+    # Dragon Tamer keeps its dragons in one list too
+    try:
+        recall_list("DRG")
+        store_list("DRG", [0])
+        n += 1
+    except Exception:
+        pass
     return n
