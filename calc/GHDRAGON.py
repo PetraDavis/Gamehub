@@ -684,12 +684,13 @@ def pen(g):
             t = DT[d[1]]
             portrait(d)
             message([t[0] + " (" + RARE[t[2]] + ")", "Element: " + ENAME[t[1]], "Level " + str(d[2]) + "  HP " + str(d[4])], d[0])
-        elif a == 2 and len(g.pen) > 1:
+        elif a == 2 and choose("Free " + d[0] + " forever?", ["No, keep " + d[0], "Yes, let it go"]) == 1:
             g.pen.remove(d)
             if g.pick is d:
-                g.pick = g.pen[0]
+                g.pick = g.pen[0] if g.pen else None
             if g.ride is d:
                 g.ride = g.pick
+            message([d[0] + " flies away. Bye!"], "Free")
 
 
 def lst(title, opts):
