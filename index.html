@@ -74,7 +74,7 @@
 <div class="wrap">
   <header>
     <h1>GAMEHUB</h1>
-    <p class="tag">13 free apps for the TI-84 Evo, in one menu.</p>
+    <p class="tag"><span id="count">16</span> free apps for the TI-84 Evo, in one menu.</p>
   </header>
 
   <section class="hero">
@@ -178,6 +178,8 @@
   }
   const $ = id => document.getElementById(id);
 
+  // the number at the top counts the cards, so it never goes out of date
+  $('count').textContent = GAMES.length;
   const grid = $('games');
   for (const g of GAMES) {
     const el = document.createElement('article');
