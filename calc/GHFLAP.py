@@ -6,19 +6,54 @@ GAP = 64
 TW = 26
 SKY = (110, 195, 240)
 TREE = (50, 140, 60)
+LEAF = (40, 115, 50)
 INK = (20, 20, 20)
 
 
-def tree(x, gy, c):
-    if x > 319 or x + TW < 0:
-        return
+def _bar(x, y, w, h, c):
+    # rect clipped to the screen
     x0 = max(0, x)
-    w = min(320, x + TW) - x0
-    if w < 2:
+    w = min(320, x + w) - x0
+    if w >= 2 and h >= 1:
+        rect(x0, y, w, h, c)
+
+
+def _blob(x, y, r, c):
+    # a round clump of leaves, only when it fits on the screen
+    if r <= x <= 319 - r:
+        circ(x, y, r, c)
+
+
+def tree(x, gy, c):
+    if x > 322 or x + TW + 3 < 0:
         return
-    if gy > 24:
-        rect(x0, 22, w, gy - 22, c)
-    rect(x0, gy + GAP, w, 196 - gy - GAP, c)
+    hi = lt(c)
+    lo = dk(c, 0.75)
+    cx = x + TW // 2
+    # clear what the last frame left around the round parts
+    top = gy + GAP
+    y0 = max(22, gy - 27)
+    _bar(x - 3, y0, TW + 9, gy + 1 - y0, SKY)
+    _bar(x - 3, top, TW + 9, 24, SKY)
+    _bar(cx + 5, top + 18, 5, 196 - top - 18, SKY)
+    # leaves hanging from above, with a bumpy lower edge
+    if gy - 14 > 22:
+        _bar(x, 22, TW, gy - 36, lo)
+        _bar(x + 3, 22, TW - 6, gy - 36, c)
+    for bx, by, r in ((x + 5, gy - 18, 8), (x + TW - 5, gy - 16, 8), (cx, gy - 9, 9)):
+        if by - r >= 22:
+            _blob(bx, by, r, c)
+        else:
+            _bar(bx - r, 22, 2 * r, by + r - 22, c)
+    _blob(cx - 3, gy - 12, 3, hi)
+    # a tree from the ground: round crown on a trunk
+    trunk = (110, 75, 40)
+    _bar(cx - 5, top + 18, 10, 196 - top - 18, trunk)
+    _bar(cx + 2, top + 18, 3, 196 - top - 18, dk(trunk))
+    for bx, by, r in ((x + 5, top + 14, 8), (x + TW - 5, top + 14, 8), (cx, top + 9, 10)):
+        _blob(bx, by, r, c)
+    _blob(cx - 3, top + 6, 3, hi)
+    _blob(x + 6, top + 13, 2, hi)
 
 
 def bird(x, y, c, wing):
@@ -33,10 +68,19 @@ def bird(x, y, c, wing):
     rect(x + 7, y - 1, 5, 3, (245, 140, 30))
 
 
-def game():
-    cls(SKY)
+def ground():
     rect(0, 196, 320, 5, (70, 170, 80))
     rect(0, 201, 320, 9, (120, 80, 40))
+    for x in range(0, 320, 16):
+        rect(x + 4, 197, 3, 1, (110, 200, 110))
+        rect(x + 10, 198, 2, 2, (40, 120, 50))
+        rect(x + 7, 204, 3, 2, (95, 60, 30))
+        rect(x + 1, 207, 2, 2, (150, 105, 60))
+
+
+def game():
+    cls(SKY)
+    ground()
     rect(0, 20, 320, 2, INK)
     trees = [[330, random.randint(40, 120)], [330 + 170, random.randint(40, 120)]]
     y = 100.0
@@ -61,9 +105,9 @@ def game():
         for i in range(2):
             t = trees[i]
             # erase the strip the tree leaves behind
-            rect(max(0, t[0] + TW - 4), 22, 4, 174, SKY)
+            _bar(t[0] + TW - 1, 22, 6, 174, SKY)
             t[0] -= 4
-            if t[0] + TW < 0:
+            if t[0] + TW + 3 < 0:
                 t[0] = 330
                 t[1] = random.randint(40, 120)
                 passed[i] = False
@@ -77,7 +121,7 @@ def game():
         bird(60, int(y), YELLOW, wing)
         hit = y > 189 or y < 28
         for t in trees:
-            if t[0] - 7 < 60 < t[0] + TW + 7 and not (t[1] + 7 < y < t[1] + GAP - 7):
+            if t[0] - 9 < 60 < t[0] + TW + 9 and not (t[1] + 7 < y < t[1] + GAP - 7):
                 hit = True
         if hit:
             pause(0.4)

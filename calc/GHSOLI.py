@@ -51,11 +51,18 @@ def card(x, y, cd, h=CHT, sel=False):
     rrect(x, y, CW, h, 4, edge)
     if not up:
         rrect(x + 1, y + 1, CW - 2, h - 2, 3, BACK)
+        rect(x + 3, y + 3, CW - 6, 1, lt(BACK, 0.5))
+        if h >= 12:
+            rect(x + 4, y + 4, CW - 8, h - 8, lt(BACK, 0.15))
+            for i in range(x + 6, x + CW - 6, 6):
+                rect(i, y + 6, 2, h - 12, BACK)
         return
     rrect(x + 1, y + 1, CW - 2, h - 2, 3, (255, 245, 200) if sel else CARD)
     t = RANKS[r]
     text(x + 3, y + 15, t, RED if s < 2 else BLACK)
     suit(x + 31 - (5 if len(t) > 1 else 0) + (5 if len(t) > 1 else 0), y + 9, s)
+    if h >= CHT:
+        suit(x + CW // 2, y + 22, s)
 
 
 class G:

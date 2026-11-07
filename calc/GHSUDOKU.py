@@ -51,7 +51,7 @@ def clash(b, i):
 def cell(b, fixed, i, cur):
     x = X0 + (i % 9) * S
     y = Y0 + (i // 9) * S
-    bg = (250, 225, 140) if i == cur else WHITE
+    bg = (250, 225, 140) if i == cur else ((236, 238, 246) if fixed[i] else WHITE)
     rect(x + 1, y + 1, S - 2, S - 2, bg)
     v = b[i]
     if v:
@@ -77,7 +77,8 @@ def game(holes):
     fixed = [v != 0 for v in b]
     cls(WHITE)
     grid()
-    text(214, 30, "SUDOKU", INK)
+    rbox(208, 12, 106, 30, 8, PEN, 2, (225, 235, 252))
+    text(222, 33, "SUDOKU", PEN)
     text(214, 70, "0-9 type", GREY)
     text(214, 90, "ENTER +1", GREY)
     text(214, 110, "DEL erase", GREY)

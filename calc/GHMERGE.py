@@ -57,7 +57,10 @@ def draw(b, score):
         x = X0 + (i % 4) * S
         y = Y0 + (i // 4) * S
         c = TC.get(v, (235, 180, 20))
-        rrect(x + 2, y + 2, S - 4, S - 4, 5, c)
+        rrect(x + 2, y + 4, S - 4, S - 5, 5, dk(c, 0.8))
+        rrect(x + 2, y + 2, S - 4, S - 5, 5, c)
+        if v:
+            rect(x + 7, y + 4, S - 14, 2, lt(c, 0.4))
         if v:
             s = str(v)
             if len(s) > 3:
@@ -65,7 +68,8 @@ def draw(b, score):
             tc = (60, 55, 50) if v < 8 else WHITE
             text(x + S // 2 - len(s) * 5, y + 25, s, tc)
     rect(0, 180, 320, 30, WHITE)
-    ctext(200, "Score " + str(score), (60, 55, 50))
+    rrect(110, 182, 100, 24, 6, BOARD)
+    ctext(200, "Score " + str(score), WHITE)
 
 
 def game():
@@ -74,6 +78,14 @@ def game():
     add(b)
     score = 0
     cls(WHITE)
+    rrect(12, 34, 64, 64, 8, dk((235, 185, 30), 0.8))
+    rrect(12, 32, 64, 64, 8, (235, 185, 30))
+    text(24, 70, "2048", WHITE)
+    text(12, 128, "Join", (120, 110, 100))
+    text(12, 146, "same", (120, 110, 100))
+    text(12, 164, "tiles!", (120, 110, 100))
+    text(250, 60, "Arrows", (120, 110, 100))
+    text(250, 78, "slide", (120, 110, 100))
     rrect(X0 - 4, Y0 - 4, S * 4 + 8, S * 4 + 8, 8, BOARD)
     draw(b, score)
     won = False

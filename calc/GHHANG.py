@@ -33,9 +33,14 @@ def word_line(w, used):
 
 def figure(n):
     if n == 0:
-        rect(8, 134, 74, 5, POST)
+        rrect(0, 136, 120, 12, 5, (110, 180, 90))
+        rect(0, 140, 120, 4, (80, 150, 70))
+        rect(8, 132, 74, 6, POST)
+        rect(8, 136, 74, 2, dk(POST, 0.75))
         rect(24, 18, 5, 116, POST)
+        rect(27, 18, 2, 116, dk(POST, 0.75))
         rect(24, 18, 52, 5, POST)
+        rect(24, 21, 52, 2, dk(POST, 0.75))
         col(POST)
         for o in range(4):
             draw_line(29 + o, 44, 50 + o, 23)

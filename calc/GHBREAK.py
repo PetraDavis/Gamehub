@@ -13,7 +13,25 @@ BG = (30, 70, 170)
 
 
 def brick(r, c, on):
-    rect(10 + c * BW + 1, BY + r * BH + 1, BW - 2, BH - 2, RC[r] if on else BG)
+    if on:
+        block(10 + c * BW + 1, BY + r * BH + 1, BW - 2, BH - 2, RC[r], 2)
+    else:
+        rect(10 + c * BW + 1, BY + r * BH + 1, BW - 2, BH - 2, BG)
+
+
+def walls():
+    rect(0, 24, 4, 186, (200, 210, 230))
+    rect(316, 24, 4, 186, (200, 210, 230))
+    rect(3, 24, 1, 186, (120, 130, 160))
+    rect(316, 24, 1, 186, (120, 130, 160))
+
+
+def paddle(x, c=WHITE):
+    if c == BG:
+        rect(x, 192, PW, 8, BG)
+        return
+    rrect(x, 192, PW, 8, 3, (230, 120, 60))
+    rect(x + 4, 193, PW - 8, 2, (255, 200, 150))
 
 
 def hud(score, lives):
@@ -25,6 +43,7 @@ def hud(score, lives):
 def game():
     cls(BG)
     rect(0, 22, 320, 2, WHITE)
+    walls()
     b = [[1] * COLS for r in range(ROWS)]
     for r in range(ROWS):
         for c in range(COLS):
@@ -38,7 +57,7 @@ def game():
         bx, by = px + PW / 2, 180.0
         vx = random.choice((-3.0, 3.0))
         vy = -3.0
-        rect(px, 192, PW, 6, WHITE)
+        paddle(px)
         pause(0.5)
         st = Steer((LEFT, RIGHT))
         while True:
@@ -48,19 +67,19 @@ def game():
             opx = px
             d = st.feed(k)
             if d == LEFT:
-                px = max(0, px - 7)
-                if px == 0:
+                px = max(4, px - 7)
+                if px == 4:
                     st.stop()
             elif d == RIGHT:
-                px = min(320 - PW, px + 7)
-                if px == 320 - PW:
+                px = min(316 - PW, px + 7)
+                if px == 316 - PW:
                     st.stop()
             obx, oby = bx, by
             bx += vx
             by += vy
-            if bx < 3 or bx > 316:
+            if bx < 7 or bx > 312:
                 vx = -vx
-                bx = max(3, min(316, bx))
+                bx = max(7, min(312, bx))
             if by < 26:
                 vy = -vy
                 by = 26
@@ -80,17 +99,17 @@ def game():
                 hud(score, lives)
                 if left == 0:
                     break
-            rect(int(obx) - 2, int(oby) - 2, 5, 5, BG)
-            if opx != px:
-                rect(opx, 192, PW, 6, BG)
-                rect(px, 192, PW, 6, WHITE)
-            rect(int(bx) - 2, int(by) - 2, 5, 5, WHITE)
+            rect(int(obx) - 3, int(oby) - 3, 7, 7, BG)
+            if opx != px or oby > 186:
+                paddle(opx, BG)
+                paddle(px)
+            ball(int(bx), int(by), 3, WHITE)
             if by > 210:
                 lives -= 1
                 hud(score, lives)
                 break
-        rect(int(bx) - 2, int(by) - 2, 5, 5, BG)
-        rect(0, 192, 320, 6, BG)
+        rect(int(bx) - 3, int(by) - 3, 7, 7, BG)
+        rect(4, 192, 312, 8, BG)
     if left == 0:
         message(["Score " + str(score)], "All bricks cleared!")
     else:

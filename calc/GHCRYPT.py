@@ -214,8 +214,16 @@ def render(g):
         x = i * CWID
         k = light(g, i, d) * (0.8 if side else 1.0)
         if top > 0:
+            # ceiling and floor fade darker toward the far wall
+            m = top // 2
             rect(x, 0, CWID, top, shade(CEIL, max(k, .3)))
+            if m >= 2:
+                rect(x, top - m, CWID, m, shade(CEIL, max(k, .3) * .8))
             rect(x, top + h, CWID, VH - top - h, shade(FLOOR, max(k, .25)))
+            if m >= 2:
+                rect(x, top + h, CWID, m, shade(FLOOR, max(k, .25) * .75))
+                if m >= 6:
+                    rect(x, top + h + m + m // 2, CWID, 1, shade(FLOOR, max(k, .25) * .85))
         rect(x, max(0, top), CWID, min(VH, top + h) - max(0, top), shade(colour(t), k))
         wall_detail(g, t, u, top, h, x, k)
     sprites(g, zb, ca, sa)

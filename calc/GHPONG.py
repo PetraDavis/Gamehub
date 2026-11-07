@@ -8,9 +8,26 @@ TABLE = (30, 85, 165)
 BALL = (250, 150, 40)
 
 
+LINE = (150, 190, 235)
+
+
 def net():
-    for y in range(TOP, 210, 14):
+    col(LINE)
+    draw_circle(160, 117, 28)
+    for y in range(TOP + 2, 208, 14):
         rect(159, y, 2, 7, WHITE)
+
+
+def court():
+    cls(TABLE)
+    rect(0, 207, 320, 3, LINE)
+    rect(0, TOP + 1, 320, 1, LINE)
+    net()
+
+
+def paddle(x, y, c):
+    block(x, y, 6, PH, c, 1)
+    rect(x + 2, y + 4, 2, PH - 8, lt(c, 0.5))
 
 
 def scores(a, b):
@@ -18,19 +35,22 @@ def scores(a, b):
     text(110, 18, str(a))
     text(200, 18, str(b), GOLD)
     rect(0, TOP - 2, 320, 2, WHITE)
+    text(14, 18, "YOU", LINE)
+    text(250, 18, "CALC", LINE)
 
 
 def game():
-    cls(TABLE)
+    court()
     me = cpu = 0
     py = cy = 100
     scores(me, cpu)
-    net()
     serve = 1
     while me < 7 and cpu < 7:
         bx, by = 160.0, 110.0
         vx = 4.0 * serve
         vy = random.choice((-2.5, -1.5, 1.5, 2.5))
+        paddle(8, py, WHITE)
+        paddle(306, cy, GOLD)
         pause(0.5)
         st = Steer((UP, DOWN))
         while True:
@@ -40,23 +60,23 @@ def game():
             opy, ocy = py, cy
             d = st.feed(k)
             if d == UP:
-                py = max(TOP, py - 6)
-                if py == TOP:
+                py = max(TOP + 3, py - 6)
+                if py == TOP + 3:
                     st.stop()
             elif d == DOWN:
-                py = min(210 - PH, py + 6)
-                if py == 210 - PH:
+                py = min(206 - PH, py + 6)
+                if py == 206 - PH:
                     st.stop()
             target = by - PH / 2
             if vx > 0 and bx > 120:
                 cy += max(-4, min(4, target - cy))
-            cy = int(max(TOP, min(210 - PH, cy)))
+            cy = int(max(TOP + 3, min(206 - PH, cy)))
             obx, oby = bx, by
             bx += vx
             by += vy
-            if by < TOP + 3 or by > 206:
+            if by < TOP + 6 or by > 202:
                 vy = -vy
-                by = max(TOP + 3, min(206, by))
+                by = max(TOP + 6, min(202, by))
             if bx < 18 and vx < 0 and py - 4 < by < py + PH + 4:
                 vx = min(9, -vx * 1.06)
                 vy += (by - (py + PH / 2)) / 6
@@ -65,16 +85,18 @@ def game():
                 vx = max(-9, -vx * 1.06)
                 vy += (by - (cy + PH / 2)) / 6
                 bx = 302
-            rect(int(obx) - 3, int(oby) - 3, 7, 7, TABLE)
+            rect(int(obx) - 4, int(oby) - 4, 9, 9, TABLE)
             if opy != py:
                 rect(8, opy, 6, PH, TABLE)
             if ocy != cy:
                 rect(306, ocy, 6, PH, TABLE)
-            if 150 < obx < 170:
+            if 126 < obx < 194:
                 net()
-            rect(8, py, 6, PH, WHITE)
-            rect(306, cy, 6, PH, GOLD)
-            rect(int(bx) - 3, int(by) - 3, 7, 7, BALL)
+            if opy != py or 0 < obx < 24:
+                paddle(8, py, WHITE)
+            if ocy != cy or 296 < obx < 320:
+                paddle(306, cy, GOLD)
+            ball(int(bx), int(by), 4, BALL)
             if bx < 0:
                 cpu += 1
                 serve = 1
@@ -83,7 +105,8 @@ def game():
                 me += 1
                 serve = -1
                 break
-        rect(int(bx) - 3, int(by) - 3, 7, 7, TABLE)
+        rect(int(bx) - 4, int(by) - 4, 9, 9, TABLE)
+        net()
         scores(me, cpu)
     message(["You " + str(me) + " - " + str(cpu) + " Calculator"], "You win!" if me > cpu else "Calculator wins")
 
