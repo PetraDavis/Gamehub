@@ -341,7 +341,15 @@ def draw(g, full):
             rect(a * CWID, y0, (b - a) * CWID, y1 - y0, c)
     if ys:
         if ys[0] != g.ysk or hit:
-            ys_draw(g, ys)
+            try:
+                ys_draw(g, ys)
+            except MemoryError:
+                # out of memory: she is a dark shape this time instead
+                gc.collect()
+                left, wid, top, h, a, b = ys[0]
+                x = max(left, a * CWID)
+                rect(x, max(0, top), min(left + wid, b * CWID) - x, min(VH, top + h) - max(0, top), INSIDE)
+                g.rim = []
         else:
             ys_shimmer(g)
         g.ysk, g.ysa, g.ysb = ys[0], ys[1], ys[2]
@@ -441,12 +449,14 @@ def ys_draw(g, ys):
     hi = b * CWID
     rows = {}
     eyes = []
+    # whole numbers only, and each row piece is one number xa*256+xb, so
+    # the calculator needs no extra memory for floats or pairs
     for i in range(0, len(YSD), 5):
-        u0, u1, v0, v1, kind = YSD[i] / 255, YSD[i + 1] / 255, YSD[i + 2] / 255, YSD[i + 3] / 255, YSD[i + 4]
-        xa = max(lo, int(left + u0 * wid)) // YG
-        xb = min(hi, int(left + u1 * wid) + 1 + YG - 1) // YG
-        ya = int(top + h * (1 - v1))
-        yb = int(top + h * (1 - v0)) + 1
+        kind = YSD[i + 4]
+        xa = max(lo, left + YSD[i] * wid // 255) // YG
+        xb = min(hi, left + YSD[i + 1] * wid // 255 + YG) // YG
+        ya = top + h * (255 - YSD[i + 3]) // 255
+        yb = top + h * (255 - YSD[i + 2]) // 255 + 1
         if kind == 4:
             eyes.append(((xa + xb) * YG // 2, (ya + yb) // 2))
             continue
@@ -454,16 +464,18 @@ def ys_draw(g, ys):
             continue
         for r in range(max(0, ya) // YG, (min(VH, yb) + YG - 1) // YG):
             if r in rows:
-                rows[r].append((xa, xb))
+                rows[r].append(xa << 8 | xb)
             else:
-                rows[r] = [(xa, xb)]
+                rows[r] = [xa << 8 | xb]
     out = []
     open_ = {}
     for r in range(VH // YG + 1):
         cur = {}
-        segs = sorted(rows.get(r, ()))
+        segs = rows.pop(r, [])
+        segs.sort()
         m = []
-        for xa, xb in segs:
+        for q in segs:
+            xa, xb = q >> 8, q & 255
             if m and xa <= m[-1][1]:
                 if xb > m[-1][1]:
                     m[-1][1] = xb
@@ -471,11 +483,11 @@ def ys_draw(g, ys):
                 m.append([xa, xb])
         for xa, xb in m:
             if xb - xa >= 3:
-                cur[(xa, xa + 1, 0)] = 1
-                cur[(xa + 1, xb - 1, 1)] = 1
-                cur[(xb - 1, xb, 0)] = 1
+                cur[(xa << 8 | xa + 1) << 1] = 1
+                cur[(xa + 1 << 8 | xb - 1) << 1 | 1] = 1
+                cur[(xb - 1 << 8 | xb) << 1] = 1
             else:
-                cur[(xa, xb, 0)] = 1
+                cur[(xa << 8 | xb) << 1] = 1
         for key in list(open_):
             if key not in cur:
                 out.append((key, open_.pop(key), r))
@@ -484,7 +496,8 @@ def ys_draw(g, ys):
                 open_[key] = r
     g.rim = []
     for c in (0, 1):
-        for (xa, xb, kind), r0, r1 in out:
+        for q, r0, r1 in out:
+            xa, xb, kind = q >> 9, q >> 1 & 255, q & 1
             if kind == c:
                 x, y, w, hh = xa * YG, r0 * YG, (xb - xa) * YG, min(VH, r1 * YG) - r0 * YG
                 if hh > 0:

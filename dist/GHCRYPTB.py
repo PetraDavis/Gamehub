@@ -1,30 +1,6 @@
 # GHCRYPTB: part of GHCRYPTP. Keep it next to GHCRYPTP.
 from GHCRYPTC import*
-LEFT=24
-def circ(x,y,r,c):
- col(c)
- fill_circle(x,y,r)
-def G_diff(old,new):
- if old is None:
-  return new
- out=[]
- i=j=0
- y=0
- while y<G_VH:
-  o0,o1,oc=old[i]
-  n0,n1,nc=new[j]
-  e=min(o1,n1)
-  if oc!=nc:
-   if out and out[-1][1]==y and(out[-1][2]==nc):
-    out[-1]=(out[-1][0],e,nc)
-   else:
-    out.append((y,e,nc))
-  y=e
-  if o1==e:
-   i+=1
-  if n1==e:
-   j+=1
- return out
+G_SPRITES=[(3.3,5.5,'couch'),(1.9,4.6,'table'),(4.4,6.4,'phone'),(1.0,6.5,'lamp'),(2.6,1.5,'desk'),(12.4,4.9,'rack'),(6.5,1.4,'vase')]
 def G_column(g,t,u,top,h,k):
  cl=0 if g.blackout else G_shade(G_CEIL,1)
  fl=0 if g.blackout else G_shade(G_FLOOR,0.5 if not g.power else 1)
@@ -180,7 +156,14 @@ def G_draw(g,full):
    rect(a*G_CWID,y0,(b-a)*G_CWID,y1-y0,c)
  if ys:
   if ys[0]!=g.ysk or hit:
-   G_ys_draw(g,ys)
+   try:
+    G_ys_draw(g,ys)
+   except MemoryError:
+    gc.collect()
+    left,wid,top,h,a,b=ys[0]
+    x=max(left,a*G_CWID)
+    rect(x,max(0,top),min(left+wid,b*G_CWID)-x,min(G_VH,top+h)-max(0,top),G_INSIDE)
+    g.rim=[]
   else:
    G_ys_shimmer(g)
   g.ysk,g.ysa,g.ysb=(ys[0],ys[1],ys[2])
@@ -222,11 +205,11 @@ def G_ys_draw(g,ys):
  rows={}
  eyes=[]
  for i in range(0,len(G_YSD),5):
-  u0,u1,v0,v1,kind=(G_YSD[i]/255,G_YSD[i+1]/255,G_YSD[i+2]/255,G_YSD[i+3]/255,G_YSD[i+4])
-  xa=max(lo,int(left+u0*wid))//G_YG
-  xb=min(hi,int(left+u1*wid)+1+G_YG-1)//G_YG
-  ya=int(top+h*(1-v1))
-  yb=int(top+h*(1-v0))+1
+  kind=G_YSD[i+4]
+  xa=max(lo,left+G_YSD[i]*wid//255)//G_YG
+  xb=min(hi,left+G_YSD[i+1]*wid//255+G_YG)//G_YG
+  ya=top+h*(255-G_YSD[i+3])//255
+  yb=top+h*(255-G_YSD[i+2])//255+1
   if kind==4:
    eyes.append(((xa+xb)*G_YG//2,(ya+yb)//2))
    continue
@@ -234,16 +217,18 @@ def G_ys_draw(g,ys):
    continue
   for r in range(max(0,ya)//G_YG,(min(G_VH,yb)+G_YG-1)//G_YG):
    if r in rows:
-    rows[r].append((xa,xb))
+    rows[r].append(xa<<8|xb)
    else:
-    rows[r]=[(xa,xb)]
+    rows[r]=[xa<<8|xb]
  out=[]
  open_={}
  for r in range(G_VH//G_YG+1):
   cur={}
-  segs=sorted(rows.get(r,()))
+  segs=rows.pop(r,[])
+  segs.sort()
   m=[]
-  for xa,xb in segs:
+  for q in segs:
+   xa,xb=(q>>8,q&255)
    if m and xa<=m[-1][1]:
     if xb>m[-1][1]:
      m[-1][1]=xb
@@ -251,11 +236,11 @@ def G_ys_draw(g,ys):
     m.append([xa,xb])
   for xa,xb in m:
    if xb-xa>=3:
-    cur[xa,xa+1,0]=1
-    cur[xa+1,xb-1,1]=1
-    cur[xb-1,xb,0]=1
+    cur[(xa<<8|xa+1)<<1]=1
+    cur[(xa+1<<8|xb-1)<<1|1]=1
+    cur[(xb-1<<8|xb)<<1]=1
    else:
-    cur[xa,xb,0]=1
+    cur[(xa<<8|xb)<<1]=1
   for key in list(open_):
    if key not in cur:
     out.append((key,open_.pop(key),r))
@@ -264,7 +249,8 @@ def G_ys_draw(g,ys):
     open_[key]=r
  g.rim=[]
  for c in(0,1):
-  for(xa,xb,kind),r0,r1 in out:
+  for q,r0,r1 in out:
+   xa,xb,kind=(q>>9,q>>1&255,q&1)
    if kind==c:
     x,y,w,hh=(xa*G_YG,r0*G_YG,(xb-xa)*G_YG,min(G_VH,r1*G_YG)-r0*G_YG)
     if hh>0:
@@ -276,6 +262,8 @@ def G_ys_draw(g,ys):
  for rr,c in((r,(35,80,150)),(r*2//3,(80,175,245)),(max(1,r//3),(230,250,255))):
   for x,y in eyes:
    circ(x,y,rr,c)
+def G_say(g,s):
+ G_toast(g,G_wrap(s,27))
 def G_ending():
  cls()
  ctext(40,'enCRYPTed',(200,60,60))
