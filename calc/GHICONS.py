@@ -305,85 +305,78 @@ def hangman(x, y, c):
 
 
 def crypt(x, y, c):
-    # Ysolde: a static woman, small head tilted hard on a long neck,
-    # lank hair, gaunt face, small cold blue eyes, jaw hanging open.
+    # Ysolde as she looks in the full game: a thin dark shape full of faint
+    # static, outlined in bright static, with two small cold blue eyes.
+    # Same shape as her character sheet (256 x 640), head and shoulders only.
     random.seed(7)
-    hx = x + 3
-    hy = y - 7
+    k = 0.21
+    ox = x + 3
+    oy = y - 17
     ca = math.cos(0.55)
     sa = math.sin(0.55)
 
-    def rot(px, py):
-        return hx + px * ca - py * sa, hy + px * sa + py * ca
+    def m(cx, cy):
+        return ox + (cx - 140) * k, oy + (cy - 50) * k
 
-    def shape(pts, col):
-        xs = []
-        ys = []
-        for px, py in pts:
-            a, b = rot(px, py)
-            xs.append(a)
-            ys.append(b)
-        poly(xs, ys, col)
+    def head(lx, ly):
+        return m(140 + lx * ca - ly * sa, 50 + lx * sa + ly * ca)
 
-    def oval(px, py, rx, ry, col, n=14):
-        shape([(px + rx * math.cos(2 * math.pi * i / n), py + ry * math.sin(2 * math.pi * i / n)) for i in range(n)], col)
+    def band(pts, w):
+        # a thick line through canvas points, as a polygon
+        left = []
+        right = []
+        for i in range(len(pts) - 1):
+            (x1, y1), (x2, y2) = pts[i], pts[i + 1]
+            d = math.hypot(x2 - x1, y2 - y1) or 1
+            nx = -(y2 - y1) / d * w / 2
+            ny = (x2 - x1) / d * w / 2
+            left += [(x1 + nx, y1 + ny), (x2 + nx, y2 + ny)]
+            right += [(x1 - nx, y1 - ny), (x2 - nx, y2 - ny)]
+        return [m(px, py) for px, py in left + right[::-1]]
 
-    def inside(px, py, xs, ys):
-        n = len(xs)
-        hit = False
-        j = n - 1
-        for i in range(n):
-            if (ys[i] > py) != (ys[j] > py) and px < xs[i] + (py - ys[i]) * (xs[j] - xs[i]) / (ys[j] - ys[i]):
-                hit = not hit
-            j = i
-        return hit
+    shapes = [
+        [head(17 * math.cos(t * math.pi / 8), 25 * math.sin(t * math.pi / 8)) for t in range(16)],
+        [head(px, py) for px, py in ((-18, -6), (-27, 30), (-24, 96), (-6, 70), (8, 100), (20, 60), (17, -6), (10, -24), (-10, -24))],
+        band(((128, 125), (132, 88), (140, 66)), 11),
+        [m(px, py) for px, py in ((98, 122), (128, 112), (160, 126), (150, 210), (148, 250), (108, 250), (106, 210))],
+        band(((100, 128), (84, 250), (90, 260)), 7),
+        band(((158, 128), (176, 248), (170, 258)), 7),
+    ]
 
-    def static(xs, ys, base, n, lo=100, hi=250):
-        poly(xs, ys, base)
-        x0 = int(min(xs))
-        x1 = int(max(xs))
-        y0 = int(min(ys))
-        y1 = int(max(ys))
-        for i in range(n):
-            px = random.randint(x0, x1)
-            py = random.randint(y0, y1)
-            if inside(px + 1, py + 1, xs, ys):
-                g = random.randint(lo, hi)
-                box(px, py, 2, 2, (g, g, g + 5 if g < 250 else g))
+    def spans(pts):
+        out = []
+        ys = [p[1] for p in pts]
+        n = len(pts)
+        for row in range(int(min(ys)), int(max(ys)) + 1):
+            yc = row + .5
+            xs = []
+            for i in range(n):
+                (x1, y1), (x2, y2) = pts[i], pts[(i + 1) % n]
+                if (y1 <= yc < y2) or (y2 <= yc < y1):
+                    xs.append(x1 + (yc - y1) * (x2 - x1) / (y2 - y1))
+            if len(xs) >= 2:
+                out.append((row, int(min(xs) + .5), int(max(xs) + .5)))
+        return out
 
-    # lank hair hanging behind, the same static as the rest of her
-    hair = [rot(px, py) for px, py in ((-9, -4), (-14, 12), (-12, 24), (-4, 18), (3, 25), (9, 15), (9, -4), (0, -12))]
-    static([p[0] for p in hair], [p[1] for p in hair], (125, 125, 132), 70, 70, 210)
-    for a0, a1 in (((-7, 0), (-11, 20)), ((-2, 2), (-3, 16)), ((4, 2), (6, 20))):
-        p0 = rot(a0[0], a0[1])
-        p1 = rot(a1[0], a1[1])
-        line(p0[0], p0[1], p1[0], p1[1], (45, 45, 52))
-    # long neck and narrow sloped shoulders
-    nx, ny = rot(0, 11)
-    static([nx - 3, nx + 3, x + 2, x - 4], [ny, ny, y + 16, y + 16], (165, 165, 172), 30)
-    static([x - 13, x - 2, x + 11, x + 7, x - 9], [y + 22, y + 14, y + 20, y + 23, y + 23], (150, 150, 158), 40)
-    # head
-    oval(0, 0, 8.5, 12.5, (200, 200, 205))
-    for i in range(70):
-        px = random.uniform(-8, 8)
-        py = random.uniform(-12, 12)
-        if (px / 8.5) ** 2 + (py / 12.5) ** 2 < 1:
-            g = random.randint(110, 255)
-            a, b = rot(px, py)
-            box(a, b, 2, 2, (g, g, g))
-    # glitch band
-    a, b = rot(0, -6)
-    box(a - 6, b, 14, 2, (235, 235, 240))
-    # face
-    for s in (-1, 1):
-        oval(s * 3.5, -3, 2.4, 2.8, (10, 10, 15), 8)
-        ex, ey = rot(s * 3.5, -3)
-        circ(ex, ey, 1, (40, 110, 220))
-        box(ex, ey, 2, 2, (150, 225, 255))
-        t0 = rot(s * 3.5, 1)
-        t1 = rot(s * 4, 6)
-        line(t0[0], t0[1], t1[0], t1[1], (10, 10, 15))
-    oval(0, 7, 2, 4, (15, 5, 5), 10)
+    all_spans = [spans(sh) for sh in shapes]
+    # bright static outline: everything bright first, then the dark inside
+    for sp in all_spans:
+        for row, a, b in sp:
+            g = random.randint(150, 255)
+            hline(a, max(a, b - 1), row, (g * 4 // 5, g * 9 // 10, g))
+    for sp in all_spans:
+        for row, a, b in sp[1:-1]:
+            if b - a > 2:
+                hline(a + 1, b - 2, row, (8, 10, 15))
+                if random.randint(0, 3) == 0:
+                    px = random.randint(a + 1, b - 2)
+                    g = random.randint(35, 90)
+                    hline(px, min(b - 2, px + 1), row, (g * 5 // 6, g * 11 // 12, g))
+    # small cold blue eyes
+    for ex, ey in ((137.2, 41.2), (149.1, 48.55)):
+        a, b = m(ex, ey)
+        circ(a, b, 1, (35, 95, 200))
+        box(a, b, 2, 2, (225, 248, 255))
     random.seed()
 
 

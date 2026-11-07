@@ -277,18 +277,19 @@ def bottom(g, prompt):
 
 
 # Ysolde, drawn from the character sheet in the full game (a 256 x 640 picture):
-# very thin and tall, all static, small head tilted hard on a long neck,
-# lank hair hanging from it, black eyes that glow small and cold blue, black
-# tear streaks, jaw hanging open, short tattered dress, arms past the knees.
-# Built once into thin slabs (u0, u1, v0, v1, kind); kinds draw in order:
-# 0 static body, 1 static hair (a little darker), 2 static head, 3 black, 4 eye glow.
+# very thin and tall, small head tilted hard on a long neck, lank hair, short
+# tattered dress, arms past the knees. Like the game's shader, her body is
+# dark inside with faint blue-grey static, her outline glows with bright static,
+# and two small cold blue eyes shine out of the dark. No face most of the time.
+# Built once into thin slabs (u0, u1, v0, v1, kind); kind 4 is an eye.
 YS = []
 
 
-def _poly_slabs(pts, kind, step):
+def _poly_slabs(pts, kind, step, top=True, bottom=True):
     ys = [p[1] for p in pts]
     y = min(ys)
     n = len(pts)
+    first = len(YS)
     while y < max(ys):
         yc = y + step / 2
         xs = []
@@ -300,6 +301,11 @@ def _poly_slabs(pts, kind, step):
         if len(xs) >= 2:
             YS.append((min(xs) / 256, max(xs) / 256, 1 - (y + step) / 640, 1 - y / 640, kind))
         y += step
+    # the top and bottom slabs are outline too
+    for i, on in ((first, top), (len(YS) - 1, bottom)):
+        if on and i < len(YS):
+            u0, u1, v0, v1, k = YS[i]
+            YS[i] = (u0, u1, v0, v1, 5)
 
 
 def _limb(pts, w, kind=0):
@@ -333,14 +339,14 @@ def _build_ys():
     sa = math.sin(.55)
     # body
     _limb([128, 120, 132, 88, 140, 66], 11)
-    _poly_slabs([(98, 122), (128, 112), (160, 126), (150, 210), (146, 260), (110, 260), (106, 210)], 0, 8)
+    _poly_slabs([(98, 122), (128, 112), (160, 126), (150, 210), (146, 260), (110, 260), (106, 210)], 0, 8, True, False)
     hem = [(108, 250), (148, 250), (162, 330)]
     x = 162
     while x > 94:
         hem.append((x - 4.5, 330 + (18 if int(x) % 2 else 6)))
         x -= 9
     hem.append((94, 330))
-    _poly_slabs(hem, 0, 6)
+    _poly_slabs(hem, 0, 6, False, True)
     _limb([118, 320, 112, 460, 120, 470, 108, 612, 98, 628], 9)
     _limb([140, 320, 146, 462, 136, 474, 150, 610, 162, 630], 9)
     _limb([100, 128, 84, 250, 92, 262, 76, 420], 7)
@@ -350,50 +356,56 @@ def _build_ys():
             _limb([x0, y0, x0 + sg * (f * 4 - 6), y0 + 52 + (f % 2) * 8, x0 + sg * (f * 5 - 4), y0 + 70 + f * 3], 2.6)
     # lank hair hanging from the tilted head
     hair = [(-18, -6), (-27, 30), (-24, 96), (-6, 70), (8, 100), (20, 60), (17, -6), (10, -24), (-10, -24)]
-    _poly_slabs([(140 + lx * ca - ly * sa, 50 + lx * sa + ly * ca) for lx, ly in hair], 1, 4)
-    _oval(0, 0, 17, 25, 2, 4)
-    # black eyes, tear streaks, open jaw
-    for sg in (-1, 1):
-        _oval(sg * 6, -5, 3.5, 4, 3, 2, sg * .3)
-        p0 = (sg * 6, 0)
-        p1 = (sg * 7, 11)
-        _limb([140 + p0[0] * ca - p0[1] * sa, 50 + p0[0] * sa + p0[1] * ca,
-               140 + p1[0] * ca - p1[1] * sa, 50 + p1[0] * sa + p1[1] * ca], 1.5, 3)
-    _oval(0, 16, 3.5, 8, 3, 2)
-    for sg in (-1, 1):
-        _oval(sg * 6, -5, 1.4, 1.4, 4, 2)
-    YS.sort(key=lambda r: r[4])
-
-
-COLS_YS = (None, None, None, (8, 6, 8), (120, 210, 255))
+    _poly_slabs([(140 + lx * ca - ly * sa, 50 + lx * sa + ly * ca) for lx, ly in hair], 0, 4)
+    _oval(0, 0, 17, 25, 0, 4)
+    for ex, ey in ((137.2, 41.2), (149.1, 48.55)):
+        YS.append(((ex - 2) / 256, (ex + 2) / 256, 1 - (ey + 2) / 640, 1 - (ey - 2) / 640, 4))
 
 
 def ys_column(x, left, wid, top, h):
     if not YS:
         _build_ys()
     x1 = x + CWID
-    for u0, u1, v0, v1, kind in YS:
-        pa = int(left + u0 * wid)
-        pb = int(left + u1 * wid) + 1
-        if kind == 4:
-            pb = max(pb, pa + 2)
-        a = max(x, pa)
-        b = min(x1, pb)
-        if b - a < 1:
-            continue
-        y0 = int(top + h * (1 - v1))
-        y1 = min(VH, int(top + h * (1 - v0)) + 1)
-        if y0 >= VH or y1 <= 0:
-            continue
-        if kind == 0 or kind == 2:
-            g = random.randint(120, 245)
-            c = (g, g, g + 8 if g < 248 else g)
-        elif kind == 1:
-            g = random.randint(80, 205)
-            c = (g, g, g + 8)
-        else:
-            c = COLS_YS[kind]
-        rect(a, max(0, y0), b - a, max(2 if kind == 4 else 1, y1 - max(0, y0)), c)
+    rim = max(1, int(wid * .03))
+    eyes = []
+    for p in (0, 1):
+        for u0, u1, v0, v1, kind in YS:
+            pa = int(left + u0 * wid)
+            pb = int(left + u1 * wid) + 1
+            if kind == 4:
+                if p == 0:
+                    eyes.append((pa, pb, v0, v1))
+                continue
+            if p == 1:
+                if kind == 5:
+                    continue
+                pa += rim
+                pb -= rim
+            a = max(x, pa)
+            b = min(x1, pb)
+            if b - a < 1:
+                continue
+            y0 = max(0, int(top + h * (1 - v1)))
+            y1 = min(VH, int(top + h * (1 - v0)) + 1)
+            if y1 - y0 < 1:
+                continue
+            if p == 0:
+                g = random.randint(170, 255)
+                c = (g * 4 // 5, g * 9 // 10, g)
+            else:
+                g = random.randint(0, 9)
+                c = (6, 8, 12) if g < 7 else (40 + g * 4, 50 + g * 4, 62 + g * 4)
+            rect(a, y0, b - a, y1 - y0, c)
+    for pa, pb, v0, v1 in eyes:
+        cx = (pa + pb) // 2
+        cy = int(top + h * (1 - (v0 + v1) / 2))
+        if x - 2 <= cx < x1 + 2 and 0 <= cy < VH - 2:
+            ha = max(x, cx - 1)
+            hb = min(x1, cx + 3)
+            if hb - ha >= 1:
+                rect(ha, cy - 1, hb - ha, 4, (40, 110, 210))
+            if x <= cx < x1:
+                rect(cx, cy, 2, 2, (230, 250, 255))
 
 
 # ---------- text screens ----------
