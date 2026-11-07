@@ -15,7 +15,7 @@ T = 20
 # functions is called and dropped from memory again when it returns.
 SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
         "X": ("rest", "load", "new_quest", "board", "portrait", "pen", "lst", "dress", "shop", "nest",
-              "menu", "win"),
+              "menu", "win", "shen", "who", "glim"),
         "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
@@ -146,7 +146,7 @@ ARTO = (b'',
         b'\x00\n\x0e\x08\x02\x08\x00\x00\x00\n\x0b\t\x04\x02\x00\x00\x00\n\x12\x08\x02\x08\x00\x00\x00\n\x13\x08\x04\x02\x00\x00',
         b'\x02\x02!\x1c$!\x1e!\x00\x02#\x10\x02\x02\x00\x00\x00\x02!\x15\x02\x02\x00\x00\x00\x02\x1d\x18\x01\x01\x00\x00\x00\x02%\r\x01\x01\x00\x00\x00\x02#\x19\x01\x01\x00\x00\x00\x02\r\x12\x02\x02\x00\x00',
         b'\x00\x01 \x13\x01\x01\x00\x00\x00!#\x0f\x01\x01\x00\x00\x00\x01\x1d\x17\x01\x01\x00\x00\x00!$\x16\x01\x01\x00\x00\x00!!\x18\x01\x01\x00\x00\x00\x01%\x0c\x01\x03\x00\x00\x00\x01$\r\x03\x01\x00\x00\x02\x16\x13\x1c\x16\x18\x19\x1c\x02\x16\x13\x1c\x16 \x19\x1c\x00!\x15\x1b\x03\x02\x00\x00\x00\x01\x16\x1b\x01\x02\x00\x00\x02\x12\x0e\x11\x12\x05\x12\x11\x02\x16\x11\x11\x1b\x01\x16\x12\x02!\x13\x10\x1b\x01\x15\x10\x02\x166\x1b<\x1f6#\x01\x16=\x1f\x03\x00\x00\x00\x01!=\x1f\x02\x00\x00\x00\x00\x01=\x1e\x01\x01\x00\x00\x00\x16\n\x15\x06\x01\x00\x00\x00\x16\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00',
-        b'\x01\x10=\x1f\x04\x00\x00\x00\x01\x05<\x1e\x03\x00\x00\x00\x01\x06;\x1d\x01\x00\x00\x00\x00\x03<\x1e\x03\x01\x00\x00\x00\x02>\x1f\x01\x02\x00\x00\x02\x13<\x1c?\x16A\x1c\x02\x01>\x1b?\x16?\x1b\x02\x10\r\x11\x10\x07\x12\x11\x02\x13\x10\x11\x15\x00\x18\x11\x02\x01\x13\x0f\x15\x00\x15\x0f\x02\x02\x14\x03\x15\x00\x16\x03\x02\x02\x0f\n\x10\x07\x11\n\x00\x02\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00\x00\x03\n\x15\x06\x01\x00\x00\x02\x03\x12\x1c\x15\x17\x18\x1c\x02\x03\x12\x1c\x15!\x18\x1c\x02\x02\x13\x1c\x15\x19\x17\x1c\x02\x02\x13\x1c\x15\x1f\x17\x1c\x00\x01\x14\x1a\x01\x02\x00\x00\x01\x05\x04\x0b\x02\x00\x00\x00\x00\x06\x03\n\x01\x01\x00\x00\x01\x05\x1f\x04\x02\x00\x00\x00\x00\x06\x1e\x03\x01\x01\x00\x00\x01\x05;\x11\x02\x00\x00\x00\x00\x06:\x10\x01\x01\x00\x00\x00\x02#\x06\x01\x01\x00\x00\x00\x02?\x12\x01\x01\x00\x00',
+        b'\x01\x10=\x1f\x04\x00\x00\x00\x01\x05<\x1e\x03\x00\x00\x00\x01\x06;\x1d\x01\x00\x00\x00\x00\x03<\x1e\x03\x01\x00\x00\x00\x02>\x1f\x01\x02\x00\x00\x02\x10\r\x11\x10\x07\x12\x11\x02\x13\x10\x11\x15\x00\x18\x11\x02\x01\x13\x0f\x15\x00\x15\x0f\x02\x02\x14\x03\x15\x00\x16\x03\x02\x02\x0f\n\x10\x07\x11\n\x00\x02\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00\x00\x03\n\x15\x06\x01\x00\x00\x02\x03\x12\x1c\x15\x17\x18\x1c\x02\x03\x12\x1c\x15!\x18\x1c\x02\x02\x13\x1c\x15\x19\x17\x1c\x02\x02\x13\x1c\x15\x1f\x17\x1c\x00\x01\x14\x1a\x01\x02\x00\x00\x01\x05\x04\x0b\x02\x00\x00\x00\x00\x06\x03\n\x01\x01\x00\x00\x01\x05\x1f\x04\x02\x00\x00\x00\x00\x06\x1e\x03\x01\x01\x00\x00\x01\x05;\x11\x02\x00\x00\x00\x00\x06:\x10\x01\x01\x00\x00\x00\x02#\x06\x01\x01\x00\x00\x00\x02?\x12\x01\x01\x00\x00',
         b'\x02\x00\x11\x11\x1c\x02\x16\x12\x02\x00\x0e\x10\x14\x04\x12\x11\x00\x17\x08\x17\x0b\x01\x00\x00\x00\x01\n\x17\x01\x02\x00\x00\x00\x01\r\x17\x01\x02\x00\x00\x00\x01\x10\x17\x01\x02\x00\x00\x00\x12\x0b\x11\x05\x04\x00\x00\x00\x16\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00\x02\x00\x0b\x10\x11\x10\x11\x12')
 ARTU = (b'', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'', b'')
 ARTT = (b'', b'', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x02\x17\x0c\x19\n\x18\r\x02\x02\x12\x0c\x14\n\x13\r\x02\x1b+\x1b-\x17/\x1c\x02\x1b0\x1c2\x194\x1d\x02\x1b4\x1d6\x1b7\x1e\x02\x02,\x1a-\x17.\x1a\x02\x021\x1b2\x193\x1b\x00\x02\x16)\x01\x01\x00\x00\x00\x02#)\x01\x01\x00\x00\x02\x1b\x13\x1c\x15\x19\x17\x1c\x02\x1b\x13\x1c\x15\x1f\x17\x1c\x00\x01\x15\x1b\x01\x02\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x02\x17\x0c\x19\n\x18\r\x02\x02\x12\x0c\x14\n\x13\r\x02\x1b+\x1b-\x17/\x1c\x02\x1b0\x1c2\x194\x1d\x02\x1b4\x1d6\x1b7\x1e\x02\x02,\x1a-\x17.\x1a\x02\x021\x1b2\x193\x1b\x00\x02\x16)\x01\x01\x00\x00\x00\x02#)\x01\x01\x00\x00\x02\x1b\x13\x1c\x15\x19\x17\x1c\x02\x1b\x13\x1c\x15\x1f\x17\x1c\x00\x01\x15\x1b\x01\x02\x00\x00\x02\x0f\x11\x14\n\x0b\x15\x11\x02\x10\x11\x14\r\x0e\x14\x12\x00\x02\x05\x0b\x01\x05\x00\x00\x00\x02\x03\r\x05\x01\x00\x00\x00\x02\x1d\x06\x01\x05\x00\x00\x00\x02\x1b\x08\x05\x01\x00\x00\x00\x02:\x14\x01\x05\x00\x00\x00\x028\x16\x05\x01\x00\x00\x00\x01\x05\r\x01\x01\x00\x00\x00\x01\x1d\x08\x01\x01\x00\x00\x00\x01:\x16\x01\x01\x00\x00\x00\x02\x0c\t\x01\x01\x00\x00\x00\x022\x0c\x01\x01\x00\x00\x00\x02>$\x01\x01\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x0f\x11\x14\n\x0b\x15\x11\x02\x10\x11\x14\r\x0e\x14\x12\x00!\x05\x0b\x01\x05\x00\x00\x00!\x03\r\x05\x01\x00\x00\x00!\x1d\x06\x01\x05\x00\x00\x00!\x1b\x08\x05\x01\x00\x00\x00!:\x14\x01\x05\x00\x00\x00!8\x16\x05\x01\x00\x00\x00\x01\x05\r\x01\x01\x00\x00\x00\x01\x1d\x08\x01\x01\x00\x00\x00\x01:\x16\x01\x01\x00\x00\x00!\x0c\t\x01\x01\x00\x00\x00!2\x0c\x01\x01\x00\x00\x00!>$\x01\x01\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x0f\x11\x14\n\x0b\x15\x11\x02\x10\x11\x14\r\x0e\x14\x12')
@@ -198,11 +198,12 @@ def beats(a, b):
     return (a == 3 and b != 3) or (a < 3 and b == (a + 2) % 3)
 
 
-def egg_type(m):
+def egg_type(m, up=0):
     # most eggs are common; rare ones are very rare. Further lands are a bit luckier.
     # Land 1: legendary 0.4%, epic 2.6%, rare 8%, uncommon 22%, common 67%
     r = random.randint(0, 999)
     rar = 4 if r < 4 + 2 * m else 3 if r < 30 + 10 * m else 2 if r < 110 + 25 * m else 1 if r < 330 + 40 * m else 0
+    rar = min(4, rar + up)
     return random.choice([i for i in range(20) if DT[i][2] == rar])
 
 
@@ -368,6 +369,12 @@ def shapes(m, x, y, ch, out):
             out.append((3, YELLOW, 0, (px + 9, py + 8, 2, 1)))
         else:
             out.append((3, YELLOW, 1, (px + 10, py + 5, 2)))
+    elif ch == "M":
+        out.append((0, (70, 45, 95), 2, ([px + 3, px + 10, px + 17], [py + 19, py + 2, py + 19])))
+        out.append((1, (15, 10, 20), 1, (px + 10, py + 8, 3)))
+        out.append((1, (150, 105, 55), 1, (px + 16, py + 15, 3)))
+        out.append((2, YELLOW, 0, (px + 8, py + 7, 1, 1)))
+        out.append((2, YELLOW, 0, (px + 11, py + 7, 1, 1)))
     elif ch == "W":
         out.append((0, ROCK, 1, (px + 10, py + 11, 8)))
         out.append((1, WATER, 1, (px + 10, py + 11, 5)))
@@ -655,9 +662,10 @@ def battle(g, f, lv=0):
                         dd[3] = dd[4]
                         msg.append(dd[0] + " is now level " + str(dd[2]) + "!")
             if lv >= 5:
-                # strong monsters drop coins
-                g.coins += lv
-                msg = ["+" + str(lv) + " coins!"] + msg
+                # strong monsters drop coins (twice as many with the Golden Coin)
+                c = lv * (1 + g.curse)
+                g.coins += c
+                msg = ["+" + str(c) + " coins!"] + msg
             message(msg[:3] or ["You won!"], who + " beaten")
             if f is not BOSS:
                 quest_step(g, 0, name)
@@ -692,7 +700,8 @@ def rest(g):
 # DRG: [4, coins, accessories owned, species in the book, steps until the Dread Drake returns,
 #  eggs in the bag (up to 5, -1 = none), then 5 numbers a dragon: name (letters 1-26 in base 27),
 #  kind, level, xp, shiny*4000+paint*200+head*20+body]
-# DRB: [1, then 2 numbers a baby: name, kind + 32 * shiny]
+# DRB: [2, things from the merchant (Glimmer Stones + 100 * Lucky Charm + 200 * Golden Coin),
+#  then 2 numbers a baby: name, kind + 32 * shiny]  (version 1 had no second number)
 def pack(nm):
     n = 0
     for ch in nm.upper():
@@ -710,7 +719,7 @@ def unpack(n):
 
 def save(g):
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
-    b = [1]
+    b = [2, g.glim + 100 * g.luck + 200 * g.curse]
     for d in g.pen:
         if d[9] & 8:
             b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
@@ -755,6 +764,9 @@ def load(g):
         g.pen.append([nm, t, lv, mh, mh, s[i + 2], PAINT[p - 1] if p else DT[t][3], x // 20 % 10, x % 20, s[i + 3] // 4000])
     try:
         b = [int(v) for v in recall_list("DRB")]
+        if b[0] > 1:
+            g.glim, g.luck, g.curse = b[1] % 100, b[1] // 100 % 2, b[1] // 200
+            b = b[1:]
         for i in range(1, len(b) - 1, 2):
             t = b[i + 1] % 32
             g.pen.append([unpack(b[i]), t, 1, 10, 10, 0, DT[t][3], 0, 0, 8 + b[i + 1] // 32])
@@ -935,12 +947,157 @@ def shop(g):
             return
 
 
+SHOP = (("Glimmer Stone", 60), ("Power Fruit", 40), ("Mystery Egg", 50), ("Healing Tonic", 20),
+        ("Lucky Charm", 35), ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45))
+
+
+def who(g, title, babies=True):
+    # pick one of your dragons (10 to a page); None for Back
+    L = [d for d in g.pen if babies or not d[9] & 8]
+    pg = 0
+    while L:
+        sh = L[pg:pg + 9]
+        more = len(L) > 9
+        c = lst(title, [d[0] + " " + DT[d[1]][0][:8] for d in sh] + (["More..."] if more else []) + ["Back"])
+        if more and c == len(sh):
+            pg = pg + 9 if pg + 9 < len(L) else 0
+            continue
+        return sh[c] if 0 <= c < len(sh) else None
+    message(["You need a dragon first."], "Hm")
+    return None
+
+
+def glim(g):
+    # 1 stone: a random shiny; 5 stones: you pick the colour
+    d = who(g, "Make shiny (" + str(g.glim) + " stones)")
+    if d is None:
+        return
+    q = 0
+    if g.glim >= 5:
+        c = choose("Glimmer Stones: " + str(g.glim), ["Random (1 stone)", "Pick colour (5)", "Back"])
+        if c == 1:
+            q = choose("Which shiny?", [SCH[i][0] for i in range(1, 5)]) + 1
+            if q < 1:
+                return
+            g.glim -= 5
+        elif c != 0:
+            return
+    if not q:
+        g.glim -= 1
+        q = random.randint(1, 4)
+    d[9] = d[9] & 8 | q
+    d[6] = DT[d[1]][3]
+    portrait(d)
+    message([d[0] + " sparkles!", "Now a " + SCH[q][0] + " " + DT[d[1]][0] + "!"], "Shiny!")
+
+
+def shen(g):
+    # Shady Shen. The game never tells you, but: after your first visit he sometimes
+    # picks your pocket, after your first buy 1 thing in 10 is a fake, and the
+    # Golden Coin makes coins go missing more often (book bit 27 = met, 28 = bought)
+    met = g.book >> 27 & 1
+    g.book |= 1 << 27
+    if met and random.random() < 0.25 + 0.25 * g.curse:
+        g.coins -= min(g.coins, random.randint(2, 6) * (1 + g.curse))
+    cls(NIGHT)
+    col((70, 45, 95))
+    fill_poly([110, 160, 210], [200, 40, 200])
+    circ(160, 95, 22, (15, 10, 20))
+    rect(148, 90, 6, 4, YELLOW)
+    rect(166, 90, 6, 4, YELLOW)
+    circ(222, 170, 20, (150, 105, 55))
+    rect(214, 150, 16, 4, (110, 75, 40))
+    ctext(24, "SHADY SHEN", GOLD)
+    ctext(196, random.choice(("Psst... over here.", "Rare goods. Very real.", "Don't ask where I got these.",
+                              "Best prices in all the lands.", "You look like a smart tamer.")))
+    while wkey() not in (OK, CLR):
+        pass
+    while True:
+        c = lst("Shady Shen   " + str(g.coins) + " coins", [n + " " + str(p) + "c" for n, p in SHOP] +
+                (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
+        if c == 8 and g.glim:
+            glim(g)
+            continue
+        if c < 0 or c >= 8:
+            message([random.choice(("No refunds. Ever.", "You didn't see me.", "Come back soon, friend."))], "Shady Shen")
+            return
+        n, p = SHOP[c]
+        if g.coins < p:
+            message(["That's " + str(p) + " coins, friend.", "Come back richer."], "Shady Shen")
+            continue
+        d = None
+        if c == 1:
+            d = who(g, "Feed the Power Fruit to", False)
+            if d is None:
+                continue
+        if c == 2 and (len(g.bag) >= 5 or kids(g) + 4 > 40):
+            message(["No room for an egg."], "Shady Shen")
+            continue
+        if c == 6:
+            if not g.bag:
+                message(["You have no eggs to swap."], "Shady Shen")
+                continue
+            e = lst("Swap which egg?", ["Egg " + str(i + 1) for i in range(len(g.bag))] + ["Back"])
+            if not 0 <= e < len(g.bag):
+                continue
+        if c == 7 and g.curse:
+            message(["You already have one.", "One is plenty. Heh."], "Shady Shen")
+            continue
+        g.coins -= p
+        if g.book >> 28 & 1 and random.random() < 0.1:
+            message([random.choice(("It was just a painted rock!", "The box was empty...", "It crumbled into dust.",
+                                    "It melted in your hand."))], "Huh?")
+            continue
+        g.book |= 1 << 28
+        if c == 5:
+            # the Mystery Box: something from his bag, or nothing at all
+            c = random.choice((0, 1, 3, 4, 9, 9, 10))
+            d = grown(g) if c == 1 else None
+            if c == 1 and d is None:
+                c = 9
+        if c == 0:
+            g.glim += 1
+            m = ["A Glimmer Stone! Use 1 for", "a random shiny, or 5 to", "pick the shiny colour."]
+        elif c == 1:
+            d[2] += 1
+            d[4] += 6
+            d[3] = d[4]
+            m = [d[0] + " ate the Power Fruit.", d[0] + " is now level " + str(d[2]) + "!"]
+        elif c == 2:
+            g.bag.append(egg_roll(g, random.randint(0, 19)))
+            m = ["A Mystery Egg!", "It's in your backpack."]
+        elif c == 3:
+            g.hp = g.mhp
+            for dd in g.pen:
+                dd[3] = dd[4]
+            m = ["Everyone feels great!"]
+        elif c == 4:
+            g.luck = 1
+            g.spawn = min(g.spawn, 40)
+            m = ["You feel lucky.", "Your next egg will", "be a rare one!"]
+        elif c == 6:
+            g.bag[e] = egg_roll(g, egg_type(g.m))
+            m = ["Swapped! A brand new", "egg is in your backpack."]
+        elif c == 7:
+            g.curse = 1
+            m = ["A Golden Coin! Double", "coins from fights.", "Lucky you. Heh heh."]
+        elif c == 9:
+            m = ["The box was empty.", "Just air. Heh."]
+        else:
+            n = random.randint(10, 60)
+            g.coins += n
+            m = [str(n) + " coins inside!"]
+        message(m, n if c < 9 else "Mystery Box")
+
+
 def nest(g):
     rest(g)
     save(g)
     while True:
-        c = choose("The Nest (saved)", ["Dragon pen", "Backpack and book", "Leave the nest"])
-        if c == 0:
+        c = choose("The Nest (saved)", ["Dragon pen", "Backpack and book", "Leave the nest"] + (["Glimmer Stones: " + str(g.glim)] if g.glim else []))
+        if c == 3:
+            glim(g)
+        elif c == 0:
             pen(g)
         elif c == 1:
             # play() shows these, so the nest's code can leave memory first
@@ -1144,8 +1301,20 @@ def menu(g):
     return 0
 
 
-def put_egg(g, t, near):
-    # an egg turns up on an empty spot (next to you when near is set)
+def shen_off(g):
+    # the merchant leaves (when you leave the land or his time is up)
+    if g.shen:
+        m, x, y = g.shen
+        if g.maps[m][y][x] == "M":
+            g.maps[m][y][x] = "."
+            if m == g.m:
+                cells(g, [(x, y)], False)
+        g.shen = None
+        g.shn = random.randint(250, 350)
+
+
+def put_egg(g, t, near, ch="E"):
+    # an egg turns up on an empty spot (next to you when near is set); ch "M" puts the merchant there
     mp = g.maps[g.m]
     for n in range(30):
         if near:
@@ -1155,8 +1324,11 @@ def put_egg(g, t, near):
             x = random.randint(1, 14)
             y = random.randint(1, 7)
         if 0 <= x < 16 and 0 <= y < 9 and mp[y][x] in '."' and (x, y) != (g.x, g.y) and (near or abs(x - g.x) + abs(y - g.y) > 3):
-            mp[y][x] = "E"
-            EGGS[(g.m, x, y)] = t
+            mp[y][x] = ch
+            if ch == "E":
+                EGGS[(g.m, x, y)] = t
+            else:
+                g.shen = (g.m, x, y)
             cells(g, [(x, y)], False)
             return True
     return False
@@ -1246,6 +1418,9 @@ def play():
     g.face = 0
     g.spawn = 100
     g.dread = 0
+    g.glim = g.luck = g.curse = 0
+    g.shen = None
+    g.shn = random.randint(250, 350)
     load(g)
     steps = 0
     draw_map(g)
@@ -1283,6 +1458,7 @@ def play():
             if 0 <= m <= 3:
                 ch = g.maps[m][ny][15 - g.x]
                 if ch != "T" and (ch not in "~L^" or g.ride is not None):
+                    shen_off(g)
                     g.m = m
                     if m < 3:
                         g.seen = max(g.seen, m)
@@ -1311,6 +1487,11 @@ def play():
             draw_map(g)
             message(["Your backpack is full."] if len(g.bag) >= 5 else ["No room in your pen.", "Let a dragon go first."], "Egg")
             draw_map(g, True)
+            continue
+        if ch == "M":
+            # talk to the merchant without stepping on him
+            shen(g)
+            draw_map(g)
             continue
         ox, oy = g.x, g.y
         g.x, g.y = nx, ny
@@ -1357,7 +1538,17 @@ def play():
         if g.spawn <= 0:
             g.spawn = random.randint(100, 200)
             if g.m < 3 and not any(q[0] == g.m for q in EGGS):
-                put_egg(g, egg_roll(g, egg_type(g.m)), False)
+                put_egg(g, egg_roll(g, egg_type(g.m, g.luck)), False)
+                g.luck = 0
+        # the merchant turns up every 300 steps or so and stays for about 60
+        g.shn -= 1
+        if g.shen:
+            if g.shn < 0:
+                shen_off(g)
+        elif g.shn <= 0 and g.m < 3 and put_egg(g, 0, False, "M"):
+            g.shn = 60
+        if g.curse and random.random() < 0.01:
+            g.coins -= min(g.coins, random.randint(1, 3))
         hud(g)
         steps += 1
         # the evil dragon only hunts tamers who own an Epic (or rarer) dragon

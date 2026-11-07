@@ -1,9 +1,27 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
-UP=25
+GOLD=(230,180,40)
 GREY=(110,110,110)
 def pause(s):
  time.sleep(s)
+def message(lines,title=None):
+ n=len(lines)+(1 if title else 0)
+ h=n*18+30
+ y=(H-h)//2
+ rbox(20,y,280,h,8,WHITE)
+ MSG[0],MSG[1]=(y,h)
+ COVER[0]+=1
+ yy=y+24
+ if title:
+  ctext(yy,title,GOLD)
+  yy+=18
+ for s in lines:
+  ctext(yy,s)
+  yy+=18
+ while True:
+  k=wkey()
+  if k in(OK,CLR):
+   return k
 def choose(title,opts,sel=0):
  cls()
  ctext(24,title,GOLD)
@@ -31,61 +49,10 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
-G_EVIL=0.12 if G_TEST else 0.004
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
-def G_egg_roll(g,t):
- if g.book&2097151 and random.random()<0.05:
-  t=G_SMALL
- if random.random()<0.02:
-  r=random.random()
-  return t+32*(1 if r<0.4 else 2 if r<0.7 else 3 if r<0.9 else 4)
- return t
-def G_paint(ops):
- ops.sort(key=lambda o:(o[0],o[1],o[2],o[3][1]if o[2]==0 else 0,o[3][0]))
- last=None
- for layer,c,kind,a in ops:
-  if kind==0:
-   if last and last[0]==(layer,c)and(last[2]==a[1])and(last[4]==a[3])and(last[1]+last[3]==a[0]):
-    last[3]+=a[2]
-    continue
-   if last:
-    rect(last[1],last[2],last[3],last[4],last[0][1])
-   last=[(layer,c),a[0],a[1],a[2],a[3]]
-   continue
-  if last:
-   rect(last[1],last[2],last[3],last[4],last[0][1])
-   last=None
-  if kind==1:
-   circ(a[0],a[1],a[2],c)
-  else:
-   col(c)
-   fill_poly(a[0],a[1])
- if last:
-  rect(last[1],last[2],last[3],last[4],last[0][1])
-def G_cells(g,todo,with_hero):
- mp=g.maps[g.m]
- ops=[]
- rows={}
- for x,y in todo:
-  rows.setdefault(y,[]).append(x)
- for y in rows:
-  xs=sorted(rows[y])
-  i=0
-  while i<len(xs):
-   c=G_base(g.m,mp[y][xs[i]])
-   j=i+1
-   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
-    j+=1
-   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
-   i=j
- for x,y in todo:
-  G_shapes(g.m,x,y,mp[y][x],ops)
- if with_hero:
-  G_hero(g,ops)
- G_paint(ops)
 def G_draw_map(g,after_msg=False):
  r0,r1=(0,9)
  if after_msg:
@@ -97,9 +64,26 @@ def G_draw_map(g,after_msg=False):
  G_CAVE[0]=not g.book>>26&1 and any((d[1]==20 and(not d[9]&8)for d in g.pen))
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
+def G_hud(g):
+ d=g.ride
+ if d is not None:
+  who=d[0]+' '+str(d[3])+'/'+str(d[4])
+ else:
+  who='You '+str(g.hp)+'/'+str(g.mhp)
+ t=(G_LANDS[g.m],who,'Egg '+str(g.warm)if g.bag else str(g.coins)+'c')
+ if t==G_HUD[0]:
+  return
+ old=G_HUD[0]or('','','')
+ if G_HUD[0]is None:
+  rect(0,0,320,20,BLACK)
+ for i,x,c in((0,4,GOLD),(1,140,WHITE),(2,262,YELLOW)):
+  if t[i]!=old[i]:
+   text(x,15,old[i],BLACK)
+   text(x,15,t[i],c)
+ G_HUD[0]=t
 def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
- b=[1]
+ b=[2,g.glim+100*g.luck+200*g.curse]
  for d in g.pen:
   if d[9]&8:
    b+=[G_pack(d[0]),d[1]+32*(d[9]&7)]
@@ -121,7 +105,16 @@ def G_quest_step(g,kind,what):
   g.coins+=q[4]
   g.quest=None
   message(['You finished:',q[5],'+'+str(q[4])+' coins!'],'Quest done!')
-def G_put_egg(g,t,near):
+def G_shen_off(g):
+ if g.shen:
+  m,x,y=g.shen
+  if g.maps[m][y][x]=='M':
+   g.maps[m][y][x]='.'
+   if m==g.m:
+    G_cells(g,[(x,y)],False)
+  g.shen=None
+  g.shn=random.randint(250,350)
+def G_put_egg(g,t,near,ch='E'):
  mp=g.maps[g.m]
  for n in range(30):
   if near:
@@ -131,8 +124,11 @@ def G_put_egg(g,t,near):
    x=random.randint(1,14)
    y=random.randint(1,7)
   if 0<=x<16 and 0<=y<9 and(mp[y][x]in '."')and((x,y)!=(g.x,g.y))and(near or abs(x-g.x)+abs(y-g.y)>3):
-   mp[y][x]='E'
-   G_EGGS[g.m,x,y]=t
+   mp[y][x]=ch
+   if ch=='E':
+    G_EGGS[g.m,x,y]=t
+   else:
+    g.shen=(g.m,x,y)
    G_cells(g,[(x,y)],False)
    return True
  return False
@@ -160,6 +156,9 @@ def G_play():
  g.face=0
  g.spawn=100
  g.dread=0
+ g.glim=g.luck=g.curse=0
+ g.shen=None
+ g.shn=random.randint(250,350)
  G_load(g)
  steps=0
  G_draw_map(g)
@@ -196,6 +195,7 @@ def G_play():
    if 0<=m<=3:
     ch=g.maps[m][ny][15-g.x]
     if ch!='T'and(ch not in '~L^'or g.ride is not None):
+     G_shen_off(g)
      g.m=m
      if m<3:
       g.seen=max(g.seen,m)
@@ -224,6 +224,10 @@ def G_play():
    G_draw_map(g)
    message(['Your backpack is full.']if len(g.bag)>=5 else['No room in your pen.','Let a dragon go first.'],'Egg')
    G_draw_map(g,True)
+   continue
+  if ch=='M':
+   G_shen(g)
+   G_draw_map(g)
    continue
   ox,oy=(g.x,g.y)
   g.x,g.y=(nx,ny)
@@ -269,7 +273,16 @@ def G_play():
   if g.spawn<=0:
    g.spawn=random.randint(100,200)
    if g.m<3 and(not any((q[0]==g.m for q in G_EGGS))):
-    G_put_egg(g,G_egg_roll(g,G_egg_type(g.m)),False)
+    G_put_egg(g,G_egg_roll(g,G_egg_type(g.m,g.luck)),False)
+    g.luck=0
+  g.shn-=1
+  if g.shen:
+   if g.shn<0:
+    G_shen_off(g)
+  elif g.shn<=0 and g.m<3 and G_put_egg(g,0,False,'M'):
+   g.shn=60
+  if g.curse and random.random()<0.01:
+   g.coins-=min(g.coins,random.randint(1,3))
   G_hud(g)
   steps+=1
   if g.dread>0:

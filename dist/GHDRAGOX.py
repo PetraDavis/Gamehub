@@ -1,5 +1,6 @@
 # GHDRAGOX: part of GHDRAGON, loaded only while it is needed.
 from GHDRAGOP import*
+G_SHOP=(('Glimmer Stone',60),('Power Fruit',40),('Mystery Egg',50),('Healing Tonic',20),('Lucky Charm',35),('Mystery Box',30),('Egg Swap',25),('Golden Coin',45))
 def G_unpack(n):
  nm=''
  while n:
@@ -47,6 +48,9 @@ def G_load(g):
   g.pen.append([nm,t,lv,mh,mh,s[i+2],G_PAINT[p-1]if p else G_DT[t][3],x//20%10,x%20,s[i+3]//4000])
  try:
   b=[int(v)for v in recall_list('DRB')]
+  if b[0]>1:
+   g.glim,g.luck,g.curse=(b[1]%100,b[1]//100%2,b[1]//200)
+   b=b[1:]
   for i in range(1,len(b)-1,2):
    t=b[i+1]%32
    g.pen.append([G_unpack(b[i]),t,1,10,10,0,G_DT[t][3],0,0,8+b[i+1]//32])
@@ -193,12 +197,138 @@ def G_shop(g):
     message([d[0]+' looks great!'],'Painted')
   else:
    return
+def G_who(g,title,babies=True):
+ L=[d for d in g.pen if babies or not d[9]&8]
+ pg=0
+ while L:
+  sh=L[pg:pg+9]
+  more=len(L)>9
+  c=G_lst(title,[d[0]+' '+G_DT[d[1]][0][:8]for d in sh]+(['More...']if more else[])+['Back'])
+  if more and c==len(sh):
+   pg=pg+9 if pg+9<len(L)else 0
+   continue
+  return sh[c]if 0<=c<len(sh)else None
+ message(['You need a dragon first.'],'Hm')
+ return None
+def G_glim(g):
+ d=G_who(g,'Make shiny ('+str(g.glim)+' stones)')
+ if d is None:
+  return
+ q=0
+ if g.glim>=5:
+  c=choose('Glimmer Stones: '+str(g.glim),['Random (1 stone)','Pick colour (5)','Back'])
+  if c==1:
+   q=choose('Which shiny?',[G_SCH[i][0]for i in range(1,5)])+1
+   if q<1:
+    return
+   g.glim-=5
+  elif c!=0:
+   return
+ if not q:
+  g.glim-=1
+  q=random.randint(1,4)
+ d[9]=d[9]&8|q
+ d[6]=G_DT[d[1]][3]
+ G_portrait(d)
+ message([d[0]+' sparkles!','Now a '+G_SCH[q][0]+' '+G_DT[d[1]][0]+'!'],'Shiny!')
+def G_shen(g):
+ met=g.book>>27&1
+ g.book|=1<<27
+ if met and random.random()<0.25+0.25*g.curse:
+  g.coins-=min(g.coins,random.randint(2,6)*(1+g.curse))
+ cls(G_NIGHT)
+ col((70,45,95))
+ fill_poly([110,160,210],[200,40,200])
+ circ(160,95,22,(15,10,20))
+ rect(148,90,6,4,YELLOW)
+ rect(166,90,6,4,YELLOW)
+ circ(222,170,20,(150,105,55))
+ rect(214,150,16,4,(110,75,40))
+ ctext(24,'SHADY SHEN',GOLD)
+ ctext(196,random.choice(('Psst... over here.','Rare goods. Very real.',"Don't ask where I got these.",'Best prices in all the lands.','You look like a smart tamer.')))
+ while wkey()not in(OK,CLR):
+  pass
+ while True:
+  c=G_lst('Shady Shen   '+str(g.coins)+' coins',[n+' '+str(p)+'c'for n,p in G_SHOP]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
+  if c==8 and g.glim:
+   G_glim(g)
+   continue
+  if c<0 or c>=8:
+   message([random.choice(('No refunds. Ever.',"You didn't see me.",'Come back soon, friend.'))],'Shady Shen')
+   return
+  n,p=G_SHOP[c]
+  if g.coins<p:
+   message(["That's "+str(p)+' coins, friend.','Come back richer.'],'Shady Shen')
+   continue
+  d=None
+  if c==1:
+   d=G_who(g,'Feed the Power Fruit to',False)
+   if d is None:
+    continue
+  if c==2 and(len(g.bag)>=5 or G_kids(g)+4>40):
+   message(['No room for an egg.'],'Shady Shen')
+   continue
+  if c==6:
+   if not g.bag:
+    message(['You have no eggs to swap.'],'Shady Shen')
+    continue
+   e=G_lst('Swap which egg?',['Egg '+str(i+1)for i in range(len(g.bag))]+['Back'])
+   if not 0<=e<len(g.bag):
+    continue
+  if c==7 and g.curse:
+   message(['You already have one.','One is plenty. Heh.'],'Shady Shen')
+   continue
+  g.coins-=p
+  if g.book>>28&1 and random.random()<0.1:
+   message([random.choice(('It was just a painted rock!','The box was empty...','It crumbled into dust.','It melted in your hand.'))],'Huh?')
+   continue
+  g.book|=1<<28
+  if c==5:
+   c=random.choice((0,1,3,4,9,9,10))
+   d=G_grown(g)if c==1 else None
+   if c==1 and d is None:
+    c=9
+  if c==0:
+   g.glim+=1
+   m=['A Glimmer Stone! Use 1 for','a random shiny, or 5 to','pick the shiny colour.']
+  elif c==1:
+   d[2]+=1
+   d[4]+=6
+   d[3]=d[4]
+   m=[d[0]+' ate the Power Fruit.',d[0]+' is now level '+str(d[2])+'!']
+  elif c==2:
+   g.bag.append(G_egg_roll(g,random.randint(0,19)))
+   m=['A Mystery Egg!',"It's in your backpack."]
+  elif c==3:
+   g.hp=g.mhp
+   for dd in g.pen:
+    dd[3]=dd[4]
+   m=['Everyone feels great!']
+  elif c==4:
+   g.luck=1
+   g.spawn=min(g.spawn,40)
+   m=['You feel lucky.','Your next egg will','be a rare one!']
+  elif c==6:
+   g.bag[e]=G_egg_roll(g,G_egg_type(g.m))
+   m=['Swapped! A brand new','egg is in your backpack.']
+  elif c==7:
+   g.curse=1
+   m=['A Golden Coin! Double','coins from fights.','Lucky you. Heh heh.']
+  elif c==9:
+   m=['The box was empty.','Just air. Heh.']
+  else:
+   n=random.randint(10,60)
+   g.coins+=n
+   m=[str(n)+' coins inside!']
+  message(m,n if c<9 else 'Mystery Box')
 def G_nest(g):
  G_rest(g)
  G_save(g)
  while True:
-  c=choose('The Nest (saved)',['Dragon pen','Backpack and book','Leave the nest'])
-  if c==0:
+  c=choose('The Nest (saved)',['Dragon pen','Backpack and book','Leave the nest']+(['Glimmer Stones: '+str(g.glim)]if g.glim else[]))
+  if c==3:
+   G_glim(g)
+  elif c==0:
    G_pen(g)
   elif c==1:
    k=choose('Look at your',['Backpack','Dragon book'])
