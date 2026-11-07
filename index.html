@@ -91,6 +91,9 @@
         <button class="btn small" id="sendOne" type="button">Test: send as ONE file</button>
         <a class="btn small" href="dist/GHONE.py" download>Test: download one file</a>
       </div>
+      <div class="actions">
+        <button class="btn small" id="sendBench" type="button">Test: send speed check</button>
+      </div>
       <p class="note">Test version: all of GAMEHUB in a single file called GHONE. Run GHONE on the calculator. If it shows a memory error, use the normal button above.</p>
       <p class="note" id="support"></p>
       <div id="status" aria-live="polite">
@@ -187,6 +190,7 @@
 
   $('sendAll').addEventListener('click', () => send(['GAMEHUB'].concat(GAMES.map(g => g.mod)), 'GAMEHUB'));
   $('sendOne').addEventListener('click', () => send(['GHONE'], 'GHONE (one-file test)'));
+  $('sendBench').addEventListener('click', () => send(['GHBENCH'], 'GHBENCH (speed check)'));
 
   const ok = window.EvoSend && EvoSend.supported();
   if (!ok) {
