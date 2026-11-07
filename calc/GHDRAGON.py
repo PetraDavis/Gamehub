@@ -704,7 +704,7 @@ def rest(g):
 #  eggs in the bag (up to 5, -1 = none), then 5 numbers a dragon: name (letters 1-26 in base 27),
 #  kind, level, xp, shiny*4000+paint*200+head*20+body]
 # DRB: [2, things from the merchant (Glimmer Stones + 100 * Lucky Charm + 200 * Golden Coin
-#  + 400 * things bought from him, up to 10),
+#  + 400 * things bought from him, up to 10, + 4400 * quests finished, up to 99),
 #  then 2 numbers a baby: name, kind + 32 * shiny]  (version 1 had no second number)
 def pack(nm):
     n = 0
@@ -723,7 +723,7 @@ def unpack(n):
 
 def save(g):
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
-    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys)]
+    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done)]
     for d in g.pen:
         if d[9] & 8:
             b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
@@ -769,7 +769,7 @@ def load(g):
     try:
         b = [int(v) for v in recall_list("DRB")]
         if b[0] > 1:
-            g.glim, g.luck, g.curse, g.buys = b[1] % 100, b[1] // 100 % 2, b[1] // 200 % 2, b[1] // 400
+            g.glim, g.luck, g.curse, g.buys, g.done = b[1] % 100, b[1] // 100 % 2, b[1] // 200 % 2, b[1] // 400 % 11, b[1] // 4400
             b = b[1:]
         for i in range(1, len(b) - 1, 2):
             t = b[i + 1] % 32
@@ -782,17 +782,21 @@ def load(g):
 
 # ---------- quests ----------
 def new_quest(g):
+    # quests get harder the more you finish (up to level 10), and harder ones pay more
+    t = min(10, g.done)
+    m = 1 + 0.3 * t
     k = random.randint(0, 2)
     if k == 0:
-        n = random.randint(2, 4)
-        land = random.randint(0, g.seen)
+        n = random.randint(2, 4) + t // 2
+        land = random.randint(min(g.seen, t // 3), g.seen)
         nm = random.choice(FOES[land])[0]
-        return [0, nm, n, 0, 8 * n + 6 * land, "Beat " + str(n) + " " + nm + "s"]
+        return [0, nm, n, 0, int((8 * n + 6 * land) * m), "Beat " + str(n) + " " + nm + "s"]
     if k == 1:
-        return [1, None, 1, 0, 20, "Hatch an egg"]
-    land = random.randint(0, g.seen)
-    n = random.randint(3, 5)
-    return [2, land, n, 0, 7 * n + 6 * land, str(n) + " wins: " + LANDS[land]]
+        n = 1 + t // 3
+        return [1, None, n, 0, int(20 * n * m), "Hatch " + (str(n) + " eggs" if n > 1 else "an egg")]
+    land = random.randint(min(g.seen, t // 3), g.seen)
+    n = random.randint(3, 5) + t // 2
+    return [2, land, n, 0, int((7 * n + 6 * land) * m), str(n) + " wins: " + LANDS[land]]
 
 
 def quest_step(g, kind, what):
@@ -803,6 +807,7 @@ def quest_step(g, kind, what):
     if q[3] >= q[2]:
         g.coins += q[4]
         g.quest = None
+        g.done += 1
         message(["You finished:", q[5], "+" + str(q[4]) + " coins!"], "Quest done!")
 
 
@@ -814,7 +819,7 @@ def board(g):
             g.quest = None
         return
     qs = [new_quest(g) for i in range(3)]
-    c = choose("Quests: pick one", [q[5][:15] + " " + str(q[4]) + "c" for q in qs] + ["Not now"])
+    c = choose("Quests (level " + str(min(10, g.done) + 1) + ")", [q[5][:15] + " " + str(q[4]) + "c" for q in qs] + ["Not now"])
     if 0 <= c < 3:
         g.quest = qs[c]
 
@@ -1457,7 +1462,7 @@ def play():
     g.face = 0
     g.spawn = 100
     g.dread = 0
-    g.glim = g.luck = g.curse = g.buys = 0
+    g.glim = g.luck = g.curse = g.buys = g.done = 0
     g.shen = None
     g.shn = random.randint(250, 350)
     load(g)
