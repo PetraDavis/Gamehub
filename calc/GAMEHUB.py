@@ -126,7 +126,7 @@ def run_app(mod):
         cls()
         message([str(e)[:26], "Is " + mod + " on the", "calculator?"], "Could not run")
     # forget the game and its part files (GHCRYPTB, GHCRYPTC...) to free memory
-    for k in [mod] + [mod[:7] + c for c in "BCDEF"]:
+    for k in [mod] + [mod[:7] + c for c in "BCDEFHP"]:
         try:
             del sys.modules[k]
         except Exception:

@@ -306,7 +306,7 @@ def H_run_app(mod):
  except Exception as e:
   cls()
   message([str(e)[:26],'Is '+mod+' on the','calculator?'],'Could not run')
- for k in[mod]+[mod[:7]+c for c in 'BCDEF']:
+ for k in[mod]+[mod[:7]+c for c in 'BCDEFHP']:
   try:
    del sys.modules[k]
   except Exception:

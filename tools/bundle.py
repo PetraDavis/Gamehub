@@ -361,7 +361,7 @@ while True:
   st[3]=str(e)[:26]
   st[4]=mod
  m=None
- drop([mod]+[mod[:7]+c for c in "BCDEF"])
+ drop([mod]+[mod[:7]+c for c in "BCDEFHP"])
 """
 
 
@@ -430,8 +430,89 @@ def build_game(g):
     parts.append(call)
     shake(parts)
     parts.pop()
+    if sum(words(ast.unparse(t)) for t in parts) > STAGE_OVER:
+        return build_staged(g)
     tail = call.body + ast.parse('RAN = True').body
     return split(parts, g, '# %s from GAMEHUB, on its own. Run it.' % g, tail)
+
+
+# A game this big doesn't fit in memory all at once even in parts (the
+# Encrypted demo). So its home screen and the game itself become separate
+# files that are never loaded together: <NAME>H shows the home screen,
+# <NAME>P (plus its parts) is the game, and <NAME> loads one, drops it,
+# then loads the other.
+STAGE_OVER = 9000
+STAGED = """# {g} from GAMEHUB, on its own. Run it.
+import sys
+import gc
+def drop(names):
+ for k in names:
+  try:
+   del sys.modules[k]
+  except Exception:
+   pass
+while True:
+ gc.collect()
+ import {h}
+ c={h}.G_front()
+ {h}=None
+ drop(["{h}"])
+ gc.collect()
+ if c<0:
+  break
+ import {p}
+ {p}.G_back()
+ {p}=None
+ drop(["{p}"]+["{g7}"+c for c in "BCDEF"])
+RAN=True
+"""
+
+
+def main_calls(tree, mods, g):
+    # main() is "while True: c = home(...); if c < 0: return; play()":
+    # pull out the home(...) call and the name of the game function
+    fn = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == mods[g] + 'main'][0]
+    home_call = play = None
+    for n in ast.walk(fn):
+        if isinstance(n, ast.Call) and getattr(n.func, 'id', '') == 'home':
+            home_call = n
+        if isinstance(n, ast.Expr) and isinstance(n.value, ast.Call) and getattr(n.value.func, 'id', '') != 'home':
+            play = n.value.func.id
+    return home_call, play
+
+
+def build_staged(g):
+    mods = mods_map([g])
+    h, p, g7 = g[:7] + 'H', g[:7] + 'P', g[:7]
+    out = {}
+    # the home screen file: the helpers, the icon and the game's words
+    icons = convert('GHICONS', mods)
+    keep_only(icons, mods['GHICONS'] + 'ICONS', g)
+    keep_only(icons, mods['GHICONS'] + 'BG', g)
+    game = convert(g, mods)
+    home_call, play = main_calls(game, mods, g)
+    front = ast.parse('def G_front():\n return 0')
+    front.body[0].body[0].value = home_call
+    keep = ast.parse('G_front')
+    parts = [convert(LIB, mods), icons, game, front, keep]
+    shake(parts)
+    parts.pop()
+    out.update(split(parts, h, '# %s: home screen of %s. Run %s, not this.' % (h, g, g), []))
+    # the game file: no icon and no home screen
+    game = convert(g, mods)
+    parts = [convert(LIB, mods)]
+    if 'GHSAVE' in open(os.path.join(CALC, g + '.py')).read():
+        parts.append(convert('GHSAVE', mods))
+    parts.append(game)
+    back = ast.parse('def G_back():\n %s()' % play)
+    parts.append(back)
+    keep = ast.parse('G_back')
+    parts.append(keep)
+    shake(parts)
+    parts.pop()
+    out.update(split(parts, p, '# %s: the game part of %s. Run %s, not this.' % (p, g, g), []))
+    out[g] = STAGED.format(g=g, h=h, p=p, g7=g7)
+    return out
 
 
 def build_single():
