@@ -1,10 +1,9 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
+UP=25
 GREY=(110,110,110)
-def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
- edge(x,y,w,h,r,c,t)
- if fill:
-  rect(x+t,y+t,w-2*t,h-2*t,inner)
+def wkey():
+ return wait_key()
 def pause(s):
  time.sleep(s)
 def message(lines,title=None):
@@ -55,12 +54,21 @@ def choose(title,opts,sel=0):
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
-G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
 G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
 def G_egg_type(m):
  r=random.randint(0,999)
  rar=4 if r<4+2*m else 3 if r<30+10*m else 2 if r<110+25*m else 1 if r<330+40*m else 0
  return random.choice([i for i in range(20)if G_DT[i][2]==rar])
+def G_base(m,ch):
+ if ch=='~':
+  return G_WATER
+ if ch=='L':
+  return G_LAVA
+ if ch=='"':
+  return G_TALL[m]
+ if ch=='=':
+  return(190,160,110)
+ return G_GROUND[m]
 def G_paint(ops):
  ops.sort(key=lambda o:(o[0],o[1],o[2],o[3][1]if o[2]==0 else 0,o[3][0]))
  last=None
@@ -172,6 +180,7 @@ def G_play():
  g.book=0
  g.quest=None
  g.seen=0
+ g.face=0
  g.spawn=100
  g.dread=0
  G_load(g)
@@ -201,6 +210,8 @@ def G_play():
   if dx==0 and dy==0:
    continue
   nx,ny=(g.x+dx,g.y+dy)
+  if dx:
+   g.face=dx>0
   if nx<0 or nx>15:
    m=(0 if nx>15 else-1)if g.m==3 else g.m+(1 if nx>15 else-1)
    if m<0 and g.m==0:

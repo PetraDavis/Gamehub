@@ -198,23 +198,31 @@ def egg_type(m):
 
 
 # ---------- pictures ----------
-def art(b, x, y, s, P, out=None):
+def art(b, x, y, s, P, out=None, f=0):
     for i in range(0, len(b), 8):
         c = P[b[i + 1]]
         a1, a2, a3, a4, a5, a6 = b[i + 2], b[i + 3], b[i + 4], b[i + 5], b[i + 6], b[i + 7]
         if out is not None:
             # small map picture: keep the shapes in order, round them, skip specks
+            # f: mirror it (f is the picture width) so the dragon faces right
             k = b[i]
             if k == 0:
                 if a3 * s < 0.8 or a4 * s < 0.8:
                     continue
-                a = (int(x + a1 * s + 0.5), int(y + a2 * s + 0.5), int(a3 * s + 0.5), int(a4 * s + 0.5))
+                w = int(a3 * s + 0.5)
+                a = (int(x + a1 * s + 0.5), int(y + a2 * s + 0.5), w, int(a4 * s + 0.5))
+                if f:
+                    a = (2 * x + f - a[0] - w,) + a[1:]
             elif k == 1:
                 if a3 * s < 0.8:
                     continue
                 a = (int(x + a1 * s + 0.5), int(y + a2 * s + 0.5), int(a3 * s + 0.5))
+                if f:
+                    a = (2 * x + f - a[0],) + a[1:]
             else:
                 a = ([int(x + v * s + 0.5) for v in (a1, a3, a5)], [int(y + v * s + 0.5) for v in (a2, a4, a6)])
+                if f:
+                    a = ([2 * x + f - v for v in a[0]], a[1])
             out.append((10 + len(out), c, min(k, 2), a))
         elif b[i] == 0:
             rect(x + a1 * s, y + a2 * s, a3 * s, a4 * s, c)
@@ -225,7 +233,7 @@ def art(b, x, y, s, P, out=None):
             fill_poly([x + a1 * s, x + a3 * s, x + a5 * s], [y + a2 * s, y + a4 * s, y + a6 * s])
 
 
-def drag(x, y, s, t, c, head=0, body=0, out=None):
+def drag(x, y, s, t, c, head=0, body=0, out=None, f=0):
     # a dragon facing left, about 58 x 50 times s pixels, top left at x, y
     # (with out, the shapes go into that list for the map instead of being drawn)
     P = PAL + [lt(c, 0.45), dk(c, 0.6), c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
@@ -233,7 +241,7 @@ def drag(x, y, s, t, c, head=0, body=0, out=None):
     for a in (ARTB, ARTF[t], bytes((2, w, 24, 26, 40, 10, 37, 28, 2, b, 40, 10, 28, 27, 30, 27, 2, b, 40, 10, 33, 28, 35, 28,
               2, 17, 23, 26, 40, 9, 26, 26, 1, 17, 26, 27, 3, 0, 0, 0, 2, 1, 40, 9, 42, 7, 41, 11)), ARTL, ARTO[t],
               ARTG[body] if body else b"", ARTG[head] if head else b""):
-        art(a, x, y, s, P, out)
+        art(a, x, y, s, P, out, f)
 
 
 def oval(x, y, s, c, k=0):
@@ -356,9 +364,11 @@ def hero(g, out):
     d = g.ride
     if d is not None:
         # the dragon's own detailed picture, small, with you on its back
-        out.append((8, (60, 120, 230), 0, (px + 8, py + 5, 3, 5)))
-        out.append((9, (240, 200, 160), 1, (px + 9, py + 3, 2)))
-        drag(px, py + 2, 0.34, d[1], d[6], d[7], d[8], out)
+        # g.face: 1 when you last flew right, so the dragon turns that way
+        r = g.face
+        out.append((8, (60, 120, 230), 0, (px + (9 if r else 8), py + 5, 3, 5)))
+        out.append((9, (240, 200, 160), 1, (px + (10 if r else 9), py + 3, 2)))
+        drag(px, py + 2, 0.34, d[1], d[6], d[7], d[8], out, 20 if r else 0)
         return
     out.append((5, (240, 200, 160), 1, (px + 10, py + 5, 4)))
     out.append((6, BARK, 0, (px + 6, py + 1, 8, 3)))
@@ -1070,6 +1080,7 @@ def play():
     g.book = 0
     g.quest = None
     g.seen = 0
+    g.face = 0
     g.spawn = 100
     g.dread = 0
     load(g)
@@ -1099,6 +1110,8 @@ def play():
         if dx == 0 and dy == 0:
             continue
         nx, ny = g.x + dx, g.y + dy
+        if dx:
+            g.face = dx > 0
         if nx < 0 or nx > 15:
             # the village (land 3) sits left of Green Valley
             m = (0 if nx > 15 else -1) if g.m == 3 else g.m + (1 if nx > 15 else -1)
