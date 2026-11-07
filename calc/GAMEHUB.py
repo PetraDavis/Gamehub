@@ -7,7 +7,7 @@ CATS = [
     ("Arcade", [("Wing It", "GHFLAP"), ("Pong", "GHPONG"), ("Breakout", "GHBREAK"), ("Star Patrol", "GHSTAR")]),
     ("Puzzle", [("Stack Drop", "GHBLOCKS"), ("2048", "GHMERGE"), ("Sudoku", "GHSUDOKU"), ("Simon", "GHSIMON")]),
     ("Classics", [("Solitaire", "GHSOLI"), ("Tic-Tac-Toe", "GHTTT"), ("Hangman", "GHHANG"), ("Memory Match", "GHMATCH")]),
-    ("Adventure", [("Tiny Quest", "GHRPG"), ("Encrypted Demo", "GHCRYPT"), ("Lost Orbit", "GHSPACE")]),
+    ("Adventure", [("Tiny Quest", "GHRPG"), ("Dragon Tamer", "GHDRAGON"), ("Detective Case", "GHDETECT"), ("Lost Orbit", "GHSPACE")]),
     ("Create", [("Animation Studio", "GHANIM"), ("Fortune Cards", "GHFORTUN"), ("Name Generator", "GHNAMES")]),
     ("Settings", [("Key Test", "*keys"), ("Delete All Saves", "*wipe"), ("About", "*about")]),
 ]
@@ -125,7 +125,7 @@ def run_app(mod):
     except Exception as e:
         cls()
         message([str(e)[:26], "Is " + mod + " on the", "calculator?"], "Could not run")
-    # forget the game and its part files (GHCRYPTB, GHCRYPTC...) to free memory
+    # forget the game and its part files (like GHANIMB) to free memory
     for k in [mod] + [mod[:7] + c for c in "BCDEFHP"]:
         try:
             del sys.modules[k]
@@ -155,8 +155,8 @@ def wipe():
     cls()
     ctext(40, "DELETE ALL SAVES", GOLD)
     ctext(70, "This erases every")
-    ctext(90, "Animation Studio")
-    ctext(110, "animation.")
+    ctext(90, "Animation Studio animation")
+    ctext(110, "and your Dragon Tamer dragons.")
     ctext(150, "ENTER: delete", RED)
     ctext(175, "CLEAR: keep them")
     if wkey() != OK:

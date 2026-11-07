@@ -251,7 +251,7 @@ def defines(n):
 
 
 def side_name(name, k=0):
-    # GHCRYPT -> GHCRYPTB, then GHCRYPTC (calculator names: 8 letters at most)
+    # GHANIM -> GHANIMB, then GHANIMC (calculator names: 8 letters at most)
     return name[:7] + 'BCDEF'[k]
 
 
@@ -438,8 +438,8 @@ def build_game(g):
     return split(parts, g, '# %s from GAMEHUB, on its own. Run it.' % g, tail)
 
 
-# A game this big doesn't fit in memory all at once even in parts (the
-# Encrypted demo). So its home screen and the game itself become separate
+# A game this big doesn't fit in memory all at once even in parts (none right now;
+# the old Encrypted demo was one). So its home screen and the game itself become separate
 # files that are never loaded together: <NAME>H shows the home screen,
 # <NAME>P (plus its parts) is the game, and <NAME> loads one, drops it,
 # then loads the other.

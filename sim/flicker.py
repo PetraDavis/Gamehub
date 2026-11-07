@@ -52,7 +52,7 @@ for mod in mods:
         def fake(c=c): c[0] += 0.05; return c[0]
         m.now = fake
     try:
-        g = m.play if mod in ('GHRPG', 'GHCRYPT') else m.game
+        g = m.play if mod in ('GHRPG',) else m.game
         n = g.__code__.co_argcount
         g(*([True, 40][:n] if mod == 'GHTTT' else [40][:n]))
     except SimDone:

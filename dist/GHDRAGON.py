@@ -1,4 +1,4 @@
-# GHCRYPT from GAMEHUB, on its own. Run it.
+# GHDRAGON from GAMEHUB, on its own. Run it.
 import sys
 import gc
 def drop(names):
@@ -17,17 +17,17 @@ def free(step):
   print(step)
 while True:
  free("start")
- import GHCRYPTH
+ import GHDRAGOH
  free("home loaded")
- c=GHCRYPTH.G_front()
- GHCRYPTH=None
- drop(["GHCRYPTH"])
+ c=GHDRAGOH.G_front()
+ GHDRAGOH=None
+ drop(["GHDRAGOH"])
  free("home dropped")
  if c<0:
   break
- import GHCRYPTP
+ import GHDRAGOP
  free("game loaded")
- GHCRYPTP.G_back()
- GHCRYPTP=None
- drop(["GHCRYPTP"]+["GHCRYPT"+c for c in "BCDEF"])
+ GHDRAGOP.G_back()
+ GHDRAGOP=None
+ drop(["GHDRAGOP"]+["GHDRAGO"+c for c in "BCDEF"])
 RAN=True

@@ -43,13 +43,12 @@ def lt(c,k=0.35):
  return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
 def dk(c,k=0.65):
  return(int(c[0]*k),int(c[1]*k),int(c[2]*k))
-MSG=[0,0]
 I_BLACK=(0,0,0)
 I_WHITE=(255,255,255)
 I_INK=(20,20,20)
 I_RED=(215,40,40)
 I_GOLD=(230,180,40)
-I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE,'GHSPACE':(15,20,50),'GHFORTUN':(55,25,85),'GHNAMES':(20,60,70),'GHSTAR':(8,10,32),'GHMATCH':(30,90,80)}
+I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE,'GHSPACE':(15,20,50),'GHFORTUN':(55,25,85),'GHNAMES':(20,60,70),'GHSTAR':(8,10,32),'GHMATCH':(30,90,80),'GHDRAGON':(50,130,60),'GHDETECT':(35,30,55)}
 I_FONT={'0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001001001001','8':'111101111101111','9':'111101111001111'}
 def I_c_(c):
  col(c)
@@ -138,17 +137,6 @@ def I_solitaire(x,y,c):
   f,col=suits[i]
   f(l+4,t+5,2,col)
  I_heart(x+10,y+3,3,I_RED)
-def I_anim(x,y,c):
- I_box(x-20,y-13,41,27,(35,35,40))
- for i in range(5):
-  I_box(x-18+i*8,y-11,4,3,I_WHITE)
-  I_box(x-18+i*8,y+9,4,3,I_WHITE)
- for i,by in enumerate((4,-2,2)):
-  fx=x-17+i*12
-  I_box(fx,y-6,11,13,(120,200,240))
-  I_box(fx,y+4,11,3,(70,170,80))
-  I_circ(fx+5,y+by,2,(240,120,40))
- I_circ(x+17,y-9,1,I_RED)
 def I_ttt(x,y,c):
  s=12
  for i in(-1,1):
@@ -159,6 +147,10 @@ def I_ttt(x,y,c):
   cy=y+i*s
   I_line(cx-4,cy-4,cx+3,cy+3,I_INK,2)
   I_line(cx+3,cy-4,cx-4,cy+3,I_INK,2)
+def I_g2048(x,y,c):
+ I_rr(x-20,y-12,41,28,4,(200,160,30))
+ I_rr(x-20,y-14,41,28,4,(237,194,46))
+ I_digits(x-14,y-5,'2048',I_WHITE)
 def I_pong(x,y,c):
  I_c_(I_WHITE)
  draw_rect(x-22,y-16,44,32)
@@ -168,32 +160,6 @@ def I_pong(x,y,c):
  I_box(x-17,y-11,4,14,I_WHITE)
  I_box(x+14,y-3,4,14,I_WHITE)
  I_circ(x-6,y-5,2,(250,150,40))
-def I_breakout(x,y,c):
- cols=((220,60,60),(235,140,50),(230,210,60),(70,190,90))
- for r in range(3):
-  for i in range(4):
-   bx=x-19+i*10
-   I_box(bx,y-15+r*6,9,5,cols[(i+r)%4])
-   I_hline(bx,bx+8,y-15+r*6,tuple((min(255,v+60)for v in cols[(i+r)%4])))
- for i,(dx,dy)in enumerate(((-8,12),(-5,8))):
-  I_box(x+dx,y+dy,2,2,(120,150,230))
- I_circ(x-1,y+5,2,I_WHITE)
- I_rr(x-11,y+13,22,4,1,I_WHITE)
-def I_simon(x,y,c):
- r=18
- cols=((40,170,60),(200,40,40),(40,80,200),(220,180,30))
- for q in range(4):
-  a0=-math.pi/2+q*math.pi/2
-  xs=[x]
-  ys=[y]
-  for i in range(6):
-   a=a0+math.pi/2*i/5
-   xs.append(x+r*math.cos(a))
-   ys.append(y+r*math.sin(a))
-  I_poly(xs,ys,cols[q])
- I_circ(x,y,5,I_BLACK)
- I_box(x-1,y-r,2,2*r,I_BLACK)
- I_box(x-r,y-1,2*r,2,I_BLACK)
 def I_keys(x,y,c):
  for i in range(3):
   for j in range(3):
@@ -204,26 +170,18 @@ def I_wipe(x,y,c):
  I_box(x-4,y-16,8,3,c)
  for i in(-5,0,5):
   I_box(x+i-1,y-4,2,15,(0,0,0))
-def I_fortune(x,y,c):
- I_box(x-19,y-10,13,20,(120,40,140))
- I_box(x+6,y-10,13,20,(120,40,140))
- I_box(x-8,y-15,16,25,(250,240,215))
- I_poly([x,x+2,x+6,x+3,x+4,x,x-4,x-3,x-6,x-2],[y-9,y-4,y-4,y-1,y+4,y+1,y+4,y-1,y-4,y-4],I_GOLD)
 def I_names(x,y,c):
  I_box(x-14,y-9,28,18,I_WHITE)
  I_poly([x-14,x-21,x-14],[y-9,y,y+9],I_WHITE)
  I_box(x-17,y-1,3,3,(20,60,70))
  I_box(x-8,y-4,17,3,I_GOLD)
  I_box(x-8,y+2,11,3,I_INK)
-def I_star(x,y,c):
- I_box(x-7,y-15,14,9,(120,230,90))
- I_box(x-7,y-15,3,3,(8,10,32))
- I_box(x+4,y-15,3,3,(8,10,32))
- I_box(x-4,y-11,8,2,(8,10,32))
- I_box(x-1,y-3,2,6,(255,230,90))
- I_box(x-10,y+7,20,10,(90,200,255))
- I_box(x-10,y+7,7,4,(8,10,32))
- I_box(x+3,y+7,7,4,(8,10,32))
+def I_detect(x,y,c):
+ I_box(x-14,y+4,6,9,(120,90,60))
+ I_box(x-6,y+8,6,9,(120,90,60))
+ I_circ(x+2,y-4,11,(230,180,40))
+ I_circ(x+2,y-4,8,(190,220,245))
+ I_poly([x+9,x+13,x+19,x+15],[y+5,y+1,y+13,y+17],(120,80,40))
 def I_match(x,y,c):
  I_box(x-19,y-12,17,24,(200,70,90))
  I_box(x-15,y-8,9,16,(225,120,135))
@@ -243,6 +201,9 @@ def S_hname(s):
 H_BAR_Y=34
 H_BAR_H=22
 H_BAR_GAP=27
+def H_header():
+ cls()
+ ctext(22,'GAMEHUB',WHITE)
 def H_app_pos(i):
  return(50+i%4*73,82+i//4*70)
 def H_show_title(name,old=None):
