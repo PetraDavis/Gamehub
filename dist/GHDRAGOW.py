@@ -140,7 +140,7 @@ def G_evil(g):
   return False
  G_draw_map(g)
  if r==2:
-  g.dread=random.randint(25,50)
+  g.dread=random.randint(900,1100)
   message(['You got away...','but the Dread Drake','will be back!'],'Escaped')
   G_draw_map(g,True)
   return True
