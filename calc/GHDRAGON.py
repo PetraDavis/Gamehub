@@ -233,10 +233,14 @@ def art(b, x, y, s, P, out=None, f=0):
             fill_poly([x + a1 * s, x + a3 * s, x + a5 * s], [y + a2 * s, y + a4 * s, y + a6 * s])
 
 
-def drag(x, y, s, t, c, head=0, body=0, out=None, f=0):
+def drag(x, y, s, t, c, head=0, body=0, out=None, f=0, sp=0):
     # a dragon facing left, about 58 x 50 times s pixels, top left at x, y
-    # (with out, the shapes go into that list for the map instead of being drawn)
-    P = PAL + [lt(c, 0.45), dk(c, 0.6), c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
+    # (with out, the shapes go into that list for the map instead of being drawn; sp: shiny scheme)
+    if sp:
+        n, c, l, k = SCH[sp]
+        P = PAL + [l, k, c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
+    else:
+        P = PAL + [lt(c, 0.45), dk(c, 0.6), c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
     w, b = ARTW[2 * t], ARTW[2 * t + 1]
     for a in (ARTB, ARTF[t], bytes((2, w, 24, 26, 40, 10, 37, 28, 2, b, 40, 10, 28, 27, 30, 27, 2, b, 40, 10, 33, 28, 35, 28,
               2, 17, 23, 26, 40, 9, 26, 26, 1, 17, 26, 27, 3, 0, 0, 0, 2, 1, 40, 9, 42, 7, 41, 11)), ARTL, ARTO[t],
@@ -252,9 +256,16 @@ def oval(x, y, s, c, k=0):
 
 
 def egg(x, y, s, t):
-    # a shaded egg; its pattern shows how rare it is
+    # a shaded egg; its pattern shows how rare it is. Small eggs are smaller, shiny ones shine.
+    q, t = t // 32, t % 32
+    if t == SMALL:
+        s = max(2, s * 2 // 3)
+        y += 2 * s
+        t = 0
     r = DT[t][2]
     shell = ((245, 235, 210), (225, 240, 205), (215, 230, 250), (235, 215, 250), (30, 30, 70), (20, 20, 45))[r]
+    if q:
+        shell = SCH[q][2]
     oval(x, y, s, BLACK, -1)
     oval(x, y, s, dk(shell, 0.7))
     oval(x - s, y - s, s, shell, 2 * s)
@@ -278,7 +289,7 @@ def egg(x, y, s, t):
         rect(x - 5 * s, y - 3 * s, s, s, (210, 150, 255))
         rect(x + 4 * s, y - 6 * s, s, s, (210, 150, 255))
     else:
-        sp = ((190, 150, 100), (90, 170, 80), (60, 120, 230), (150, 80, 220))[r]
+        sp = SCH[q][3] if q else ((190, 150, 100), (90, 170, 80), (60, 120, 230), (150, 80, 220))[r]
         if r >= 2:
             # a zig-zag band
             for i in range(-5, 5, 2):
@@ -337,11 +348,13 @@ def shapes(m, x, y, ch, out):
         out.append((2, (245, 235, 210), 1, (px + 13, py + 11, 3)))
         out.append((3, (200, 160, 90), 0, (px + 1, py + 15, 18, 2)))
     elif ch == "E":
-        r = DT[EGGS.get((m, x, y), 0)][2]
-        sh = (25, 25, 35) if r == 4 else CYAN if r == 5 else (245, 235, 210)
-        sp = MAG if r == 5 else YELLOW if r == 4 else RCOL[r] if r else (200, 170, 120)
+        v = EGGS.get((m, x, y), 0)
+        q, k = v // 32, v % 32
+        r = DT[k % SMALL][2]
+        sh = SCH[q][2] if q else (25, 25, 35) if r == 4 else CYAN if r == 5 else (245, 235, 210)
+        sp = SCH[q][3] if q else MAG if r == 5 else YELLOW if r == 4 else RCOL[r] if r else (200, 170, 120)
         out.append((0, BARK, 0, (px + 3, py + 15, 14, 4)))
-        out.append((1, sh, 1, (px + 10, py + 10, 6)))
+        out.append((1, sh, 1, (px + 10, py + 10, 4 if k == SMALL else 6)))
         out.append((2, sp, 0, (px + 7, py + 8, 3, 3)))
         out.append((2, sp, 0, (px + 11, py + 12, 3, 3)))
     elif ch == "B":
@@ -351,7 +364,38 @@ def shapes(m, x, y, ch, out):
         out.append((2, (255, 60, 60), 0, (px + 11, py + 8, 3, 3)))
 
 
-EGGS = {}  # (land, x, y): dragon kind of the egg lying there
+EGGS = {}  # (land, x, y): the egg lying there (see egg_roll)
+# Shiny colour schemes: (name, main, light, dark). An egg number is kind + 32 * scheme;
+# kind 31 is a small egg, which hatches a baby of a kind you have discovered.
+SCH = (None, ("Silver", (190, 195, 205), (240, 242, 248), (105, 110, 125)),
+       ("Gold", (235, 185, 40), (255, 235, 130), (150, 100, 20)),
+       ("Neon", (40, 255, 140), (240, 255, 60), (255, 40, 220)),
+       ("Purple-blue", (130, 60, 210), (70, 150, 255), (40, 30, 120)))
+SMALL = 31
+
+
+def egg_roll(g, t):
+    # 1 in 20 eggs is small (once you have a dragon kind in your book), 1 in 50 is shiny:
+    # silver 40%, gold 30%, neon 20%, purple-blue 10%
+    if g.book & 0x1FFFFF and random.random() < 0.05:
+        return SMALL
+    if random.random() < 0.02:
+        r = random.random()
+        return t + 32 * (1 if r < 0.4 else 2 if r < 0.7 else 3 if r < 0.9 else 4)
+    return t
+
+
+def kids(g):
+    # how full the pen is, in quarters: a dragon or a big egg takes 4, a baby or a small egg 1
+    return sum(1 if d[9] & 8 else 4 for d in g.pen) + sum(1 if e % 32 == SMALL else 4 for e in g.bag)
+
+
+def grown(g):
+    # the first grown-up dragon (babies can't be partners)
+    for d in g.pen:
+        if not d[9] & 8:
+            return d
+    return None
 
 
 def el(d):
@@ -368,7 +412,7 @@ def hero(g, out):
         r = g.face
         out.append((8, (60, 120, 230), 0, (px + (9 if r else 8), py + 5, 3, 5)))
         out.append((9, (240, 200, 160), 1, (px + (10 if r else 9), py + 3, 2)))
-        drag(px, py + 2, 0.34, d[1], d[6], d[7], d[8], out, 20 if r else 0)
+        drag(px, py + 2, 0.34, d[1], d[6], d[7], d[8], out, 20 if r else 0, d[9] & 7)
         return
     out.append((5, (240, 200, 160), 1, (px + 10, py + 5, 4)))
     out.append((6, BARK, 0, (px + 6, py + 1, 8, 3)))
@@ -602,21 +646,39 @@ def rest(g):
         d[3] = d[4]
 
 
-# ---------- saving: one list called DRG ----------
-# [4, coins, accessories owned, species in the book, steps until the Dread Drake returns, eggs in the bag (up to 5, -1 = none),
-#  then 5 numbers a dragon: name (letters 1-26 in base 27), kind, level, xp,
-#  paint*200+head*20+body]
+# ---------- saving: lists DRG (grown dragons) and DRB (babies) ----------
+# DRG: [4, coins, accessories owned, species in the book, steps until the Dread Drake returns,
+#  eggs in the bag (up to 5, -1 = none), then 5 numbers a dragon: name (letters 1-26 in base 27),
+#  kind, level, xp, shiny*4000+paint*200+head*20+body]
+# DRB: [1, then 2 numbers a baby: name, kind]
+def pack(nm):
+    n = 0
+    for ch in nm.upper():
+        n = n * 27 + ABC.index(ch) + 1
+    return n
+
+
+def unpack(n):
+    nm = ""
+    while n:
+        nm = ABC[n % 27 - 1] + nm
+        n //= 27
+    return nm[0] + nm[1:].lower()
+
+
 def save(g):
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
+    b = [1]
     for d in g.pen:
+        if d[9] & 8:
+            b += [pack(d[0]), d[1]]
+            continue
         p = PAINT.index(d[6]) + 1 if d[6] in PAINT and d[6] != DT[d[1]][3] else 0
-        n = 0
-        for ch in d[0].upper():
-            n = n * 27 + ABC.index(ch) + 1
-        s += [n, d[1], d[2], d[5], p * 200 + d[7] * 20 + d[8]]
+        s += [pack(d[0]), d[1], d[2], d[5], (d[9] & 7) * 4000 + p * 200 + d[7] * 20 + d[8]]
     try:
         from ti_system import store_list
         store_list("DRG", s)
+        store_list("DRB", b)
     except Exception:
         pass
 
@@ -639,21 +701,23 @@ def load(g):
     for i in range(9 + k, len(s) - w + 1, w):
         if v > 3:
             # the name is packed as letters 1-26 in base 27
-            n, nm = s[i], ""
-            while n:
-                nm = ABC[n % 27 - 1] + nm
-                n //= 27
-            nm = nm[0] + nm[1:].lower()
+            nm = unpack(s[i])
             i += 1
             t = s[i]
         else:
             nm, t = NAMES[s[i] // 32], s[i] % 32
         lv = s[i + 1]
         mh = 20 + 6 * min(4, DT[t][2]) + 6 * (lv - 1)
-        p = s[i + 3] // 200
-        g.pen.append([nm, t, lv, mh, mh, s[i + 2], PAINT[p - 1] if p else DT[t][3], s[i + 3] // 20 % 10, s[i + 3] % 20])
-    if g.pen:
-        g.pick = g.pen[0]
+        x = s[i + 3] % 4000
+        p = x // 200
+        g.pen.append([nm, t, lv, mh, mh, s[i + 2], PAINT[p - 1] if p else DT[t][3], x // 20 % 10, x % 20, s[i + 3] // 4000])
+    try:
+        b = [int(v) for v in recall_list("DRB")]
+        for i in range(1, len(b) - 1, 2):
+            g.pen.append([unpack(b[i]), b[i + 1], 1, 10, 10, 0, DT[b[i + 1]][3], 0, 0, 8])
+    except Exception:
+        pass
+    g.pick = grown(g)
     g.warm = 12
 
 
@@ -699,18 +763,33 @@ def board(g):
 # ---------- the nest ----------
 def portrait(d):
     cls(NIGHT)
-    drag(102, 10, 2, d[1], d[6], d[7], d[8])
+    if d[9] & 8:
+        drag(131, 45, 1, d[1], d[6], d[7], d[8], None, 0, d[9] & 7)
+    else:
+        drag(102, 10, 2, d[1], d[6], d[7], d[8], None, 0, d[9] & 7)
 
 
 def pen(g):
+    # 9 dragons a page; babies take a quarter of a space each
+    pg = 0
     while g.pen:
-        opts = [("> " if d is g.pick else "") + d[0] + " L" + str(d[2]) + " " + DT[d[1]][0][:6] for d in g.pen]
-        c = lst("Dragon pen " + str(len(g.pen)) + "/10", opts + ["Back"])
-        if c < 0 or c >= len(g.pen):
+        k = kids(g)
+        top = pg * 9
+        sh = g.pen[top:top + 9]
+        opts = [("> " if d is g.pick else "") + d[0] + (" baby" if d[9] & 8 else " L" + str(d[2])) + " " + DT[d[1]][0][:6] for d in sh]
+        more = len(g.pen) > 9
+        c = lst("Pen " + str(k // 4) + ("", ".25", ".5", ".75")[k % 4] + "/10", opts + (["More..."] if more else []) + ["Back"])
+        if more and c == len(sh):
+            pg = pg + 1 if (pg + 1) * 9 < len(g.pen) else 0
+            continue
+        if c < 0 or c >= len(sh):
             return
-        d = g.pen[c]
-        a = choose(d[0] + " the " + DT[d[1]][0], ["Pick as partner", "See " + d[0], "Let it go free", "Back"])
-        if a == 0:
+        d = sh[c]
+        b = d[9] & 8
+        a = choose(d[0] + " the " + ("baby " if b else "") + DT[d[1]][0], ["Pick as partner", "See " + d[0], "Let it go free", "Back"])
+        if a == 0 and b:
+            message([d[0] + " is too little to", "ride or fight. Babies", "just live in your pen."], "Baby")
+        elif a == 0:
             g.pick = d
             if g.ride is not None:
                 g.ride = d
@@ -718,11 +797,13 @@ def pen(g):
         elif a == 1:
             t = DT[d[1]]
             portrait(d)
-            message([t[0] + " (" + RARE[t[2]] + ")", "Element: " + ENAME[t[1]], "Level " + str(d[2]) + "  HP " + str(d[4])], d[0])
+            q = d[9] & 7
+            message([(SCH[q][0] + " " if q else "") + t[0] + " (" + RARE[t[2]] + ")", "Element: " + ENAME[t[1]],
+                     "A baby" if b else "Level " + str(d[2]) + "  HP " + str(d[4])], d[0])
         elif a == 2 and choose("Free " + d[0] + " forever?", ["No, keep " + d[0], "Yes, let it go"]) == 1:
             g.pen.remove(d)
             if g.pick is d:
-                g.pick = g.pen[0] if g.pen else None
+                g.pick = grown(g)
             if g.ride is d:
                 g.ride = g.pick
             message([d[0] + " flies away. Bye!"], "Free")
@@ -795,6 +876,8 @@ def shop(g):
                     message([GEAR[i][0] + " is in your bag."], "Bought!")
         elif c in (1, 2):
             dress(g, d, 1 if c == 1 else 9)
+        elif c == 3 and d[9] & 7:
+            message(["Shiny dragons keep", "their special colours."], "Paint")
         elif c == 3:
             if g.coins < 20:
                 message(["You need 20 coins."], "Not enough")
@@ -832,9 +915,11 @@ def backpack(g):
     if not g.bag:
         ctext(100, "No eggs. Go and find some!")
     for i in range(len(g.bag)):
-        egg(40 + i * 60, 90, 3, g.bag[i])
-        r = DT[g.bag[i]][2]
-        text(16 + i * 60, 150, "???" if r > 4 else RARE[r][:5], RCOL[r])
+        v = g.bag[i]
+        egg(40 + i * 60, 90, 3, v)
+        r = DT[v % 32 % SMALL][2]
+        text(16 + i * 60, 150, "Small" if v % 32 == SMALL else "Shiny" if v > 31 else "???" if r > 4 else RARE[r][:5],
+             SCH[v // 32][2] if v > 31 else WHITE if v % 32 == SMALL else RCOL[r])
     if g.bag:
         text(6, 186, "The first egg hatches in " + str(g.warm), WHITE)
     n = len([i for i in range(1, 17) if g.own >> i & 1])
@@ -928,12 +1013,17 @@ def typed(kind):
 
 
 def hatch(g):
-    e = g.bag.pop(0)
+    v = g.bag.pop(0)
     g.warm = 12
+    q, e = v // 32, v % 32
+    b = e == SMALL
+    if b:
+        # a baby of a kind you have discovered
+        e = random.choice([i for i in range(21) if g.book >> i & 1] or [0])
     t = DT[e]
     cls(NIGHT)
     ctext(24, "The egg is cracking!", GOLD)
-    egg(160, 110, 5, e)
+    egg(160, 110, 5, v)
     pause(0.6)
     # cracks spread, then a flash, then the dragon
     col(WHITE if t[2] > 3 else (70, 45, 30))
@@ -943,21 +1033,25 @@ def hatch(g):
         fill_poly([a1 - 2, a1 + 2, a2 + 2, a2 - 2], [b1, b1, b2, b2])
         pause(0.25)
     cls((255, 248, 215))
-    drag(73, 30, 3, e, t[3])
+    if b:
+        drag(102, 55, 2, e, t[3])
+    else:
+        drag(73, 30, 3, e, t[3], 0, 0, None, 0, q)
     rect(0, 182, 320, 28, NIGHT)
-    ctext(200, ("" if t[2] > 4 else RARE[t[2]] + " ") + t[0] + " dragon!", RCOL[t[2]])
+    ctext(200, "A baby " + t[0] + "!" if b else (SCH[q][0] + " " if q else "" if t[2] > 4 else RARE[t[2]] + " ") + t[0] + " dragon!",
+          SCH[q][2] if q else RCOL[t[2]])
     pause(1.2)
     names = sample(NAMES, 4)
     i = choose("Name your " + t[0] + ":", names + ["Type a name"])
     nm = names[max(0, i)] if i < 4 else typed(t[0]) or names[0]
     mh = 20 + 6 * min(4, t[2])
-    d = [nm, e, 1, mh, mh, 0, t[3], 0, 0]
+    d = [nm, e, 1, mh, mh, 0, t[3], 0, 0, q + 8 * b]
     g.pen.append(d)
     msg = [nm + " joins your pen!"]
     if not g.book >> e & 1:
         g.book |= 1 << e
         msg.append("New page in your book!")
-    if g.pick is None:
+    if g.pick is None and not b:
         g.pick = d
         msg += ["Press ENTER to ride.", "Dragons fly over water,", "lava and mountains."]
     draw_map(g)
@@ -1053,7 +1147,7 @@ def evil(g):
 def win(g):
     cls()
     if g.pick:
-        drag(73, 30, 3, g.pick[1], g.pick[6], g.pick[7], g.pick[8])
+        drag(73, 30, 3, g.pick[1], g.pick[6], g.pick[7], g.pick[8], None, 0, g.pick[9] & 7)
     message(["The Shadow Wyrm flies far", "away. Dragons return to", "every land. You did it!"], "THE END")
     rest(g)
     save(g)
@@ -1140,7 +1234,7 @@ def play():
                 return
             draw_map(g)
             continue
-        if ch == "E" and (len(g.bag) >= 5 or len(g.pen) + len(g.bag) >= 10):
+        if ch == "E" and (len(g.bag) >= 5 or kids(g) + (1 if EGGS.get((g.m, nx, ny), 0) % 32 == SMALL else 4) > 40):
             draw_map(g)
             message(["Your backpack is full."] if len(g.bag) >= 5 else ["No room in your pen.", "Let a dragon go first."], "Egg")
             draw_map(g, True)
@@ -1155,7 +1249,8 @@ def play():
                 g.warm = 12
             g.bag.append(e)
             hud(g)
-            message(["You found an egg with", RARE[DT[e][2]] + " spots! It's in", "your backpack."], "An egg!")
+            message(["You found a small egg!", "It's in your backpack."] if e % 32 == SMALL else
+                    ["You found a" + (" shiny" if e > 31 else "n") + " egg with", RARE[DT[e % 32][2]] + " spots! It's in", "your backpack."], "An egg!")
             draw_map(g, True)
             continue
         if ch == "Q":
@@ -1189,7 +1284,7 @@ def play():
         if g.spawn <= 0:
             g.spawn = random.randint(100, 200)
             if g.m < 3 and not any(q[0] == g.m for q in EGGS):
-                put_egg(g, egg_type(g.m), False)
+                put_egg(g, egg_roll(g, egg_type(g.m)), False)
         hud(g)
         steps += 1
         # the evil dragon only hunts tamers who own an Epic (or rarer) dragon

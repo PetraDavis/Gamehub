@@ -14,8 +14,15 @@ def G_oval(x,y,s,c,k=0):
  circ(x,y-2*s,6*s-k,c)
  circ(x,y-5*s,4*s-k,c)
 def G_egg(x,y,s,t):
+ q,t=(t//32,t%32)
+ if t==G_SMALL:
+  s=max(2,s*2//3)
+  y+=2*s
+  t=0
  r=G_DT[t][2]
  shell=((245,235,210),(225,240,205),(215,230,250),(235,215,250),(30,30,70),(20,20,45))[r]
+ if q:
+  shell=G_SCH[q][2]
  G_oval(x,y,s,BLACK,-1)
  G_oval(x,y,s,dk(shell,0.7))
  G_oval(x-s,y-s,s,shell,2*s)
@@ -37,7 +44,7 @@ def G_egg(x,y,s,t):
   rect(x-5*s,y-3*s,s,s,(210,150,255))
   rect(x+4*s,y-6*s,s,s,(210,150,255))
  else:
-  sp=((190,150,100),(90,170,80),(60,120,230),(150,80,220))[r]
+  sp=G_SCH[q][3]if q else((190,150,100),(90,170,80),(60,120,230),(150,80,220))[r]
   if r>=2:
    for i in range(-5,5,2):
     rect(x+i*s,y+(i%4==1)*s,2*s,2*s,sp)
@@ -50,9 +57,10 @@ def G_backpack(g):
  if not g.bag:
   ctext(100,'No eggs. Go and find some!')
  for i in range(len(g.bag)):
-  G_egg(40+i*60,90,3,g.bag[i])
-  r=G_DT[g.bag[i]][2]
-  text(16+i*60,150,'???'if r>4 else G_RARE[r][:5],G_RCOL[r])
+  v=g.bag[i]
+  G_egg(40+i*60,90,3,v)
+  r=G_DT[v%32%G_SMALL][2]
+  text(16+i*60,150,'Small'if v%32==G_SMALL else 'Shiny'if v>31 else '???'if r>4 else G_RARE[r][:5],G_SCH[v//32][2]if v>31 else WHITE if v%32==G_SMALL else G_RCOL[r])
  if g.bag:
   text(6,186,'The first egg hatches in '+str(g.warm),WHITE)
  n=len([i for i in range(1,17)if g.own>>i&1])
@@ -132,12 +140,16 @@ def G_typed(kind):
    G_frame(G_kbox(old),BLACK)
    G_frame(G_kbox(sel),GOLD)
 def G_hatch(g):
- e=g.bag.pop(0)
+ v=g.bag.pop(0)
  g.warm=12
+ q,e=(v//32,v%32)
+ b=e==G_SMALL
+ if b:
+  e=random.choice([i for i in range(21)if g.book>>i&1]or[0])
  t=G_DT[e]
  cls(G_NIGHT)
  ctext(24,'The egg is cracking!',GOLD)
- G_egg(160,110,5,e)
+ G_egg(160,110,5,v)
  pause(0.6)
  col(WHITE if t[2]>3 else(70,45,30))
  C=(160,74,152,88,152,88,162,100,162,100,154,114,170,86,176,100,176,100,168,112)
@@ -146,21 +158,24 @@ def G_hatch(g):
   fill_poly([a1-2,a1+2,a2+2,a2-2],[b1,b1,b2,b2])
   pause(0.25)
  cls((255,248,215))
- G_drag(73,30,3,e,t[3])
+ if b:
+  G_drag(102,55,2,e,t[3])
+ else:
+  G_drag(73,30,3,e,t[3],0,0,None,0,q)
  rect(0,182,320,28,G_NIGHT)
- ctext(200,(''if t[2]>4 else G_RARE[t[2]]+' ')+t[0]+' dragon!',G_RCOL[t[2]])
+ ctext(200,'A baby '+t[0]+'!'if b else(G_SCH[q][0]+' 'if q else ''if t[2]>4 else G_RARE[t[2]]+' ')+t[0]+' dragon!',G_SCH[q][2]if q else G_RCOL[t[2]])
  pause(1.2)
  names=sample(G_NAMES,4)
  i=choose('Name your '+t[0]+':',names+['Type a name'])
  nm=names[max(0,i)]if i<4 else G_typed(t[0])or names[0]
  mh=20+6*min(4,t[2])
- d=[nm,e,1,mh,mh,0,t[3],0,0]
+ d=[nm,e,1,mh,mh,0,t[3],0,0,q+8*b]
  g.pen.append(d)
  msg=[nm+' joins your pen!']
  if not g.book>>e&1:
   g.book|=1<<e
   msg.append('New page in your book!')
- if g.pick is None:
+ if g.pick is None and(not b):
   g.pick=d
   msg+=['Press ENTER to ride.','Dragons fly over water,','lava and mountains.']
  G_draw_map(g)
