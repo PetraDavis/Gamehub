@@ -4,22 +4,24 @@ import random
 
 PH = 36
 TOP = 24
+TABLE = (30, 85, 165)
+BALL = (250, 150, 40)
 
 
 def net():
     for y in range(TOP, 210, 14):
-        rect(159, y, 2, 7, DARK)
+        rect(159, y, 2, 7, WHITE)
 
 
 def scores(a, b):
-    rect(0, 0, 320, TOP - 2, BLACK)
+    rect(0, 0, 320, TOP - 2, TABLE)
     text(110, 18, str(a))
     text(200, 18, str(b), GOLD)
     rect(0, TOP - 2, 320, 2, WHITE)
 
 
 def game():
-    cls()
+    cls(TABLE)
     me = cpu = 0
     py = cy = 100
     scores(me, cpu)
@@ -57,16 +59,16 @@ def game():
                 vx = max(-9, -vx * 1.06)
                 vy += (by - (cy + PH / 2)) / 6
                 bx = 302
-            rect(int(obx) - 3, int(oby) - 3, 7, 7, BLACK)
+            rect(int(obx) - 3, int(oby) - 3, 7, 7, TABLE)
             if opy != py:
-                rect(8, opy, 6, PH, BLACK)
+                rect(8, opy, 6, PH, TABLE)
             if ocy != cy:
-                rect(306, ocy, 6, PH, BLACK)
+                rect(306, ocy, 6, PH, TABLE)
             if 150 < obx < 170:
                 net()
             rect(8, py, 6, PH, WHITE)
             rect(306, cy, 6, PH, GOLD)
-            rect(int(bx) - 3, int(by) - 3, 7, 7, WHITE)
+            rect(int(bx) - 3, int(by) - 3, 7, 7, BALL)
             if bx < 0:
                 cpu += 1
                 serve = 1
@@ -75,7 +77,7 @@ def game():
                 me += 1
                 serve = -1
                 break
-        rect(int(bx) - 3, int(by) - 3, 7, 7, BLACK)
+        rect(int(bx) - 3, int(by) - 3, 7, 7, TABLE)
         scores(me, cpu)
     message(["You " + str(me) + " - " + str(cpu) + " Calculator"], "You win!" if me > cpu else "Calculator wins")
 

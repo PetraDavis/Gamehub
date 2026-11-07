@@ -4,8 +4,9 @@ import random
 
 GAP = 64
 TW = 26
-SKY = (10, 14, 30)
-TREE = (40, 120, 60)
+SKY = (110, 195, 240)
+TREE = (50, 140, 60)
+INK = (20, 20, 20)
 
 
 def tree(x, gy, c):
@@ -24,23 +25,25 @@ def bird(x, y, c, wing):
     if c == SKY:
         rect(x - 8, max(22, y - 8), 20, 17, SKY)
         return
+    circ(x, y, 8, (170, 120, 20))
     circ(x, y, 7, c)
-    if True:
-        circ(x + 3, y - 2, 2, BLACK)
-        rect(x + 6, y, 5, 3, (240, 140, 40))
-        rect(x - 6, y - 1 + wing, 6, 3, WHITE)
+    rect(x - 7, y - 1 + wing, 6, 3, (255, 245, 190))
+    circ(x + 3, y - 3, 3, WHITE)
+    circ(x + 4, y - 3, 1, BLACK)
+    rect(x + 7, y - 1, 5, 3, (245, 140, 30))
 
 
 def game():
     cls(SKY)
-    rect(0, 196, 320, 14, (90, 60, 30))
-    rect(0, 0, 320, 22, BLACK)
+    rect(0, 196, 320, 5, (70, 170, 80))
+    rect(0, 201, 320, 9, (120, 80, 40))
+    rect(0, 20, 320, 2, INK)
     trees = [[330, random.randint(40, 120)], [330 + 170, random.randint(40, 120)]]
     y = 100.0
     v = 0.0
     score = 0
     passed = [False, False]
-    text(6, 17, "Score 0")
+    text(6, 17, "Score 0", INK)
     held = False
     wing = 0
     while True:
@@ -68,8 +71,8 @@ def game():
             if not passed[i] and t[0] + TW < 52:
                 passed[i] = True
                 score += 1
-                rect(0, 0, 320, 22, BLACK)
-                text(6, 17, "Score " + str(score))
+                rect(0, 0, 320, 20, SKY)
+                text(6, 17, "Score " + str(score), INK)
         wing = max(0, wing - 1)
         bird(60, int(y), YELLOW, wing)
         hit = y > 189 or y < 28

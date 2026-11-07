@@ -6,6 +6,8 @@ import random
 S = 20
 X0 = 20
 Y0 = 15
+INK = (20, 20, 20)
+PEN = (40, 90, 200)
 
 
 def make(holes):
@@ -49,17 +51,17 @@ def clash(b, i):
 def cell(b, fixed, i, cur):
     x = X0 + (i % 9) * S
     y = Y0 + (i // 9) * S
-    bg = (70, 55, 10) if i == cur else BLACK
+    bg = (250, 225, 140) if i == cur else WHITE
     rect(x + 1, y + 1, S - 2, S - 2, bg)
     v = b[i]
     if v:
-        c = WHITE if fixed[i] else (RED if clash(b, i) else GOLD)
+        c = INK if fixed[i] else (RED if clash(b, i) else PEN)
         text(x + 5, y + 17, str(v), c)
 
 
 def grid():
     for i in range(10):
-        c = WHITE if i % 3 == 0 else DARK
+        c = INK if i % 3 == 0 else (150, 150, 150)
         t = 2 if i % 3 == 0 else 1
         if t == 2:
             rect(X0 + i * S - 1, Y0 - 1, 2, S * 9 + 2, c)
@@ -73,9 +75,9 @@ def grid():
 def game(holes):
     b = make(holes)
     fixed = [v != 0 for v in b]
-    cls()
+    cls(WHITE)
     grid()
-    text(214, 30, "SUDOKU", GOLD)
+    text(214, 30, "SUDOKU", INK)
     text(214, 70, "0-9 type", GREY)
     text(214, 90, "ENTER +1", GREY)
     text(214, 110, "DEL erase", GREY)

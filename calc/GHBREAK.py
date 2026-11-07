@@ -7,22 +7,24 @@ COLS = 10
 BW = 30
 BH = 10
 BY = 34
-RC = ((220, 60, 60), (235, 140, 50), (230, 210, 60), (70, 190, 90), (70, 130, 230))
+RC = ((220, 60, 60), (235, 140, 50), (230, 210, 60), (70, 190, 90), (170, 90, 210))
 PW = 46
+BG = (30, 70, 170)
 
 
 def brick(r, c, on):
-    rect(10 + c * BW + 1, BY + r * BH + 1, BW - 2, BH - 2, RC[r] if on else BLACK)
+    rect(10 + c * BW + 1, BY + r * BH + 1, BW - 2, BH - 2, RC[r] if on else BG)
 
 
 def hud(score, lives):
-    rect(0, 0, 320, 22, BLACK)
+    rect(0, 0, 320, 22, BG)
     text(6, 17, "Score " + str(score))
     text(214, 17, "Balls " + str(lives), GOLD)
 
 
 def game():
-    cls()
+    cls(BG)
+    rect(0, 22, 320, 2, WHITE)
     b = [[1] * COLS for r in range(ROWS)]
     for r in range(ROWS):
         for c in range(COLS):
@@ -72,17 +74,17 @@ def game():
                 hud(score, lives)
                 if left == 0:
                     break
-            rect(int(obx) - 2, int(oby) - 2, 5, 5, BLACK)
+            rect(int(obx) - 2, int(oby) - 2, 5, 5, BG)
             if opx != px:
-                rect(opx, 192, PW, 6, BLACK)
+                rect(opx, 192, PW, 6, BG)
                 rect(px, 192, PW, 6, WHITE)
-            rect(int(bx) - 2, int(by) - 2, 5, 5, GOLD)
+            rect(int(bx) - 2, int(by) - 2, 5, 5, WHITE)
             if by > 210:
                 lives -= 1
                 hud(score, lives)
                 break
-        rect(int(bx) - 2, int(by) - 2, 5, 5, BLACK)
-        rect(0, 192, 320, 6, BLACK)
+        rect(int(bx) - 2, int(by) - 2, 5, 5, BG)
+        rect(0, 192, 320, 6, BG)
     if left == 0:
         message(["Score " + str(score)], "All bricks cleared!")
     else:

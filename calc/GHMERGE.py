@@ -5,7 +5,8 @@ import random
 X0 = 90
 Y0 = 26
 S = 36
-TC = {0: (35, 35, 35), 2: (230, 225, 215), 4: (235, 220, 190), 8: (240, 170, 110), 16: (245, 140, 90),
+BOARD = (187, 173, 160)
+TC = {0: (205, 193, 180), 2: (230, 225, 215), 4: (235, 220, 190), 8: (240, 170, 110), 16: (245, 140, 90),
       32: (245, 110, 85), 64: (245, 80, 50), 128: (235, 205, 110), 256: (235, 200, 90),
       512: (235, 195, 70), 1024: (235, 190, 50), 2048: (235, 185, 30)}
 
@@ -61,10 +62,10 @@ def draw(b, score):
             s = str(v)
             if len(s) > 3:
                 s = s[:2] + "k" if v >= 10000 else s
-            tc = BLACK if v < 8 else WHITE
+            tc = (60, 55, 50) if v < 8 else WHITE
             text(x + S // 2 - len(s) * 5, y + 25, s, tc)
-    rect(0, 180, 320, 30, BLACK)
-    ctext(200, "Score " + str(score))
+    rect(0, 180, 320, 30, WHITE)
+    ctext(200, "Score " + str(score), (60, 55, 50))
 
 
 def game():
@@ -72,8 +73,8 @@ def game():
     add(b)
     add(b)
     score = 0
-    cls()
-    rbox(X0 - 4, Y0 - 4, S * 4 + 8, S * 4 + 8, 8, WHITE)
+    cls(WHITE)
+    rrect(X0 - 4, Y0 - 4, S * 4 + 8, S * 4 + 8, 8, BOARD)
     draw(b, score)
     won = False
     while True:
@@ -92,8 +93,8 @@ def game():
             if 2048 in b and not won:
                 won = True
                 message(["You made 2048!", "Keep going?"], "Amazing!")
-                cls()
-                rbox(X0 - 4, Y0 - 4, S * 4 + 8, S * 4 + 8, 8, WHITE)
+                cls(WHITE)
+                rrect(X0 - 4, Y0 - 4, S * 4 + 8, S * 4 + 8, 8, BOARD)
                 draw(b, score)
         stuck = True
         for dd in range(4):

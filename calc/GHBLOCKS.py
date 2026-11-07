@@ -6,6 +6,8 @@ import random
 CW = 10
 CH = 20
 C = 9
+OUT = (50, 20, 70)
+WELL = (35, 30, 90)
 X0 = 115
 Y0 = 22
 SHAPES = (
@@ -58,10 +60,13 @@ def sq(x, y, c):
         return
     px = X0 + x * C
     py = Y0 + y * C
-    if c == BLACK:
-        rect(px, py, C, C, BLACK)
+    if c == WELL:
+        rect(px, py, C, C, WELL)
     else:
         rect(px, py, C - 1, C - 1, c)
+        col((min(255, c[0] + 70), min(255, c[1] + 70), min(255, c[2] + 70)))
+        draw_line(px, py, px + C - 2, py)
+        draw_line(px, py, px, py + C - 2)
 
 
 def draw_piece(p, c=None):
@@ -73,28 +78,28 @@ def board(b):
     for y in range(CH):
         for x in range(CW):
             v = b[y][x]
-            sq(x, y, COLS[v - 1] if v else BLACK)
+            sq(x, y, COLS[v - 1] if v else WELL)
 
 
 def side(score, lines, nxt):
-    rect(230, 30, 90, 150, BLACK)
-    text(232, 44, "NEXT", GREY)
+    rect(230, 30, 90, 150, OUT)
+    text(232, 44, "NEXT", (175, 160, 210))
     for x, y in get((nxt, 0, 0, 0)):
         rect(240 + x * 9, 56 + y * 9, 8, 8, COLS[nxt])
-    text(232, 110, "SCORE", GREY)
+    text(232, 110, "SCORE", (175, 160, 210))
     text(232, 128, str(score))
-    text(232, 156, "LINES", GREY)
+    text(232, 156, "LINES", (175, 160, 210))
     text(232, 174, str(lines))
 
 
 def game():
     b = [[0] * CW for i in range(CH)]
-    cls()
-    rbox(X0 - 4, Y0 - 4, CW * C + 8, CH * C + 8, 4, WHITE)
+    cls(OUT)
+    rbox(X0 - 4, Y0 - 4, CW * C + 8, CH * C + 8, 4, WHITE, 2, WELL)
     text(6, 44, "STACK", GOLD)
     text(6, 62, "DROP", GOLD)
-    text(6, 160, "2nd:", GREY)
-    text(6, 178, "drop", GREY)
+    text(6, 160, "2nd:", (175, 160, 210))
+    text(6, 178, "drop", (175, 160, 210))
     score = 0
     lines = 0
     nxt = random.randint(0, 6)
@@ -142,14 +147,14 @@ def game():
         t += 1
         fall = t >= speed
         if q != p and ok(b, q):
-            draw_piece(p, BLACK)
+            draw_piece(p, WELL)
             p = q
             draw_piece(p)
         if fall:
             t = 0
             q = [p[0], p[1], p[2], p[3] + 1]
             if ok(b, q):
-                draw_piece(p, BLACK)
+                draw_piece(p, WELL)
                 p = q
                 draw_piece(p)
             else:
