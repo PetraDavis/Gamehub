@@ -180,9 +180,10 @@ def beats(a, b):
 
 
 def egg_type(m):
-    # most eggs are common; the further you travel the luckier you get
-    r = random.randint(0, 99) + m * 6
-    rar = 4 if r >= 99 else 3 if r >= 92 else 2 if r >= 78 else 1 if r >= 52 else 0
+    # most eggs are common; rare ones are very rare. Further lands are a bit luckier.
+    # Land 1: legendary 0.4%, epic 2.6%, rare 8%, uncommon 22%, common 67%
+    r = random.randint(0, 999)
+    rar = 4 if r < 4 + 2 * m else 3 if r < 30 + 10 * m else 2 if r < 110 + 25 * m else 1 if r < 330 + 40 * m else 0
     return random.choice([i for i in range(20) if DT[i][2] == rar])
 
 
@@ -320,20 +321,29 @@ def hero(g, out):
     py = 20 + g.y * T
     d = g.ride
     if d is not None:
-        c = d[6]
-        out.append((5, lt(c, 0.45), 2, ([px, px + 9, px + 4], [py + 2, py + 11, py + 14])))
-        out.append((6, c, 0, (px + 2, py + 11, 13, 7)))
-        out.append((6, c, 0, (px + 13, py + 6, 7, 7)))
-        out.append((6, c, 0, (px, py + 15, 3, 3)))
-        out.append((6, c, 0, (px + 4, py + 18, 3, 2)))
-        out.append((6, c, 0, (px + 11, py + 18, 3, 2)))
-        out.append((7, YELLOW if d[1] == 19 else BLACK, 0, (px + 17, py + 8, 2, 2)))
+        # a small copy of the dragon's big picture: its colour, wing, horns and eyes
+        c, t = d[6], d[1]
+        P = PAL + [lt(c, 0.45), dk(c, 0.6), c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
+        dc = dk(c, 0.6)
+        out.append((5, dc, 2, ([px, px + 5, px + 5], [py + 17, py + 13, py + 16])))
+        out.append((5, P[ARTW[2 * t]], 2, ([px, px + 5, px + 12], [py, py + 12, py + 11])))
+        out.append((5, P[ARTW[2 * t + 1]], 2, ([px, px + 7, px + 9], [py, py + 11, py + 11])))
+        out.append((6, c, 0, (px + 4, py + 11, 11, 6)))
+        out.append((6, c, 0, (px + 13, py + 6, 6, 6)))
+        out.append((6, c, 0, (px + 18, py + 8, 2, 3)))
+        out.append((7, lt(c, 0.45), 0, (px + 6, py + 15, 8, 2)))
+        out.append((7, dc, 0, (px + 5, py + 17, 3, 3)))
+        out.append((7, dc, 0, (px + 11, py + 17, 3, 3)))
+        out.append((7, dc, 2, ([px + 13, px + 15, px + 13], [py + 6, py + 6, py + 2])))
+        out.append((7, YELLOW if t == 19 else P[22] if t == 20 else BLACK, 0, (px + 16, py + 7, 2, 2)))
+        if t == 19:
+            out.append((8, YELLOW, 0, (px + 3, py + 5, 2, 2)))
         if d[8]:
-            out.append((7, GEARC[d[8]], 0, (px + 5, py + 11, 6, 3)))
+            out.append((8, GEARC[d[8]], 0, (px + 6, py + 11, 5, 3)))
         if d[7]:
             out.append((8, GEARC[d[7]], 0, (px + 14, py + 3, 5, 3)))
-        out.append((8, (240, 200, 160), 1, (px + 8, py + 5, 3)))
-        out.append((8, (60, 120, 230), 0, (px + 6, py + 8, 5, 4)))
+        out.append((8, (240, 200, 160), 1, (px + 10, py + 5, 2)))
+        out.append((8, (60, 120, 230), 0, (px + 8, py + 7, 4, 4)))
         return
     out.append((5, (240, 200, 160), 1, (px + 10, py + 5, 4)))
     out.append((6, BARK, 0, (px + 6, py + 1, 8, 3)))
@@ -1041,7 +1051,7 @@ def play():
     g.book = 0
     g.quest = None
     g.seen = 0
-    g.spawn = 30
+    g.spawn = 100
     g.dread = 0
     load(g)
     steps = 0
@@ -1128,8 +1138,8 @@ def play():
                 continue
         g.spawn -= 1
         if g.spawn <= 0:
-            g.spawn = random.randint(25, 40)
-            if sum(1 for q in EGGS if q[0] == g.m) < 2:
+            g.spawn = random.randint(100, 200)
+            if not any(q[0] == g.m for q in EGGS):
                 put_egg(g, egg_type(g.m), False)
         hud(g)
         steps += 1
