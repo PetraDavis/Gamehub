@@ -166,6 +166,7 @@ def G_play():
  g.quest=None
  g.seen=0
  g.spawn=30
+ g.dread=0
  G_load(g)
  steps=0
  G_draw_map(g)
@@ -256,7 +257,9 @@ def G_play():
     G_put_egg(g,G_egg_type(g.m),False)
   G_hud(g)
   steps+=1
-  if steps>3 and random.random()<G_EVIL and any((G_DT[d[1]][2]>=2 for d in g.pen)):
+  if g.dread>0:
+   g.dread-=1
+  if(g.dread==1 or(steps>3 and random.random()<G_EVIL))and any((G_DT[d[1]][2]>=2 for d in g.pen)):
    steps=0
    if not G_evil(g):
     return
@@ -266,11 +269,5 @@ def G_play():
    if not G_battle(g,random.choice(G_FOES[g.m])):
     return
    G_draw_map(g)
-def G_battle(*a):
- import GHDRAGOW
- r=GHDRAGOW.G_battle(*a)
- GHDRAGOW=None
- G__drop('GHDRAGOW')
- return r
 def G_back():
  G_play()

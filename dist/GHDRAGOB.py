@@ -1,10 +1,5 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-from GHDRAGOC import _C
-def col(c):
- if c!=_C[0]:
-  _C[0]=c
-  set_color(c[0],c[1],c[2])
 def fr(x,y,w,h):
  fill_rect(x-1,y-1,w+1,h+1)
 def rect(x,y,w,h,c):
@@ -43,6 +38,7 @@ G_GROUND=((50,130,60),(85,65,55),(215,225,240))
 G_TALL=((35,100,45),(120,90,60),(170,190,220))
 G_DT=list(zip(('Pyrrak','Smoldedrake','Aquawyrm','Gillwing','Fernling','Lichenwing','Stonewyrm','Volcanox','Ashveil','Glacius','Tempestra','Thornwyrm','Dawnwing','Pearlhorn','Jadewyrm','Petalwyrm','Blazequill','Abyssar','Rootwyrm','Lumora','Quantum'),b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03',b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05',G_cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
+G_GEARC=[None]+G_cl(b'\xfa\x96\xc8(((\x82<\xbe\xe6\xb4(<\xe6\xe6\x00\x00\x00\xfa\x96\xc8\xbe\xc3\xcd\xdc(\x1eZ<\x1e(P\xc8\xbe\xc3\xcd(P\xc8Z\xbeP\xdc(\x1e\xe6\xb4(')
 G_BOSS=('Shadow Wyrm',110,12,0,(90,50,140),3)
 def G_egg_type(m):
  r=random.randint(0,99)+m*6
@@ -156,6 +152,12 @@ def G_hud(g):
    text(x,15,old[i],BLACK)
    text(x,15,t[i],c)
  G_HUD[0]=t
+def G_battle(*a):
+ import GHDRAGOW
+ r=GHDRAGOW.G_battle(*a)
+ GHDRAGOW=None
+ G__drop('GHDRAGOW')
+ return r
 def G_evil(*a):
  import GHDRAGOW
  r=GHDRAGOW.G_evil(*a)
