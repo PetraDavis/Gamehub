@@ -25,4 +25,4 @@ while True:
   st[3]=str(e)[:26]
   st[4]=mod
  m=None
- drop([mod]+[mod[:7]+c for c in "BCDEFHP"])
+ drop([mod]+[mod[:7]+c for c in "BCDEFHPWXY"])

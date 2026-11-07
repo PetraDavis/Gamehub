@@ -363,7 +363,7 @@ while True:
   st[3]=str(e)[:26]
   st[4]=mod
  m=None
- drop([mod]+[mod[:7]+c for c in "BCDEFHP"])
+ drop([mod]+[mod[:7]+c for c in "BCDEFHPWXY"])
 """
 
 
@@ -489,7 +489,7 @@ while True:
  free("game loaded")
  {p}.G_back()
  {p}=None
- drop(["{p}"]+["{g7}"+c for c in "BCDEF"])
+ drop(["{p}"]+["{g7}"+c for c in "BCDEFWXY"])
 RAN=True
 """
 
@@ -538,14 +538,96 @@ def build_staged(g):
     parts.append(back)
     keep = ast.parse('G_back')
     parts.append(keep)
-    shake(parts)
+    swaps = take_swaps(game, mods[g], g7, p)
+    # the swap files use the game's helpers too, so shake with them in view
+    held = [ast.Module(body=nodes, type_ignores=[]) for nodes in swaps.values()]
+    shake(parts + held)
+    pull_helpers(parts, swaps)
     parts.pop()
     global LIMIT
     keep_limit, LIMIT = LIMIT, STAGE_LIMIT
     out.update(split(parts, p, '# %s: the game part of %s. Run %s, not this.' % (p, g, g), []))
     LIMIT = keep_limit
+    for name, nodes in swaps.items():
+        have = set()
+        for n in nodes:
+            have |= defines(n)
+        under = sorted(u for u in loads(nodes) if u.startswith('_') and u not in have)
+        pre = ['from %s import *' % p] + (['from %s import %s' % (p, ','.join(under))] if under else [])
+        out[name] = emit([ast.Module(body=nodes, type_ignores=[])],
+                         '# %s: part of %s, loaded only while it is needed.' % (name, g), pre)
     out[g] = STAGED.format(g=g, h=h, p=p, g7=g7)
     return out
+
+
+SWAP_STUB = """
+def {f}(*a):
+    import {m}
+    r = {m}.{f}(*a)
+    {m} = None
+    G__drop("{m}")
+    return r
+"""
+SWAP_DROP = """
+def G__drop(m):
+    import sys, gc
+    try:
+        del sys.modules[m]
+    except Exception:
+        pass
+    gc.collect()
+"""
+
+
+def take_swaps(game, pre, g7, p):
+    # SWAP = {"W": (names...)} in a game: move those functions into <g7>W
+    # etc. (pull_helpers then moves what only they use), and leave small
+    # stubs that load the file, call it and drop it again
+    node = [n for n in game.body if isinstance(n, ast.Assign) and getattr(n.targets[0], 'id', '') == pre + 'SWAP']
+    if not node:
+        return {}
+    game.body.remove(node[0])
+    spec = ast.literal_eval(node[0].value)
+    out = {}
+    for letter, names in sorted(spec.items()):
+        want = {pre + n for n in names}
+        moved = [n for n in game.body if isinstance(n, ast.FunctionDef) and n.name in want]
+        rest = [n for n in game.body if n not in moved]
+        m = g7 + letter
+        stubs = [ast.parse(SWAP_STUB.format(f=n.name, m=m)).body[0] for n in moved if isinstance(n, ast.FunctionDef)]
+        game.body = rest + stubs
+        out[m] = moved
+    game.body += ast.parse(SWAP_DROP).body
+    return out
+
+
+def pull_helpers(parts, swaps):
+    # a helper (or constant) only one swap file uses moves into that file;
+    # a stub nothing outside its own swap file calls goes away
+    real = {n.name for nodes in swaps.values() for n in nodes if isinstance(n, ast.FunctionDef)}
+    for t in parts:
+        for n in list(t.body):
+            if isinstance(n, ast.FunctionDef) and n.name in real:
+                own = [k for k, nodes in swaps.items() if any(getattr(m, 'name', '') == n.name for m in nodes)][0]
+                if not any(n.name in loads([m]) for u in parts for m in u.body if m is not n) and \
+                        not any(n.name in loads(nodes) for k, nodes in swaps.items() if k != own):
+                    t.body.remove(n)
+    while True:
+        moved = 0
+        for t in parts:
+            for n in list(t.body):
+                if not isinstance(n, (ast.FunctionDef, ast.Assign)) or getattr(n, 'name', '') in real:
+                    continue
+                d = defines(n)
+                if not d or any(d & loads([m]) for u in parts for m in u.body if m is not n):
+                    continue
+                users = [k for k, nodes in swaps.items() if d & loads(nodes)]
+                if len(users) == 1:
+                    t.body.remove(n)
+                    swaps[users[0]].insert(0, n)
+                    moved += 1
+        if not moved:
+            return
 
 
 def build_single():

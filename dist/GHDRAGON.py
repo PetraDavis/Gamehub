@@ -29,5 +29,5 @@ while True:
  free("game loaded")
  GHDRAGOP.G_back()
  GHDRAGOP=None
- drop(["GHDRAGOP"]+["GHDRAGO"+c for c in "BCDEF"])
+ drop(["GHDRAGOP"]+["GHDRAGO"+c for c in "BCDEFWXY"])
 RAN=True

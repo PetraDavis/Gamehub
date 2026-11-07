@@ -10,6 +10,13 @@ TEST = True       # the evil dragon shows up often, for testing
 EVIL = 0.12 if TEST else 0.004
 
 T = 20
+# The calculator can't hold the whole game at once, so tools/bundle.py puts
+# these functions in their own files. Each file is loaded when one of its
+# functions is called and dropped from memory again when it returns.
+SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil"),
+        "X": ("rest", "load", "new_quest", "board", "portrait", "pen", "lst", "dress", "shop", "nest",
+              "menu", "win"),
+        "Y": ("backpack", "book", "hatch", "oval", "egg")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
      'T.....""".....~~',
@@ -55,38 +62,30 @@ MAG = (230, 60, 220)
 # out fire, plant drinks water, and star beats them all.
 ENAME = ("fire", "water", "plant", "star")
 RARE = ("Common", "Uncommon", "Rare", "Epic", "Legendary", "Quantum")
-RCOL = (WHITE, (120, 220, 120), (90, 160, 255), (200, 110, 240), GOLD, CYAN)
+def cl(b):
+    # colours packed as bytes (r, g, b, r, g, b...): far fewer code words
+    return [tuple(b[i:i + 3]) for i in range(0, len(b), 3)]
+
+
+RCOL = cl(b'\xff\xff\xffx\xdcxZ\xa0\xff\xc8n\xf0\xe6\xb4(<\xe6\xe6')
 # dragon kinds: name, element, rarity, colour. Each rarer level has fewer.
-DT = (("Pyrrak", 0, 0, (220, 70, 40)), ("Smoldedrake", 0, 0, (235, 140, 40)),
-      ("Aquawyrm", 1, 0, (60, 130, 230)), ("Gillwing", 1, 0, (40, 170, 170)),
-      ("Fernling", 2, 0, (70, 170, 70)), ("Lichenwing", 2, 0, (130, 150, 60)),
-      ("Stonewyrm", 2, 0, (150, 140, 120)),
-      ("Volcanox", 0, 1, (170, 40, 30)), ("Ashveil", 0, 1, (75, 75, 85)),
-      ("Glacius", 1, 1, (160, 210, 245)), ("Tempestra", 1, 1, (120, 100, 200)),
-      ("Thornwyrm", 2, 1, (30, 110, 60)),
-      ("Dawnwing", 0, 2, (240, 190, 40)), ("Pearlhorn", 1, 2, (240, 120, 150)),
-      ("Jadewyrm", 2, 2, (60, 200, 150)), ("Petalwyrm", 2, 2, (250, 160, 210)),
-      ("Blazequill", 0, 3, (255, 90, 60)), ("Abyssar", 1, 3, (30, 60, 160)),
-      ("Rootwyrm", 2, 3, (110, 80, 40)),
-      ("Lumora", 3, 4, (25, 25, 35)),
-      ("Quantum", 3, 5, (25, 30, 80)))
+DT = list(zip(('Pyrrak', 'Smoldedrake', 'Aquawyrm', 'Gillwing', 'Fernling', 'Lichenwing', 'Stonewyrm', 'Volcanox', 'Ashveil', 'Glacius', 'Tempestra', 'Thornwyrm', 'Dawnwing', 'Pearlhorn', 'Jadewyrm', 'Petalwyrm', 'Blazequill', 'Abyssar', 'Rootwyrm', 'Lumora', 'Quantum'),
+         b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03', b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05', cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
 NAMES = ("Blaze", "Splash", "Fern", "Spark", "Misty", "Clover", "Ziggy", "Nova",
          "Pebble", "Rocket", "Biscuit", "Luna", "Comet", "Pip", "Maple", "Echo",
          "Sunny", "Bolt", "Willow", "Ash", "Ripple", "Twig", "Ember", "Taro")
-PAINT = ((220, 70, 40), (60, 130, 230), (70, 170, 70), (240, 190, 40), (200, 110, 240), (240, 120, 150), (40, 40, 50), (240, 240, 245))
+PAINT = cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
 PAINTN = ("Red", "Blue", "Green", "Gold", "Purple", "Pink", "Black", "White")
 # accessories 1-8 go on the head, 9-16 on the body: name, price
 GEAR = (("", 0), ("Bow", 15), ("Goggles", 25), ("Wizard hat", 40), ("Crown", 80),
         ("Party hat", 20), ("Top hat", 35), ("Flower", 15), ("Viking helmet", 60),
         ("Scarf", 15), ("Saddle", 25), ("Cape", 40), ("Armor", 60),
         ("Bell collar", 20), ("Backpack", 30), ("Flag", 45), ("Necklace", 50))
-GEARC = (None, (250, 150, 200), (40, 40, 40), (130, 60, 190), GOLD, CYAN, BLACK, (250, 150, 200), (190, 195, 205),
-         (220, 40, 30), BARK, (40, 80, 200), (190, 195, 205), (40, 80, 200), (90, 190, 80), (220, 40, 30), GOLD)
+GEARC = [None] + cl(b'\xfa\x96\xc8(((\x82<\xbe\xe6\xb4(<\xe6\xe6\x00\x00\x00\xfa\x96\xc8\xbe\xc3\xcd\xdc(\x1eZ<\x1e(P\xc8\xbe\xc3\xcd(P\xc8Z\xbeP\xdc(\x1e\xe6\xb4(')
 # picture colours used by the art below; 15-17 are the dragon's own
-PAL = (BLACK, WHITE, (250, 220, 60), (245, 140, 30), (220, 40, 30), (120, 120, 125), (200, 200, 210),
-       (30, 90, 40), (90, 190, 80), (250, 150, 200), (110, 75, 40), CYAN, MAG, GOLD, (170, 210, 250))
-PAL2 = ((130, 60, 190), (190, 195, 205), (40, 80, 200), (30, 30, 70), (200, 130, 255), (170, 20, 30))
-PAL3 = ((70, 45, 20), (180, 130, 20), (100, 105, 120), (200, 80, 150), (20, 140, 160), (20, 40, 120), (160, 110, 60))
+PAL = cl(b'\x00\x00\x00\xff\xff\xff\xfa\xdc<\xf5\x8c\x1e\xdc(\x1exx}\xc8\xc8\xd2\x1eZ(Z\xbeP\xfa\x96\xc8nK(<\xe6\xe6\xe6<\xdc\xe6\xb4(\xaa\xd2\xfa')
+PAL2 = cl(b'\x82<\xbe\xbe\xc3\xcd(P\xc8\x1e\x1eF\xc8\x82\xff\xaa\x14\x1e')
+PAL3 = cl(b'F-\x14\xb4\x82\x14dix\xc8P\x96\x14\x8c\xa0\x14(x\xa0n<')
 
 # ART: made by tools/dragdata.py (edit the shapes there, then run it)
 ARTB = b'\x02\x10\x1e\x19-\x08/\x19\x00\x19\x1b"\x04\x07\x00\x00\x00\x19\x19(\x05\x02\x00\x00\x00\x19)"\x04\x07\x00\x00\x00\x19\'(\x05\x02\x00\x00\x02\x11)\x1a9\x1f)#\x02\x116\x1b<\x1f6#\x01\x11\x1a\x1e\x05\x00\x00\x00\x01\x11)\x1e\x05\x00\x00\x00\x00\x11\x1a\x19\x0f\n\x00\x00\x02\x11\x12\x15\x1c\x1a\x16 \x00\x11\x11\x14\x07\n\x00\x00\x00\x11\n\x10\x0c\x08\x00\x00\x00\x11\x08\x13\x04\x05\x00\x00\x02\x10) 9\x1f)#\x00\x10\x08\x17\x0b\x02\x00\x00\x00\x18\x1a\x19\x0e\x02\x00\x00\x00\x18\x0b\x10\t\x01\x00\x00\x00\x0f\x18 \x13\x03\x00\x00\x00\x0f\x11\x18\x02\x06\x00\x00\x02\x0f\x12\x10\x19\n\x15\x12\x00\x10\x1d \x01\x03\x00\x00\x00\x10! \x01\x03\x00\x00\x00\x10% \x01\x03\x00\x00\x02\x10\x0f\x11\x14\n\x12\x11'
@@ -153,6 +152,18 @@ ARTG = (b'',
         b"\x00\x1a&\x17\x01\x05\x00\x00\x00\x08'\x13\x07\x07\x00\x00\x00\x07'\x13\x07\x02\x00\x00\x00\x07,\x15\x02\x05\x00\x00\x00\r*\x15\x01\x01\x00\x00\x00\x01(\x16\x01\x02\x00\x00",
         b'\x00\x1a*\x04\x01\x15\x00\x00\x00\x04+\x04\t\x06\x00\x00\x00\x17+\x08\t\x02\x00\x00\x00\x02.\x06\x02\x02\x00\x00\x00\r)\x03\x03\x01\x00\x00',
         b'\x00\r\x11\x19\x07\x01\x00\x00\x00\x1b\x13\x1a\x03\x01\x00\x00\x01\x0b\x14\x1c\x02\x00\x00\x00\x00\x1e\x14\x1d\x02\x01\x00\x00\x00\x01\x13\x1b\x01\x01\x00\x00')
+MONA = (b'\x02\x002:ADAN\x02\x00j:[D[N\x02\x018?AEAK\x02\x01d?[E[K\x00\x00:l\x08\x0e\x00\x00\x00\x00Z\\\x08\x12\x00\x00\x00\x02>X \x1e\x00\x00\x00\x03>X\x0e\x1e\x00\x00\x00\x04>h \x04\x00\x00\x00\x05Lh\x04\x04\x00\x00\x01\x00NJ\x0f\x00\x00\x00\x01\x06LH\r\x00\x00\x00\x01\x07HD\x05\x00\x00\x00\x00\x08BD\t\x02\x00\x00\x00\x08QD\t\x02\x00\x00\x00\tDG\x05\x04\x00\x00\x00\tSG\x05\x04\x00\x00\x00\nFH\x02\x02\x00\x00\x00\nUH\x02\x02\x00\x00\x00\x0bFQ\x10\x04\x00\x00\x00\x0cHQ\x02\x02\x00\x00\x00\x0cRQ\x02\x02\x00\x00\x00\r`P\x05"\x00\x00\x01\rbN\x08\x00\x00\x00\x01\x0e`L\x05\x00\x00\x00\x00\x00Av\t\n\x00\x00\x00\x06Rv\t\n\x00\x00',
+        b'\x01\x00Nd\x1c\x00\x00\x00\x01\x01J`\x19\x00\x00\x00\x01\x02BV\x08\x00\x00\x00\x01\x00>H\n\x00\x00\x00\x01\x00^H\n\x00\x00\x00\x01\x01=G\x08\x00\x00\x00\x01\x01]G\x08\x00\x00\x00\x01\x03>H\x05\x00\x00\x00\x01\x03^H\x05\x00\x00\x00\x00\x04=E\x03\x06\x00\x00\x00\x04]E\x03\x06\x00\x00\x00\x05<E\x01\x01\x00\x00\x00\x05\\E\x01\x01\x00\x00\x00\x068`,\x03\x00\x00\x01\x07Nr\x0e\x00\x00\x00\x00\x07@r\x1c\x0c\x00\x00\x01\x00@V\x03\x00\x00\x00\x00\x02?T\x01\x01\x00\x00\x01\x00ZX\x03\x00\x00\x00\x00\x02YV\x01\x01\x00\x00\x01\x00PR\x03\x00\x00\x00\x00\x02OP\x01\x01\x00\x00\x01\x00bf\x03\x00\x00\x00\x00\x02ad\x01\x01\x00\x00\x00\x002x\x0e\x06\x00\x00\x00\x00\\x\x0e\x06\x00\x00',
+        b'\x02\x003HiH\\~\x02\x003H\\~Nl\x02\x003HNl@~\x02\x019JcJXt\x02\x019JXtNf\x02\x019JNfDt\x02\x02BPZPNh\x02\x03`dpRfr\x02\x04?<G$E8\x02\x04]<U$W8\x01\x00ND\x11\x00\x00\x00\x01\x01LB\x0f\x00\x00\x00\x01\x05G<\x05\x00\x00\x00\x00\x04C>\x07\x03\x00\x00\x00\x04R>\x07\x03\x00\x00\x00\x06DA\x05\x05\x00\x00\x00\x06SA\x05\x05\x00\x00\x00\x07FB\x02\x03\x00\x00\x00\x07UB\x02\x03\x00\x00\x00\x08EL\x12\x03\x00\x00\x00\tGL\x02\x02\x00\x00\x00\tSL\x02\x02\x00\x00',
+        b'\x00\x00*T\x0e$\x00\x00\x00\x00dT\x0e$\x00\x00\x01\x001z\x08\x00\x00\x00\x01\x00kz\x08\x00\x00\x00\x00\x008P,,\x00\x00\x00\x018P&(\x00\x00\x00\x02<T\x0c\x14\x00\x00\x00\x03>|\x0c\x08\x00\x00\x00\x03R|\x0c\x08\x00\x00\x01\x00NB\x12\x00\x00\x00\x01\x01L@\x10\x00\x00\x00\x01\x02F:\x06\x00\x00\x00\x00\x03B;\x08\x02\x00\x00\x00\x03R;\x08\x02\x00\x00\x00\x04D>\x05\x04\x00\x00\x00\x04S>\x05\x04\x00\x00\x00\x03EI\x12\x04\x00\x00\x00\x05FI\x03\x02\x00\x00\x00\x05SI\x03\x02\x00\x00\x00\x06B0\x0e\x05\x00\x00\x01\x03@\\\x04\x00\x00\x00\x00\x02>Y\x02\x01\x00\x00\x01\x03Vf\x04\x00\x00\x00\x00\x02Tc\x02\x01\x00\x00\x01\x03Hp\x04\x00\x00\x00\x00\x02Fm\x02\x01\x00\x00\x01\x03ZV\x04\x00\x00\x00\x00\x02XS\x02\x01\x00\x00\x00\x03PX\x01\n\x00\x00\x00\x03Pa\x07\x01\x00\x00',
+        b'\x02\x003HiH\\~\x02\x003H\\~Nl\x02\x003HNl@~\x02\x019HaHVv\x02\x019HVvNh\x02\x019HNhDv\x02\x02>JPJHl\x02\x034r:\x82@r\x02\x03@rF\x82Lr\x02\x03LrR\x82Xr\x02\x03Xr^\x82dr\x01\x00ND\x11\x00\x00\x00\x01\x01LB\x0f\x00\x00\x00\x01\x02G<\x05\x00\x00\x00\x00\x04C>\x08\t\x00\x00\x00\x04Q>\x08\t\x00\x00\x00\x05EA\x04\x04\x00\x00\x00\x05SA\x04\x04\x00\x00\x00\x04HL\x0c\x06\x00\x00\x01\x02p:\x03\x00\x00\x00\x01\x02,X\x02\x00\x00\x00',
+        b'\x00\x00*T\x0e$\x00\x00\x00\x00dT\x0e$\x00\x00\x01\x001z\x08\x00\x00\x00\x01\x00kz\x08\x00\x00\x00\x00\x008P,,\x00\x00\x00\x018P&(\x00\x00\x00\x02<T\x0c\x14\x00\x00\x00\x03>|\x0c\x08\x00\x00\x00\x03R|\x0c\x08\x00\x00\x01\x00NB\x12\x00\x00\x00\x01\x01L@\x10\x00\x00\x00\x01\x02F:\x06\x00\x00\x00\x00\x03B;\x08\x02\x00\x00\x00\x03R;\x08\x02\x00\x00\x02\x04@48"F2\x02\x04\\4d"V2\x02\x05@4<(F2\x02\x05\\4`(V2\x01\x06NF\n\x00\x00\x00\x00\x07D>\x05\x05\x00\x00\x00\x07S>\x05\x05\x00\x00\x00\x08E?\x02\x02\x00\x00\x00\x08T?\x02\x02\x00\x00\x00\tFJ\x10\x04\x00\x00\x00\x08GJ\x02\x03\x00\x00\x00\x08SJ\x02\x03\x00\x00\x00\x06:t\x04\x06\x00\x00\x00\x06<X\x03\x06\x00\x00\x00\x06Bt\x04\x06\x00\x00\x00\x06DX\x03\x06\x00\x00\x00\x06Jt\x04\x06\x00\x00\x00\x06LX\x03\x06\x00\x00\x00\x06Rt\x04\x06\x00\x00\x00\x06TX\x03\x06\x00\x00\x00\x06Zt\x04\x06\x00\x00\x00\x06\\X\x03\x06\x00\x00')
+MONP = (b'B`$\xe6\x8c\x96_<\x1e}U-<(\x14\xe6\xb4(n\xa0<\xa0\xc1\x80(<\x14\xfa\xdc<\x00\x00\x00<\x14\x14\xff\xff\xffP2\x19Z<\x1e',
+        b'$H`<x\xa0\x8a\xae\xc6\xf0\xc8<\x00\x00\x00\xff\xff\xff\x180@\xa7\xc2\xd4',
+        b'\xaa\x1e\x14\xf0n\x1e\xfa\xc8<\xfa\xdc<n\x14\x14\xfa\xb4P\xff\xf0x\x00\x00\x00Z\n\n\xff\xff\xff',
+        b'HB6xnZ\xa7\xa0\x930,$\xfa\xaa(\xff\xff\xffP\x8c<',
+        b'Z\x8c\xc8\x96\xc8\xf0\xe1\xf0\xff\xff\xff\xff\x14\x1eFx\xdc\xff',
+        b'\x8d\x8d\x93\xeb\xeb\xf5\xf2\xf2\xf8^^b\x96\x96\xa5nn}\xbe\xd2\xeb<\x96\xe6\xff\xff\xff<\x1e2')
 # END ART
 
 # monster: name, hp, attack, xp, colour, element
@@ -190,7 +201,7 @@ def art(b, x, y, s, P):
 
 def drag(x, y, s, t, c, head=0, body=0):
     # a dragon facing left, about 58 x 50 times s pixels, top left at x, y
-    P = PAL + (lt(c, 0.45), dk(c, 0.6), c) + PAL2 + (lt(c, 0.2), dk(c, 0.4)) + PAL3
+    P = PAL + [lt(c, 0.45), dk(c, 0.6), c] + PAL2 + [lt(c, 0.2), dk(c, 0.4)] + PAL3
     art(ARTB, x, y, s, P)
     art(ARTF[t], x, y, s, P)
     w, b = ARTW[2 * t], ARTW[2 * t + 1]
@@ -426,157 +437,12 @@ def bar(x, y, w, v, mx, c):
 
 
 def foe_art(f):
-    c = f[4]
     n = f[0]
-    d = dk(c, 0.6)
     if f is BOSS or f is DREAD:
-        drag(162, 42, 2, 21 if f is DREAD else 8, c)
-    elif n == "Goblin":
-        l = lt(c, 0.35)
-        col(d)
-        fill_poly([192, 207, 207], [70, 80, 90])
-        fill_poly([248, 233, 233], [70, 80, 90])
-        col((230, 140, 150))
-        fill_poly([198, 207, 207], [75, 81, 87])
-        fill_poly([242, 233, 233], [75, 81, 87])
-        rect(200, 120, 8, 14, d)
-        rect(232, 104, 8, 18, d)
-        rect(204, 100, 32, 30, (95, 60, 30))
-        rect(204, 100, 14, 30, (125, 85, 45))
-        rect(204, 116, 32, 4, (60, 40, 20))
-        rect(218, 116, 4, 4, GOLD)
-        circ(220, 86, 15, d)
-        circ(218, 84, 13, c)
-        circ(214, 80, 5, l)
-        rect(208, 80, 9, 2, (40, 60, 20))
-        rect(223, 80, 9, 2, (40, 60, 20))
-        rect(210, 83, 5, 4, (250, 220, 60))
-        rect(225, 83, 5, 4, (250, 220, 60))
-        rect(212, 84, 2, 2, BLACK)
-        rect(227, 84, 2, 2, BLACK)
-        rect(212, 93, 16, 4, (60, 20, 20))
-        rect(214, 93, 2, 2, WHITE)
-        rect(224, 93, 2, 2, WHITE)
-        rect(238, 92, 5, 34, (80, 50, 25))
-        circ(240, 90, 8, (80, 50, 25))
-        circ(238, 88, 5, BARK)
-        rect(207, 130, 9, 10, d)
-        rect(224, 130, 9, 10, c)
-    elif n == "Bog Toad":
-        l = lt(c, 0.4)
-        circ(220, 112, 28, d)
-        circ(216, 108, 25, c)
-        circ(208, 98, 8, l)
-        circ(204, 84, 10, d)
-        circ(236, 84, 10, d)
-        circ(203, 83, 8, c)
-        circ(235, 83, 8, c)
-        circ(204, 84, 5, (240, 200, 60))
-        circ(236, 84, 5, (240, 200, 60))
-        rect(203, 81, 3, 6, BLACK)
-        rect(235, 81, 3, 6, BLACK)
-        rect(202, 81, 1, 1, WHITE)
-        rect(234, 81, 1, 1, WHITE)
-        rect(198, 108, 44, 3, dk(c, 0.4))
-        circ(220, 126, 14, lt(c, 0.55))
-        rect(206, 126, 28, 12, lt(c, 0.55))
-        for x, y in ((206, 98), (232, 100), (222, 94), (240, 114)):
-            circ(x, y, 3, d)
-            rect(x - 1, y - 2, 1, 1, l)
-        rect(192, 132, 14, 6, d)
-        rect(234, 132, 14, 6, d)
-    elif n == "Lava Imp":
-        col((170, 30, 20))
-        fill_poly([193, 247, 234, 220, 206], [84, 84, 138, 120, 138])
-        col((240, 110, 30))
-        fill_poly([199, 241, 230, 220, 210], [86, 86, 128, 114, 128])
-        col((250, 200, 60))
-        fill_poly([208, 232, 220], [92, 92, 116])
-        col((250, 220, 60))
-        fill_poly([238, 254, 244], [112, 94, 126])
-        col((110, 20, 20))
-        fill_poly([205, 213, 211], [72, 48, 68])
-        fill_poly([235, 227, 229], [72, 48, 68])
-        circ(220, 80, 17, (170, 30, 20))
-        circ(218, 78, 15, (240, 110, 30))
-        circ(213, 72, 5, (250, 180, 80))
-        rect(209, 74, 7, 3, (110, 20, 20))
-        rect(224, 74, 7, 3, (110, 20, 20))
-        rect(210, 77, 5, 5, (255, 240, 120))
-        rect(225, 77, 5, 5, (255, 240, 120))
-        rect(212, 78, 2, 3, BLACK)
-        rect(227, 78, 2, 3, BLACK)
-        rect(211, 88, 18, 3, (90, 10, 10))
-        rect(213, 88, 2, 2, WHITE)
-        rect(225, 88, 2, 2, WHITE)
-    elif n == "Ice Wraith":
-        col((90, 140, 200))
-        fill_poly([193, 247, 234, 220, 206], [84, 84, 138, 120, 138])
-        col(c)
-        fill_poly([199, 239, 228, 220, 210], [84, 84, 130, 116, 130])
-        col((225, 240, 255))
-        fill_poly([204, 222, 214], [86, 86, 120])
-        col(WHITE)
-        for x in (200, 212, 224, 236):
-            fill_poly([x - 6, x, x + 6], [126, 142, 126])
-        circ(220, 80, 17, (90, 140, 200))
-        circ(218, 78, 15, c)
-        circ(213, 72, 5, (225, 240, 255))
-        rect(209, 74, 8, 9, (20, 30, 70))
-        rect(223, 74, 8, 9, (20, 30, 70))
-        rect(211, 77, 4, 4, (120, 220, 255))
-        rect(225, 77, 4, 4, (120, 220, 255))
-        rect(214, 88, 12, 6, (20, 30, 70))
-        circ(254, 70, 3, (225, 240, 255))
-        circ(186, 100, 2, (225, 240, 255))
+        drag(162, 42, 2, 21 if f is DREAD else 8, f[4])
     else:
-        r = (n == "Rock Troll")
-        l = lt(c, 0.35)
-        dd = dk(c, 0.4)
-        rect(184, 96, 14, 36, d)
-        rect(242, 96, 14, 36, d)
-        circ(191, 134, 8, d)
-        circ(249, 134, 8, d)
-        rect(198, 92, 44, 44, d)
-        rect(198, 92, 38, 40, c)
-        rect(202, 96, 12, 20, l)
-        rect(204, 136, 12, 8, dd)
-        rect(224, 136, 12, 8, dd)
-        circ(220, 78, 18, d)
-        circ(218, 76, 16, c)
-        circ(212, 70, 6, l)
-        rect(208, 71, 8, 2, dd)
-        rect(224, 71, 8, 2, dd)
-        if r:
-            rect(210, 74, 5, 4, (250, 170, 40))
-            rect(225, 74, 5, 4, (250, 170, 40))
-            rect(211, 85, 18, 4, dd)
-            rect(212, 85, 3, 2, WHITE)
-            rect(225, 85, 3, 2, WHITE)
-            rect(208, 60, 14, 5, (80, 140, 60))
-            for x, y in ((206, 104), (228, 114), (214, 124), (232, 98)):
-                circ(x, y, 4, dd)
-                rect(x - 2, y - 3, 2, 1, l)
-            rect(222, 100, 1, 10, dd)
-            rect(222, 109, 7, 1, dd)
-        else:
-            col((150, 150, 165))
-            fill_poly([206, 198, 212], [64, 46, 62])
-            fill_poly([234, 242, 228], [64, 46, 62])
-            col((110, 110, 125))
-            fill_poly([206, 202, 212], [64, 52, 62])
-            fill_poly([234, 238, 228], [64, 52, 62])
-            circ(220, 82, 10, (190, 210, 235))
-            rect(210, 74, 5, 5, (60, 150, 230))
-            rect(225, 74, 5, 5, (60, 150, 230))
-            rect(211, 75, 2, 2, WHITE)
-            rect(226, 75, 2, 2, WHITE)
-            rect(212, 86, 16, 4, (60, 30, 50))
-            rect(213, 86, 2, 3, WHITE)
-            rect(225, 86, 2, 3, WHITE)
-            for x in range(200, 240, 8):
-                rect(x, 128, 4, 6, (190, 210, 235))
-                rect(x + 2, 100, 3, 6, (190, 210, 235))
+        k = [m[0] for l in FOES for m in l].index(n)
+        art(MONA[k], 142, 12, 1, cl(MONP[k]))
 
 
 def foe_screen(f, title):
@@ -896,13 +762,13 @@ def nest(g):
             else:
                 shop(g)
         elif c == 3:
-            if choose("Look at your", ["Backpack", "Dragon book"]) == 1:
-                book(g)
-            else:
-                backpack(g)
+            # play() shows these, so the nest's code can leave memory first
+            k = choose("Look at your", ["Backpack", "Dragon book"])
+            if k >= 0:
+                return k + 1
         else:
             save(g)
-            return
+            return 0
 
 
 def backpack(g):
@@ -957,9 +823,17 @@ def hatch(g):
     cls(NIGHT)
     ctext(24, "The egg is cracking!", GOLD)
     egg(160, 110, 5, e)
-    pause(1.0)
-    cls(NIGHT)
+    pause(0.6)
+    # cracks spread, then a flash, then the dragon
+    col(WHITE if t[2] > 3 else (70, 45, 30))
+    C = (160, 74, 152, 88, 152, 88, 162, 100, 162, 100, 154, 114, 170, 86, 176, 100, 176, 100, 168, 112)
+    for i in range(0, 20, 4):
+        a1, b1, a2, b2 = C[i:i + 4]
+        fill_poly([a1 - 2, a1 + 2, a2 + 2, a2 - 2], [b1, b1, b2, b2])
+        pause(0.25)
+    cls((255, 248, 215))
     drag(73, 30, 3, e, t[3])
+    rect(0, 182, 320, 28, NIGHT)
     ctext(200, ("" if t[2] > 4 else RARE[t[2]] + " ") + t[0] + " dragon!", RCOL[t[2]])
     pause(1.2)
     names = sample(NAMES, 4)
@@ -995,20 +869,19 @@ def menu(g):
                 draw_map(g)
                 message(["You can't get off here!"])
                 draw_map(g, True)
-                return
+                return 0
             g.ride = None
         elif d[3] == 0:
             draw_map(g)
             message([d[0] + " is too tired.", "Rest at the nest first."])
             draw_map(g, True)
-            return
+            return 0
         else:
             g.ride = d
-    elif c == 1:
-        backpack(g)
-    elif c == 2:
-        book(g)
+    elif c in (1, 2):
+        return c
     draw_map(g)
+    return 0
 
 
 def put_egg(g, t, near):
@@ -1043,6 +916,15 @@ def evil(g):
     message(["The Dread Drake flies", "away... and leaves a", "strange egg behind!"], "Whoa!")
     draw_map(g, True)
     return True
+
+
+def win(g):
+    cls()
+    if g.pick:
+        drag(73, 30, 3, g.pick[1], g.pick[6], g.pick[7], g.pick[8])
+    message(["The Shadow Wyrm flies far", "away. Dragons return to", "every land. You did it!"], "THE END")
+    rest(g)
+    save(g)
 
 
 def play():
@@ -1085,10 +967,9 @@ def play():
             draw_map(g, True)
             continue
         if k in (OK, SECOND):
-            if g.pick is not None:
-                menu(g)
-            else:
-                backpack(g)
+            c = menu(g) if g.pick is not None else 1
+            if c:
+                (backpack if c == 1 else book)(g)
                 draw_map(g)
             continue
         dx, dy = {LEFT: (-1, 0), RIGHT: (1, 0), UP: (0, -1), DOWN: (0, 1)}.get(k, (0, 0))
@@ -1113,12 +994,7 @@ def play():
             continue
         if ch == "B":
             if battle(g, BOSS):
-                cls()
-                if g.pick:
-                    drag(73, 30, 3, g.pick[1], g.pick[6], g.pick[7], g.pick[8])
-                message(["The Shadow Wyrm flies far", "away. Dragons return to", "every land. You did it!"], "THE END")
-                rest(g)
-                save(g)
+                win(g)
                 return
             if g.hp <= 0:
                 return
@@ -1143,7 +1019,11 @@ def play():
             draw_map(g, True)
             continue
         if ch == "H":
-            nest(g)
+            while True:
+                c = nest(g)
+                if not c:
+                    break
+                (backpack if c == 1 else book)(g)
             draw_map(g)
             continue
         cells(g, [(ox, oy), (nx, ny)], True)
