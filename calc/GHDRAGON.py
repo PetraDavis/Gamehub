@@ -835,7 +835,7 @@ def pen(g):
         k = kids(g)
         top = pg * 9
         sh = g.pen[top:top + 9]
-        opts = [("> " if d is g.pick else "") + d[0] + (" baby" if d[9] & 8 else " L" + str(d[2])) + " " + DT[d[1]][0][:6] for d in sh]
+        opts = [("> " if d is g.pick else "") + d[0] + (" baby" if d[9] & 8 else " L" + str(d[2])) + " " + DT[d[1]][0] for d in sh]
         more = len(g.pen) > 9
         c = lst("Pen " + str(k // 4) + ("", ".25", ".5", ".75")[k % 4] + "/10", opts + (["More..."] if more else []) + ["Back"])
         if more and c == len(sh):
@@ -876,13 +876,13 @@ def lst(title, opts):
     h = 15 if n > 9 else 17
     sel = old = 0
     for i in range(n):
-        text(70, 50 + i * h, opts[i], GOLD if i == 0 else WHITE)
+        text(30, 50 + i * h, opts[i], GOLD if i == 0 else WHITE)
     while True:
         if sel != old:
             for i in (old, sel):
                 rect(0, 50 + i * h - 16, 320, h, BLACK)
-                text(70, 50 + i * h, opts[i], GOLD if i == sel else WHITE)
-        rect(54, 50 + sel * h - 10, 8, 6, GOLD)
+                text(30, 50 + i * h, opts[i], GOLD if i == sel else WHITE)
+        rect(14, 50 + sel * h - 10, 8, 6, GOLD)
         k = wkey()
         old = sel
         if k == UP:
@@ -958,7 +958,7 @@ def who(g, title, babies=True):
     while L:
         sh = L[pg:pg + 9]
         more = len(L) > 9
-        c = zl(title, [d[0] + " " + DT[d[1]][0][:8] for d in sh] + (["More..."] if more else []) + ["Back"])
+        c = zl(title, [d[0] + " " + DT[d[1]][0] for d in sh] + (["More..."] if more else []) + ["Back"])
         if more and c == len(sh):
             pg = pg + 9 if pg + 9 < len(L) else 0
             continue
@@ -1000,13 +1000,13 @@ def zl(title, opts):
     h = 15 if n > 9 else 17
     sel = old = 0
     for i in range(n):
-        text(70, 50 + i * h, opts[i], GOLD if i == 0 else WHITE)
+        text(30, 50 + i * h, opts[i], GOLD if i == 0 else WHITE)
     while True:
         if sel != old:
             for i in (old, sel):
                 rect(0, 50 + i * h - 16, 320, h, BLACK)
-                text(70, 50 + i * h, opts[i], GOLD if i == sel else WHITE)
-        rect(54, 50 + sel * h - 10, 8, 6, GOLD)
+                text(30, 50 + i * h, opts[i], GOLD if i == sel else WHITE)
+        rect(14, 50 + sel * h - 10, 8, 6, GOLD)
         k = wkey()
         old = sel
         if k == UP:

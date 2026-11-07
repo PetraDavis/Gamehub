@@ -87,7 +87,7 @@ def G_pen(g):
   k=G_kids(g)
   top=pg*9
   sh=g.pen[top:top+9]
-  opts=[('> 'if d is g.pick else '')+d[0]+(' baby'if d[9]&8 else ' L'+str(d[2]))+' '+G_DT[d[1]][0][:6]for d in sh]
+  opts=[('> 'if d is g.pick else '')+d[0]+(' baby'if d[9]&8 else ' L'+str(d[2]))+' '+G_DT[d[1]][0]for d in sh]
   more=len(g.pen)>9
   c=G_lst('Pen '+str(k//4)+('','.25','.5','.75')[k%4]+'/10',opts+(['More...']if more else[])+['Back'])
   if more and c==len(sh):
@@ -124,13 +124,13 @@ def G_lst(title,opts):
  h=15 if n>9 else 17
  sel=old=0
  for i in range(n):
-  text(70,50+i*h,opts[i],GOLD if i==0 else WHITE)
+  text(30,50+i*h,opts[i],GOLD if i==0 else WHITE)
  while True:
   if sel!=old:
    for i in(old,sel):
     rect(0,50+i*h-16,320,h,BLACK)
-    text(70,50+i*h,opts[i],GOLD if i==sel else WHITE)
-  rect(54,50+sel*h-10,8,6,GOLD)
+    text(30,50+i*h,opts[i],GOLD if i==sel else WHITE)
+  rect(14,50+sel*h-10,8,6,GOLD)
   k=wkey()
   old=sel
   if k==UP:
