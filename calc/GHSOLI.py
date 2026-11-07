@@ -98,7 +98,7 @@ def draw_col(g, c, cur, depth, held):
     rect(x, TABY, CW + 1, 210 - TABY, FELT)
     pile = g.tab[c]
     if not pile:
-        card(x, TABY, None)
+        card(x, TABY, None, CHT, cur == 7 + c)
     up = gap(pile)
     for i in range(len(pile)):
         cd = pile[i]
@@ -120,7 +120,7 @@ def draw_top(g, cur, held):
     if g.waste:
         card(x, TOPY, g.waste[-1], CHT, cur == 1 or (held and held[0] == 1))
     else:
-        card(x, TOPY, None)
+        card(x, TOPY, None, CHT, cur == 1)
     for f in range(4):
         x = cx(3 + f)
         p = g.found[f]

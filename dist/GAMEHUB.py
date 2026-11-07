@@ -3104,7 +3104,7 @@ def soli_draw_col(g, c, cur, depth, held):
     rect(x, soli_TABY, soli_CW + 1, 210 - soli_TABY, soli_FELT)
     pile = g.tab[c]
     if not pile:
-        soli_card(x, soli_TABY, None)
+        soli_card(x, soli_TABY, None, soli_CHT, cur == 7 + c)
     up = soli_gap(pile)
     for i in range(len(pile)):
         cd = pile[i]
@@ -3124,7 +3124,7 @@ def soli_draw_top(g, cur, held):
     if g.waste:
         soli_card(x, soli_TOPY, g.waste[-1], soli_CHT, cur == 1 or (held and held[0] == 1))
     else:
-        soli_card(x, soli_TOPY, None)
+        soli_card(x, soli_TOPY, None, soli_CHT, cur == 1)
     for f in range(4):
         x = soli_cx(3 + f)
         p = g.found[f]
