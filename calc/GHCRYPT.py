@@ -40,22 +40,28 @@ class St:
     pass
 
 
-# ---------- sprites: kind -> width, list of (u0, u1, v0, v1, color) ----------
-SPR = {
-    "couch": (1.3, ((0, 1, 0, .2, (150, 40, 45)), (.08, .92, .2, .36, (120, 30, 35)),
-                    (0, .12, .2, .28, (150, 40, 45)), (.88, 1, .2, .28, (150, 40, 45)))),
-    "table": (0.9, ((0, .12, 0, .28, (95, 65, 40)), (.88, 1, 0, .28, (95, 65, 40)),
-                    (0, 1, .28, .33, (120, 85, 50)), (.3, .7, .33, .37, (140, 70, 180)))),
-    "phone": (0.6, ((0, .15, 0, .3, (95, 65, 40)), (.85, 1, 0, .3, (95, 65, 40)),
-                    (0, 1, .3, .34, (120, 85, 50)), (.25, .75, .34, .42, (20, 20, 20)))),
-    "lamp": (0.6, ((.45, .55, 0, .55, (180, 150, 70)), (.15, .85, .55, .72, (235, 220, 170)))),
-    "desk": (1.2, ((0, .1, 0, .3, (95, 65, 40)), (.9, 1, 0, .3, (95, 65, 40)),
-                   (0, 1, .3, .35, (120, 85, 50)), (.2, .5, .35, .38, (200, 190, 150)))),
-    "rack": (0.7, ((.46, .54, 0, .8, (80, 55, 35)), (.15, .45, .35, .75, (60, 70, 110)),
-                   (.55, .85, .4, .72, (110, 50, 50)))),
-    "vase": (0.7, ((.1, .9, 0, .25, (95, 65, 40)), (.35, .65, .25, .45, (60, 120, 140)),
-                   (.3, .7, .45, .55, (90, 140, 70)))),
-}
+# ---------- sprites: kind -> half width, list of (u0, u1, v0, v1, color) ----------
+# The furniture and Ysolde are described in tools/ysdata.py, which packs them
+# into the bytes below (values 0-255 stand for 0-1). Run it after a change.
+SPRN = ('couch', 'desk', 'lamp', 'phone', 'rack', 'table', 'vase')
+SPRD = b'\xa6\x04\x00\xff\x003\x96(-\x14\xeb3\\x\x1e#\x00\x1f3G\x96(-\xe0\xff3G\x96(-\x99\x04\x00\x1a\x00L_A(\xe6\xff\x00L_A(\x00\xffLYxU23\x80Ya\xc8\xbe\x96L\x02s\x8c\x00\x8c\xb4\x96F&\xd9\x8c\xb8\xeb\xdc\xaaL\x04\x00&\x00L_A(\xd9\xff\x00L_A(\x00\xffLWxU2@\xbfWk\x14\x14\x14Y\x03u\x8a\x00\xccP7#&sY\xbf<Fn\x8c\xd9f\xb8n22s\x04\x00\x1f\x00G_A(\xe0\xff\x00G_A(\x00\xffGTxU2L\xb2T^\x8cF\xb4Y\x03\x1a\xe6\x00@_A(Y\xa6@s<x\x8cL\xb2s\x8cZ\x8cF'
+SPR = {}
+
+
+def _unpack_spr():
+    i = 0
+    for name in SPRN:
+        w, n = SPRD[i] / 255 * 2, SPRD[i + 1]
+        i += 2
+        parts = []
+        for k in range(n):
+            d = SPRD[i:i + 7]
+            parts.append((d[0] / 255, d[1] / 255, d[2] / 255, d[3] / 255, (d[4], d[5], d[6])))
+            i += 7
+        SPR[name] = (w, parts)
+
+
+_unpack_spr()
 SPRITES = [
     (3.3, 5.5, "couch"), (1.9, 4.6, "table"), (4.4, 6.4, "phone"), (1.0, 6.5, "lamp"),
     (2.6, 1.5, "desk"), (12.4, 4.9, "rack"), (6.5, 1.4, "vase"),
@@ -356,92 +362,13 @@ def bottom(g, prompt):
     text(4, VH + 33, prompt[:31], WHITE)
 
 
-# Ysolde, drawn from the character sheet in the full game (a 256 x 640 picture):
-# very thin and tall, small head tilted hard on a long neck, lank hair, short
-# tattered dress, arms past the knees. Like the game's shader, her body is
-# dark inside with faint blue-grey static, her outline glows with bright static,
-# and two small cold blue eyes shine out of the dark. No face most of the time.
-# Built once into thin slabs (u0, u1, v0, v1, kind); kind 4 is an eye.
-YS = []
-
-
-def _poly_slabs(pts, kind, step, top=True, bottom=True):
-    ys = [p[1] for p in pts]
-    y = min(ys)
-    n = len(pts)
-    first = len(YS)
-    while y < max(ys):
-        yc = y + step / 2
-        xs = []
-        for i in range(n):
-            x1, y1 = pts[i]
-            x2, y2 = pts[(i + 1) % n]
-            if (y1 <= yc < y2) or (y2 <= yc < y1):
-                xs.append(x1 + (yc - y1) * (x2 - x1) / (y2 - y1))
-        if len(xs) >= 2:
-            YS.append((min(xs) / 256, max(xs) / 256, 1 - (y + step) / 640, 1 - y / 640, kind))
-        y += step
-    # the top and bottom slabs are outline too
-    for i, on in ((first, top), (len(YS) - 1, bottom)):
-        if on and i < len(YS):
-            u0, u1, v0, v1, k = YS[i]
-            YS[i] = (u0, u1, v0, v1, 5)
-
-
-def _limb(pts, w, kind=0):
-    for i in range(0, len(pts) - 2, 2):
-        x1, y1, x2, y2 = pts[i], pts[i + 1], pts[i + 2], pts[i + 3]
-        n = max(1, int(abs(y2 - y1) / 8))
-        for k in range(n):
-            t0 = k / n
-            t1 = (k + 1) / n
-            xm = x1 + (x2 - x1) * (t0 + t1) / 2
-            ya = y1 + (y2 - y1) * t0
-            yb = y1 + (y2 - y1) * t1
-            hw = w * .4 + abs(x2 - x1) / n / 3
-            YS.append(((xm - hw) / 256, (xm + hw) / 256, 1 - max(ya, yb) / 640 - .004, 1 - min(ya, yb) / 640 + .004, kind))
-
-
-def _oval(cx, cy, rx, ry, kind, step, a=0.0):
-    ca = math.cos(.55)
-    sa = math.sin(.55)
-    pts = []
-    for i in range(16):
-        t = 2 * math.pi * i / 16
-        lx = cx + rx * math.cos(t) * math.cos(a) - ry * math.sin(t) * math.sin(a)
-        ly = cy + rx * math.cos(t) * math.sin(a) + ry * math.sin(t) * math.cos(a)
-        pts.append((140 + lx * ca - ly * sa, 50 + lx * sa + ly * ca))
-    _poly_slabs(pts, kind, step)
-
-
-def _build_ys():
-    ca = math.cos(.55)
-    sa = math.sin(.55)
-    # body
-    _limb([128, 120, 132, 88, 140, 66], 11)
-    _poly_slabs([(98, 122), (128, 112), (160, 126), (150, 210), (146, 260), (110, 260), (106, 210)], 0, 8, True, False)
-    hem = [(108, 250), (148, 250), (162, 330)]
-    x = 162
-    while x > 94:
-        hem.append((x - 4.5, 330 + (18 if int(x) % 2 else 6)))
-        x -= 9
-    hem.append((94, 330))
-    _poly_slabs(hem, 0, 6, False, True)
-    _limb([118, 320, 112, 460, 120, 470, 108, 612, 98, 628], 9)
-    _limb([140, 320, 146, 462, 136, 474, 150, 610, 162, 630], 9)
-    _limb([100, 128, 84, 250, 92, 262, 76, 420], 7)
-    _limb([158, 128, 176, 248, 166, 262, 184, 410], 7)
-    for x0, y0, sg in ((76, 420, -1), (184, 410, 1)):
-        for f in range(5):
-            _limb([x0, y0, x0 + sg * (f * 4 - 6), y0 + 52 + (f % 2) * 8, x0 + sg * (f * 5 - 4), y0 + 70 + f * 3], 2.6)
-    # lank hair hanging from the tilted head
-    hair = [(-18, -6), (-27, 30), (-24, 96), (-6, 70), (8, 100), (20, 60), (17, -6), (10, -24), (-10, -24)]
-    _poly_slabs([(140 + lx * ca - ly * sa, 50 + lx * sa + ly * ca) for lx, ly in hair], 0, 4)
-    _oval(0, 0, 17, 25, 0, 4)
-    for ex, ey in ((137.2, 41.2), (149.1, 48.55)):
-        YS.append(((ex - 2) / 256, (ex + 2) / 256, 1 - (ey + 2) / 640, 1 - (ey - 2) / 640, 4))
-
-
+# Ysolde, from her character sheet: very thin and tall, small head tilted
+# hard on a long neck, lank hair, short tattered dress, arms past the knees.
+# Dark inside with faint static, an outline of bright static and two small
+# cold blue eyes. tools/ysdata.py builds her as thin slabs and packs each one
+# as 5 bytes: u0, u1, v0, v1 (0-255 for 0-1) and kind (4 is an eye, 5 an
+# outline slab).
+YSD = b"{\x85\xce\xd3\x00|\x86\xd1\xd7\x00}\x87\xd5\xda\x00~\x88\xd8\xdd\x00\x80\x8b\xdb\xe1\x00\x84\x8f\xdf\xe6\x00t\x89\xcf\xd2\x05b\x9b\xcc\xcf\x00c\x9f\xc9\xcc\x00c\x9e\xc6\xc9\x00d\x9d\xc2\xc6\x00e\x9c\xbf\xc2\x00e\x9b\xbc\xbf\x00f\x9a\xb9\xbc\x00g\x99\xb6\xb9\x00h\x98\xb2\xb6\x00h\x97\xaf\xb2\x00i\x96\xac\xaf\x00j\x95\xa9\xac\x00j\x95\xa6\xa9\x00k\x94\xa3\xa6\x00l\x93\x9f\xa3\x00l\x93\x9c\x9f\x00m\x92\x99\x9c\x00k\x94\x99\x9b\x00j\x95\x97\x99\x00i\x96\x94\x97\x00h\x97\x92\x94\x00g\x98\x8f\x92\x00f\x99\x8d\x8f\x00e\x9a\x8b\x8d\x00d\x9b\x88\x8b\x00c\x9c\x86\x88\x00b\x9d\x83\x86\x00a\x9e\x81\x83\x00`\x9f\x7f\x81\x00_\xa0|\x7f\x00^\xa1z|\x00^\x9cxz\x00^\x98ux\x05ry{\x81\x00qyx}\x00qxuz\x00qxqw\x00pxns\x00pwkp\x00pwhm\x00owdj\x00ovaf\x00nv^c\x00nvZ`\x00nuW\\\x00muTY\x00mtQV\x00mtMS\x00ltJO\x00lsGL\x00mzCI\x00s{?E\x00sz<A\x00rz9>\x00qy5;\x00qx27\x00pw/4\x00ow+1\x00nv(-\x00nu%*\x00mu!'\x00lt\x1e#\x00ls\x1b \x00ks\x17\x1d\x00jr\x14\x19\x00jq\x11\x16\x00ip\r\x13\x00hp\n\x10\x00dn\x07\x0c\x00_i\x04\t\x00\x88\x8f{\x81\x00\x88\x90x}\x00\x89\x90tz\x00\x89\x90qw\x00\x89\x91ns\x00\x8a\x91kp\x00\x8a\x91gm\x00\x8a\x92di\x00\x8b\x92af\x00\x8b\x92]c\x00\x8b\x93Z_\x00\x8c\x93W\\\x00\x8c\x94SY\x00\x8c\x94PU\x00\x8d\x94MR\x00\x8d\x95IO\x00\x8e\x95FK\x00\x86\x93AH\x00\x84\x8c>C\x00\x85\x8d;@\x00\x86\x8d8=\x00\x86\x8e4:\x00\x87\x8f16\x00\x88\x90.3\x00\x89\x91+0\x00\x8a\x91(-\x00\x8b\x92$*\x00\x8b\x93!&\x00\x8c\x94\x1e#\x00\x8d\x95\x1b \x00\x8e\x96\x18\x1d\x00\x8f\x96\x14\x1a\x00\x90\x97\x11\x17\x00\x90\x98\x0e\x13\x00\x91\x99\x0b\x10\x00\x93\x9e\x07\r\x00\x99\xa4\x03\t\x00`f\xc8\xcd\x00_e\xc4\xca\x00^d\xc1\xc7\x00]c\xbe\xc3\x00\\b\xbb\xc0\x00[a\xb8\xbd\x00Z`\xb4\xba\x00X_\xb1\xb6\x00W^\xae\xb3\x00V]\xab\xb0\x00U\\\xa7\xad\x00T[\xa4\xa9\x00SY\xa1\xa6\x00RX\x9e\xa3\x00QW\x9a\xa0\x00R]\x96\x9c\x00X^\x92\x98\x00W]\x8f\x94\x00V]\x8c\x91\x00V\\\x88\x8e\x00U[\x85\x8a\x00TZ\x82\x87\x00SY~\x84\x00RX{\x80\x00QXx}\x00QWtz\x00PVqv\x00OUns\x00NTkp\x00MSgm\x00LSdi\x00LRaf\x00KQ]c\x00JPZ_\x00IOW\\\x00\x9b\xa1\xc8\xcd\x00\x9c\xa2\xc5\xca\x00\x9d\xa4\xc1\xc7\x00\x9e\xa5\xbe\xc3\x00\xa0\xa6\xbb\xc0\x00\xa1\xa7\xb8\xbd\x00\xa2\xa8\xb5\xba\x00\xa3\xaa\xb1\xb7\x00\xa4\xab\xae\xb4\x00\xa6\xac\xab\xb0\x00\xa7\xad\xa8\xad\x00\xa8\xae\xa5\xaa\x00\xa9\xb0\xa2\xa7\x00\xaa\xb1\x9e\xa4\x00\xac\xb2\x9b\xa0\x00\xa4\xb0\x96\x9d\x00\xa3\xa9\x92\x98\x00\xa4\xaa\x8f\x94\x00\xa5\xab\x8c\x91\x00\xa6\xac\x88\x8e\x00\xa7\xad\x85\x8b\x00\xa8\xae\x82\x87\x00\xa9\xaf\x7f\x84\x00\xaa\xb0{\x81\x00\xab\xb1x}\x00\xac\xb2uz\x00\xad\xb3rw\x00\xae\xb4nt\x00\xaf\xb5kp\x00\xb0\xb6hm\x00\xb1\xb7dj\x00\xb2\xb8af\x00\xb3\xb9^c\x00\xb4\xba[`\x00KNSY\x00LOPU\x00MPLR\x00NQIN\x00OREK\x00PSBG\x00PS>D\x00OR;@\x00KMSY\x00KMPU\x00KNLR\x00LNIN\x00LNFK\x00LNBH\x00LO?D\x00JN:A\x00JMSY\x00JLPU\x00JLLR\x00ILIN\x00IKEK\x00IKBG\x00HK?D\x00FI<A\x00EH8>\x00JMSY\x00ILPU\x00HKLR\x00GJIN\x00GIFK\x00FHBH\x00EG?D\x00CF;A\x00@D7=\x00ILSY\x00HKPU\x00FILR\x00DGIN\x00CFEK\x00ADBG\x00?B>D\x00=@:@\x00;>6<\x00\xb5\xb8W]\x00\xb4\xb7TY\x00\xb3\xb6PV\x00\xb2\xb5MR\x00\xb1\xb4IO\x00\xb0\xb3FK\x00\xb0\xb3BH\x00\xb1\xb4?D\x00\xb6\xb8W]\x00\xb6\xb8TY\x00\xb5\xb8PV\x00\xb5\xb7MR\x00\xb5\xb7JO\x00\xb5\xb7FL\x00\xb4\xb7CH\x00\xb5\xb9>E\x00\xb6\xb9W]\x00\xb7\xb9TY\x00\xb7\xb9PV\x00\xb7\xbaMR\x00\xb8\xbaIO\x00\xb8\xbaFK\x00\xb8\xbbCH\x00\xba\xbd@E\x00\xbb\xbe<B\x00\xb6\xb9W]\x00\xb7\xbaTY\x00\xb8\xbbPV\x00\xb9\xbcMR\x00\xba\xbcJO\x00\xbb\xbdFL\x00\xbc\xbeCH\x00\xbd\xc0?E\x00\xbf\xc3;A\x00\xb7\xbaW]\x00\xb8\xbbTY\x00\xba\xbdPV\x00\xbc\xbfMR\x00\xbd\xc0IO\x00\xbf\xc2FK\x00\xc1\xc4BH\x00\xc3\xc6>D\x00\xc5\xc8:@\x00\x8d\x93\xf4\xf5\x05\x87\x99\xf2\xf4\x00\x81\xa0\xf1\xf2\x00|\xa0\xef\xf1\x00x\x9f\xed\xef\x00t\x9e\xec\xed\x00p\x9e\xea\xec\x00l\x9d\xe9\xea\x00h\x9b\xe7\xe9\x00d\x98\xe5\xe7\x00b\x96\xe4\xe5\x00`\x94\xe2\xe4\x00^\x92\xe1\xe2\x00\\\x90\xdf\xe1\x00Y\x8d\xdd\xdf\x00W\x8b\xdc\xdd\x00U\x89\xda\xdc\x00S\x87\xd9\xda\x00Q\x85\xd7\xd9\x00N\x82\xd5\xd7\x00L\x80\xd4\xd5\x00J~\xd2\xd4\x00Hz\xd1\xd2\x00Fv\xcf\xd1\x00`q\xcd\xcf\x00`m\xcc\xcd\x00_h\xca\xcc\x00_d\xc9\xca\x00^_\xc7\xc9\x05\x8a\x99\xf3\xf4\x05\x84\x9c\xf1\xf3\x00\x80\x9e\xef\xf1\x00}\x9f\xee\xef\x00{\x9e\xec\xee\x00z\x9e\xeb\xec\x00y\x9d\xe9\xeb\x00x\x9b\xe8\xe9\x00y\x98\xe6\xe8\x00z\x95\xe4\xe6\x00|\x90\xe3\xe4\x00\x84\x86\xe1\xe3\x05\x87\x8b\xee\xef\x04\x93\x97\xeb\xec\x04"
 YG = 4  # Ysolde is drawn on a 4-pixel grid
 RIM = ((215, 215, 225), (170, 175, 190), (250, 250, 255))
 INSIDE = (36, 36, 44)
@@ -480,14 +407,13 @@ def ys_draw(g, ys):
     # her body: slabs merged into rows on a 4-pixel grid, an outline of
     # bright static and a dark inside; rows that match the row above
     # become one taller rectangle
-    if not YS:
-        _build_ys()
     left, wid, top, h, a, b = ys[0]
     lo = a * CWID
     hi = b * CWID
     rows = {}
     eyes = []
-    for u0, u1, v0, v1, kind in YS:
+    for i in range(0, len(YSD), 5):
+        u0, u1, v0, v1, kind = YSD[i] / 255, YSD[i + 1] / 255, YSD[i + 2] / 255, YSD[i + 3] / 255, YSD[i + 4]
         xa = max(lo, int(left + u0 * wid)) // YG
         xb = min(hi, int(left + u1 * wid) + 1 + YG - 1) // YG
         ya = int(top + h * (1 - v1))

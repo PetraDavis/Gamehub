@@ -444,6 +444,20 @@ def build_game(g):
 # <NAME>P (plus its parts) is the game, and <NAME> loads one, drops it,
 # then loads the other.
 STAGE_OVER = 9000
+# the game part loads while nothing else is in memory, but each of its files
+# is turned into code while the earlier ones are already held, so smaller
+# files keep that peak down
+STAGE_LIMIT = 3000
+LITE_BOXES = """
+def _corners(x, y, w, h, r, t):
+    return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))
+
+
+def rbox(x, y, w, h, r, c, t=2, inner=BLACK, fill=True):
+    edge(x, y, w, h, r, c, t)
+    if fill:
+        rect(x + t, y + t, w - 2 * t, h - 2 * t, inner)
+"""
 STAGED = """# {g} from GAMEHUB, on its own. Run it.
 import sys
 import gc
@@ -453,16 +467,26 @@ def drop(names):
    del sys.modules[k]
   except Exception:
    pass
-while True:
+# memory meter: prints how much memory is free at each step, so if this
+# stops with a memory error the last lines say where
+def free(step):
  gc.collect()
+ try:
+  print(step,gc.mem_free())
+ except Exception:
+  print(step)
+while True:
+ free("start")
  import {h}
+ free("home loaded")
  c={h}.G_front()
  {h}=None
  drop(["{h}"])
- gc.collect()
+ free("home dropped")
  if c<0:
   break
  import {p}
+ free("game loaded")
  {p}.G_back()
  {p}=None
  drop(["{p}"]+["{g7}"+c for c in "BCDEF"])
@@ -500,9 +524,13 @@ def build_staged(g):
     shake(parts)
     parts.pop()
     out.update(split(parts, h, '# %s: home screen of %s. Run %s, not this.' % (h, g, g), []))
-    # the game file: no icon and no home screen
+    # the game file: no icon and no home screen, and plain square boxes
+    # instead of the rounded ones, which take a lot of code
     game = convert(g, mods)
-    parts = [convert(LIB, mods)]
+    lib = convert(LIB, mods)
+    lite = {n.name: n for n in ast.parse(LITE_BOXES).body}
+    lib.body = [lite.get(getattr(n, 'name', None), n) for n in lib.body]
+    parts = [lib]
     if 'GHSAVE' in open(os.path.join(CALC, g + '.py')).read():
         parts.append(convert('GHSAVE', mods))
     parts.append(game)
@@ -512,7 +540,10 @@ def build_staged(g):
     parts.append(keep)
     shake(parts)
     parts.pop()
+    global LIMIT
+    keep_limit, LIMIT = LIMIT, STAGE_LIMIT
     out.update(split(parts, p, '# %s: the game part of %s. Run %s, not this.' % (p, g, g), []))
+    LIMIT = keep_limit
     out[g] = STAGED.format(g=g, h=h, p=p, g7=g7)
     return out
 
