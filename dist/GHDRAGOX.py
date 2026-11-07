@@ -43,7 +43,7 @@ def G_load(g):
  try:
   b=[int(v)for v in recall_list('DRB')]
   if b[0]>1:
-   g.glim,g.luck,g.curse,g.buys=(b[1]%100,b[1]//100%2,b[1]//200%2,b[1]//400)
+   g.glim,g.luck,g.curse,g.buys,g.done=(b[1]%100,b[1]//100%2,b[1]//200%2,b[1]//400%11,b[1]//4400)
    b=b[1:]
   for i in range(1,len(b)-1,2):
    t=b[i+1]%32
@@ -53,17 +53,20 @@ def G_load(g):
  g.pick=G_grown(g)
  g.warm=12
 def G_new_quest(g):
+ t=min(10,g.done)
+ m=1+0.3*t
  k=random.randint(0,2)
  if k==0:
-  n=random.randint(2,4)
-  land=random.randint(0,g.seen)
+  n=random.randint(2,4)+t//2
+  land=random.randint(min(g.seen,t//3),g.seen)
   nm=random.choice(G_FOES[land])[0]
-  return[0,nm,n,0,8*n+6*land,'Beat '+str(n)+' '+nm+'s']
+  return[0,nm,n,0,int((8*n+6*land)*m),'Beat '+str(n)+' '+nm+'s']
  if k==1:
-  return[1,None,1,0,20,'Hatch an egg']
- land=random.randint(0,g.seen)
- n=random.randint(3,5)
- return[2,land,n,0,7*n+6*land,str(n)+' wins: '+G_LANDS[land]]
+  n=1+t//3
+  return[1,None,n,0,int(20*n*m),'Hatch '+(str(n)+' eggs'if n>1 else 'an egg')]
+ land=random.randint(min(g.seen,t//3),g.seen)
+ n=random.randint(3,5)+t//2
+ return[2,land,n,0,int((7*n+6*land)*m),str(n)+' wins: '+G_LANDS[land]]
 def G_board(g):
  if g.quest is not None:
   q=g.quest
@@ -72,7 +75,7 @@ def G_board(g):
    g.quest=None
   return
  qs=[G_new_quest(g)for i in range(3)]
- c=choose('Quests: pick one',[q[5][:15]+' '+str(q[4])+'c'for q in qs]+['Not now'])
+ c=choose('Quests (level '+str(min(10,g.done)+1)+')',[q[5][:15]+' '+str(q[4])+'c'for q in qs]+['Not now'])
  if 0<=c<3:
   g.quest=qs[c]
 def G_portrait(d):
@@ -87,7 +90,7 @@ def G_pen(g):
   k=G_kids(g)
   top=pg*9
   sh=g.pen[top:top+9]
-  opts=[('> 'if d is g.pick else '')+d[0]+(' baby'if d[9]&8 else ' L'+str(d[2]))+' '+G_DT[d[1]][0][:6]for d in sh]
+  opts=[('> 'if d is g.pick else '')+d[0]+(' baby'if d[9]&8 else ' L'+str(d[2]))+' '+G_DT[d[1]][0]for d in sh]
   more=len(g.pen)>9
   c=G_lst('Pen '+str(k//4)+('','.25','.5','.75')[k%4]+'/10',opts+(['More...']if more else[])+['Back'])
   if more and c==len(sh):
@@ -124,13 +127,13 @@ def G_lst(title,opts):
  h=15 if n>9 else 17
  sel=old=0
  for i in range(n):
-  text(70,50+i*h,opts[i],GOLD if i==0 else WHITE)
+  text(30,50+i*h,opts[i],GOLD if i==0 else WHITE)
  while True:
   if sel!=old:
    for i in(old,sel):
     rect(0,50+i*h-16,320,h,BLACK)
-    text(70,50+i*h,opts[i],GOLD if i==sel else WHITE)
-  rect(54,50+sel*h-10,8,6,GOLD)
+    text(30,50+i*h,opts[i],GOLD if i==sel else WHITE)
+  rect(14,50+sel*h-10,8,6,GOLD)
   k=wkey()
   old=sel
   if k==UP:
@@ -183,7 +186,7 @@ def G_shop(g):
    if g.coins<20:
     message(['You need 20 coins.'],'Not enough')
     continue
-   p=choose('Pick a colour',list(G_PAINTN))
+   p=G_lst('Pick a colour',list(G_PAINTN))
    if p>=0:
     g.coins-=20
     d[6]=G_PAINT[p]
