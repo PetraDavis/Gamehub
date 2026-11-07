@@ -179,11 +179,12 @@ def column(g, t, u, top, h, k):
         sp = sp[:-1]
     sp = [s for s in sp if s[1] > s[0]]
 
-    def band(v0, v1, c):
+    def band(v0, v1, c, glow=False):
+        # glow: a light of its own, as bright in the dark as in the light
         a = int(top + h * (1 - v1)) & ~1
         b = int(top + h * (1 - v0)) & ~1
         if b - a >= 2:
-            return put(sp, max(0, a), min(VH, b), shade(c, k))
+            return put(sp, max(0, a), min(VH, b), c if glow and not g.blackout else shade(c, k))
         return sp
     if t in "lkjCF":
         if u < .12 or u > .88:
@@ -195,8 +196,15 @@ def column(g, t, u, top, h, k):
             on = t == "C" and g.closet
             sp = band(.5, .6, (40, 40, 40))
             sp = band(.53, .57, (40, 200, 70) if on else (200, 40, 40) if g.power else (30, 30, 30))
-        if t == "F" and g.locked and .15 < u < .25:
-            sp = band(.6, .64, (255, 30, 40))
+        if t == "F":
+            # the front door: moonlight through its window, so it shows in
+            # the dark, and a red lock light once it has locked
+            if .3 < u < .7:
+                sp = band(.6, .74, (70, 85, 120), True)
+                if .48 < u < .52:
+                    sp = band(.6, .74, (30, 30, 40))
+            if g.locked and .15 < u < .25:
+                sp = band(.55, .6, (255, 30, 40), True)
     elif t == "S":
         for n in range(6):
             sp = band(n * .14, n * .14 + .07, (95, 70, 45))
@@ -219,10 +227,15 @@ def column(g, t, u, top, h, k):
                 if not g.note:
                     sp = band(.25, .3, (240, 240, 230))
     elif t == "P":
-        if .3 < u < .6:
-            sp = band(.38, .56, (130, 130, 135))
-            if .4 < u < .5:
-                sp = band(.44 if g.power else .48, .54 if g.power else .58, (40, 40, 40))
+        # the power switch: a big panel with a glowing light, red while the
+        # power is off and green once it is on, easy to spot in the dark
+        if .25 < u < .75:
+            sp = band(.3, .62, (150, 150, 155))
+            if .4 < u < .6:
+                sp = band(.38, .5, (40, 40, 40))
+                sp = band(.44 if g.power else .38, .5 if g.power else .44, (200, 200, 205))
+            if .42 < u < .58:
+                sp = band(.54, .59, (60, 230, 90) if g.power else (255, 50, 40), True)
     return sp
 
 
@@ -572,7 +585,7 @@ def keypad(title, hint, n):
 # ---------- story ----------
 def objective(g):
     if not g.power:
-        t = "It is pitch dark. Find the power switch by the front door."
+        t = "Find the red light by the door."
     elif not g.note:
         t = "The door locked behind you. Look around the foyer."
     elif not g.closet:
