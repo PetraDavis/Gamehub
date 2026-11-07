@@ -115,8 +115,8 @@ def game():
         rect(12 + i * 16, 96, 12, 12, dk(cc, 0.55))
         rect(12 + i * 16, 96, 11, 11, cc)
     rbox(4, 150, 96, 40, 6, (150, 110, 190), 2, PANEL)
-    text(12, 167, "2nd: drop", (200, 185, 230))
-    text(12, 184, "it down", (200, 185, 230))
+    text(12, 167, "2nd key:", (200, 185, 230))
+    text(12, 184, "drop it", (200, 185, 230))
     score = 0
     lines = 0
     nxt = random.randint(0, 6)

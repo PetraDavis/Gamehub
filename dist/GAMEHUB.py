@@ -73,6 +73,20 @@ def ctext(y, s, c=WHITE, cx=160):
 def circ(x, y, r, c):
     col(c)
     fill_circle(x, y, r)
+def lt(c, k=0.35):
+    return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
+def dk(c, k=0.65):
+    return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
+def block(x, y, w, h, c, e=2):
+    rect(x, y, w, h, c)
+    rect(x, y, w, e, lt(c))
+    rect(x, y, e, h, lt(c))
+    rect(x, y + h - e, w, e, dk(c))
+    rect(x + w - e, y + e, e, h - e, dk(c))
+def ball(x, y, r, c):
+    circ(x, y, r, c)
+    s = max(1, r // 3)
+    circ(x - s, y - s, s, lt(c, 0.6))
 def ring(x, y, r, c, t=2, inner=BLACK):
     col(c)
     fill_circle(x, y, r)
@@ -1122,6 +1136,8 @@ blocks_CH = 20
 blocks_C = 9
 blocks_OUT = (50, 20, 70)
 blocks_WELL = (35, 30, 90)
+blocks_DOT = (60, 55, 125)
+blocks_PANEL = (70, 35, 100)
 blocks_X0 = 115
 blocks_Y0 = 22
 blocks_SHAPES = (((0, 1), (1, 1), (2, 1), (3, 1)), ((0, 0), (1, 0), (0, 1), (1, 1)), ((1, 0), (0, 1), (1, 1), (2, 1)), ((0, 0), (0, 1), (1, 1), (2, 1)), ((2, 0), (0, 1), (1, 1), (2, 1)), ((1, 0), (2, 0), (0, 1), (1, 1)), ((0, 0), (1, 0), (1, 1), (2, 1)))
@@ -1157,11 +1173,14 @@ def blocks_sq(x, y, c):
     py = blocks_Y0 + y * blocks_C
     if c == blocks_WELL:
         rect(px, py, blocks_C, blocks_C, blocks_WELL)
+        rect(px + 4, py + 4, 1, 1, blocks_DOT)
     else:
+        rect(px, py, blocks_C, blocks_C, dk(c, 0.55))
         rect(px, py, blocks_C - 1, blocks_C - 1, c)
-        col((min(255, c[0] + 70), min(255, c[1] + 70), min(255, c[2] + 70)))
+        col(lt(c, 0.45))
         draw_line(px, py, px + blocks_C - 2, py)
         draw_line(px, py, px, py + blocks_C - 2)
+        rect(px + 2, py + 2, 2, 2, lt(c, 0.7))
 def blocks_draw_piece(p, c=None):
     for x, y in blocks_get(p):
         blocks_sq(x, y, blocks_COLS[p[0]] if c is None else c)
@@ -1171,22 +1190,34 @@ def blocks_board(b):
             v = b[y][x]
             blocks_sq(x, y, blocks_COLS[v - 1] if v else blocks_WELL)
 def blocks_side(score, lines, nxt):
-    rect(230, 30, 90, 150, blocks_OUT)
-    text(232, 44, 'NEXT', (175, 160, 210))
+    for y, h in ((26, 64), (96, 40), (142, 40)):
+        rbox(226, y, 88, h, 6, (150, 110, 190), 2, blocks_PANEL)
+    text(234, 44, 'NEXT', (200, 185, 230))
     for x, y in blocks_get((nxt, 0, 0, 0)):
-        rect(240 + x * 9, 56 + y * 9, 8, 8, blocks_COLS[nxt])
-    text(232, 110, 'SCORE', (175, 160, 210))
-    text(232, 128, str(score))
-    text(232, 156, 'LINES', (175, 160, 210))
-    text(232, 174, str(lines))
+        c = blocks_COLS[nxt]
+        rect(244 + x * 9, 54 + y * 9, 9, 9, dk(c, 0.55))
+        rect(244 + x * 9, 54 + y * 9, 8, 8, c)
+        rect(245 + x * 9, 55 + y * 9, 2, 2, lt(c, 0.7))
+    text(234, 114, 'SCORE', (200, 185, 230))
+    text(234, 131, str(score))
+    text(234, 160, 'LINES', (200, 185, 230))
+    text(234, 177, str(lines))
 def blocks_game():
     b = [[0] * blocks_CW for i in range(blocks_CH)]
     cls(blocks_OUT)
+    for i in range(0, 210, 30):
+        rect(0, i, 320, 15, (58, 25, 80))
     rbox(blocks_X0 - 4, blocks_Y0 - 4, blocks_CW * blocks_C + 8, blocks_CH * blocks_C + 8, 4, WHITE, 2, blocks_WELL)
-    text(6, 44, 'STACK', GOLD)
-    text(6, 62, 'DROP', GOLD)
-    text(6, 160, '2nd:', (175, 160, 210))
-    text(6, 178, 'drop', (175, 160, 210))
+    blocks_board(b)
+    rbox(4, 26, 96, 56, 6, GOLD, 2, blocks_PANEL)
+    text(14, 48, 'STACK', GOLD)
+    text(14, 68, 'DROP', GOLD)
+    for i, cc in enumerate(blocks_COLS[:5]):
+        rect(12 + i * 16, 96, 12, 12, dk(cc, 0.55))
+        rect(12 + i * 16, 96, 11, 11, cc)
+    rbox(4, 150, 96, 40, 6, (150, 110, 190), 2, blocks_PANEL)
+    text(12, 167, '2nd key:', (200, 185, 230))
+    text(12, 184, 'drop it', (200, 185, 230))
     score = 0
     lines = 0
     nxt = random.randint(0, 6)
@@ -1275,7 +1306,21 @@ break_RC = ((220, 60, 60), (235, 140, 50), (230, 210, 60), (70, 190, 90), (170, 
 break_PW = 46
 break_BG = (30, 70, 170)
 def break_brick(r, c, on):
-    rect(10 + c * break_BW + 1, break_BY + r * break_BH + 1, break_BW - 2, break_BH - 2, break_RC[r] if on else break_BG)
+    if on:
+        block(10 + c * break_BW + 1, break_BY + r * break_BH + 1, break_BW - 2, break_BH - 2, break_RC[r], 2)
+    else:
+        rect(10 + c * break_BW + 1, break_BY + r * break_BH + 1, break_BW - 2, break_BH - 2, break_BG)
+def break_walls():
+    rect(0, 24, 4, 186, (200, 210, 230))
+    rect(316, 24, 4, 186, (200, 210, 230))
+    rect(3, 24, 1, 186, (120, 130, 160))
+    rect(316, 24, 1, 186, (120, 130, 160))
+def break_paddle(x, c=WHITE):
+    if c == break_BG:
+        rect(x, 192, break_PW, 8, break_BG)
+        return
+    rrect(x, 192, break_PW, 8, 3, (230, 120, 60))
+    rect(x + 4, 193, break_PW - 8, 2, (255, 200, 150))
 def break_hud(score, lives):
     rect(0, 0, 320, 22, break_BG)
     text(6, 17, 'Score ' + str(score))
@@ -1283,6 +1328,7 @@ def break_hud(score, lives):
 def break_game():
     cls(break_BG)
     rect(0, 22, 320, 2, WHITE)
+    break_walls()
     b = [[1] * break_COLS for r in range(break_ROWS)]
     for r in range(break_ROWS):
         for c in range(break_COLS):
@@ -1296,7 +1342,7 @@ def break_game():
         bx, by = (px + break_PW / 2, 180.0)
         vx = random.choice((-3.0, 3.0))
         vy = -3.0
-        rect(px, 192, break_PW, 6, WHITE)
+        break_paddle(px)
         pause(0.5)
         st = Steer((LEFT, RIGHT))
         while True:
@@ -1306,19 +1352,19 @@ def break_game():
             opx = px
             d = st.feed(k)
             if d == LEFT:
-                px = max(0, px - 7)
-                if px == 0:
+                px = max(4, px - 7)
+                if px == 4:
                     st.stop()
             elif d == RIGHT:
-                px = min(320 - break_PW, px + 7)
-                if px == 320 - break_PW:
+                px = min(316 - break_PW, px + 7)
+                if px == 316 - break_PW:
                     st.stop()
             obx, oby = (bx, by)
             bx += vx
             by += vy
-            if bx < 3 or bx > 316:
+            if bx < 7 or bx > 312:
                 vx = -vx
-                bx = max(3, min(316, bx))
+                bx = max(7, min(312, bx))
             if by < 26:
                 vy = -vy
                 by = 26
@@ -1338,17 +1384,17 @@ def break_game():
                 break_hud(score, lives)
                 if left == 0:
                     break
-            rect(int(obx) - 2, int(oby) - 2, 5, 5, break_BG)
-            if opx != px:
-                rect(opx, 192, break_PW, 6, break_BG)
-                rect(px, 192, break_PW, 6, WHITE)
-            rect(int(bx) - 2, int(by) - 2, 5, 5, WHITE)
+            rect(int(obx) - 3, int(oby) - 3, 7, 7, break_BG)
+            if opx != px or oby > 186:
+                break_paddle(opx, break_BG)
+                break_paddle(px)
+            ball(int(bx), int(by), 3, WHITE)
             if by > 210:
                 lives -= 1
                 break_hud(score, lives)
                 break
-        rect(int(bx) - 2, int(by) - 2, 5, 5, break_BG)
-        rect(0, 192, 320, 6, break_BG)
+        rect(int(bx) - 3, int(by) - 3, 7, 7, break_BG)
+        rect(4, 192, 312, 8, break_BG)
     if left == 0:
         message(['Score ' + str(score)], 'All bricks cleared!')
     else:
@@ -1520,8 +1566,15 @@ def crypt_render(g):
         x = i * crypt_CWID
         k = crypt_light(g, i, d) * (0.8 if side else 1.0)
         if top > 0:
+            m = top // 2
             rect(x, 0, crypt_CWID, top, crypt_shade(crypt_CEIL, max(k, 0.3)))
+            if m >= 2:
+                rect(x, top - m, crypt_CWID, m, crypt_shade(crypt_CEIL, max(k, 0.3) * 0.8))
             rect(x, top + h, crypt_CWID, crypt_VH - top - h, crypt_shade(crypt_FLOOR, max(k, 0.25)))
+            if m >= 2:
+                rect(x, top + h, crypt_CWID, m, crypt_shade(crypt_FLOOR, max(k, 0.25) * 0.75))
+                if m >= 6:
+                    rect(x, top + h + m + m // 2, crypt_CWID, 1, crypt_shade(crypt_FLOOR, max(k, 0.25) * 0.85))
         rect(x, max(0, top), crypt_CWID, min(crypt_VH, top + h) - max(0, top), crypt_shade(crypt_colour(t), k))
         crypt_wall_detail(g, t, u, top, h, x, k)
     crypt_sprites(g, zb, ca, sa)
@@ -2180,17 +2233,46 @@ flap_GAP = 64
 flap_TW = 26
 flap_SKY = (110, 195, 240)
 flap_TREE = (50, 140, 60)
+flap_LEAF = (40, 115, 50)
 flap_INK = (20, 20, 20)
-def flap_tree(x, gy, c):
-    if x > 319 or x + flap_TW < 0:
-        return
+def flap__bar(x, y, w, h, c):
     x0 = max(0, x)
-    w = min(320, x + flap_TW) - x0
-    if w < 2:
+    w = min(320, x + w) - x0
+    if w >= 2 and h >= 1:
+        rect(x0, y, w, h, c)
+def flap__blob(x, y, r, c):
+    if r <= x <= 319 - r:
+        circ(x, y, r, c)
+def flap_tree(x, gy, c):
+    if x > 322 or x + flap_TW + 3 < 0:
         return
-    if gy > 24:
-        rect(x0, 22, w, gy - 22, c)
-    rect(x0, gy + flap_GAP, w, 196 - gy - flap_GAP, c)
+    hi = lt(c)
+    lo = dk(c, 0.75)
+    cx = x + flap_TW // 2
+    top = gy + flap_GAP
+    y0 = max(22, gy - 27)
+    flap__bar(x - 3, y0, flap_TW + 9, gy + 1 - y0, flap_SKY)
+    flap__bar(x - 3, top - 2, flap_TW + 9, min(26, 198 - top), flap_SKY)
+    flap__bar(cx + 5, top + 18, 5, 196 - top - 18, flap_SKY)
+    if gy - 14 > 22:
+        flap__bar(x, 22, flap_TW, gy - 36, lo)
+        flap__bar(x + 3, 22, flap_TW - 6, gy - 36, c)
+    for bx, by, r in ((x + 5, gy - 18, 8), (x + flap_TW - 5, gy - 16, 8), (cx, gy - 9, 9)):
+        if by - r >= 22:
+            flap__blob(bx, by, r, c)
+        else:
+            flap__bar(bx - r, 22, 2 * r, by + r - 22, c)
+    flap__blob(cx - 3, gy - 12, 3, hi)
+    trunk = (110, 75, 40)
+    flap__bar(cx - 5, top + 18, 10, 196 - top - 18, trunk)
+    flap__bar(cx + 2, top + 18, 3, 196 - top - 18, dk(trunk))
+    for bx, by, r in ((x + 5, top + 14, 8), (x + flap_TW - 5, top + 14, 8), (cx, top + 9, 10)):
+        if by + r <= 196:
+            flap__blob(bx, by, r, c)
+        else:
+            flap__bar(bx - r, by - r, 2 * r, 196 - by + r, c)
+    flap__blob(cx - 3, top + 6, 3, hi)
+    flap__blob(x + 6, top + 13, 2, hi)
 def flap_bird(x, y, c, wing):
     if c == flap_SKY:
         rect(x - 8, max(22, y - 8), 20, 17, flap_SKY)
@@ -2201,12 +2283,19 @@ def flap_bird(x, y, c, wing):
     circ(x + 3, y - 3, 3, WHITE)
     circ(x + 4, y - 3, 1, BLACK)
     rect(x + 7, y - 1, 5, 3, (245, 140, 30))
-def flap_game():
-    cls(flap_SKY)
+def flap_ground():
     rect(0, 196, 320, 5, (70, 170, 80))
     rect(0, 201, 320, 9, (120, 80, 40))
+    for x in range(0, 320, 16):
+        rect(x + 4, 197, 3, 1, (110, 200, 110))
+        rect(x + 10, 198, 2, 2, (40, 120, 50))
+        rect(x + 7, 204, 3, 2, (95, 60, 30))
+        rect(x + 1, 207, 2, 2, (150, 105, 60))
+def flap_game():
+    cls(flap_SKY)
+    flap_ground()
     rect(0, 20, 320, 2, flap_INK)
-    trees = [[330, random.randint(40, 120)], [330 + 170, random.randint(40, 120)]]
+    trees = [[330, random.randint(40, 110)], [330 + 170, random.randint(40, 110)]]
     y = 100.0
     v = 0.0
     score = 0
@@ -2228,11 +2317,11 @@ def flap_game():
         flap_bird(60, int(oy), flap_SKY, 0)
         for i in range(2):
             t = trees[i]
-            rect(max(0, t[0] + flap_TW - 4), 22, 4, 174, flap_SKY)
+            flap__bar(t[0] + flap_TW - 1, 22, 6, 174, flap_SKY)
             t[0] -= 4
-            if t[0] + flap_TW < 0:
+            if t[0] + flap_TW + 3 < 0:
                 t[0] = 330
-                t[1] = random.randint(40, 120)
+                t[1] = random.randint(40, 110)
                 passed[i] = False
             flap_tree(t[0], t[1], flap_TREE)
             if not passed[i] and t[0] + flap_TW < 52:
@@ -2244,7 +2333,7 @@ def flap_game():
         flap_bird(60, int(y), YELLOW, wing)
         hit = y > 189 or y < 28
         for t in trees:
-            if t[0] - 7 < 60 < t[0] + flap_TW + 7 and (not t[1] + 7 < y < t[1] + flap_GAP - 7):
+            if t[0] - 9 < 60 < t[0] + flap_TW + 9 and (not t[1] + 7 < y < t[1] + flap_GAP - 7):
                 hit = True
         if hit:
             pause(0.4)
@@ -2278,9 +2367,14 @@ def hang_word_line(w, used):
     text(310 - len(s) * 10, 85, s.strip(), hang_INK)
 def hang_figure(n):
     if n == 0:
-        rect(8, 134, 74, 5, hang_POST)
+        rrect(0, 136, 120, 12, 5, (110, 180, 90))
+        rect(0, 140, 120, 4, (80, 150, 70))
+        rect(8, 132, 74, 6, hang_POST)
+        rect(8, 136, 74, 2, dk(hang_POST, 0.75))
         rect(24, 18, 5, 116, hang_POST)
+        rect(27, 18, 2, 116, dk(hang_POST, 0.75))
         rect(24, 18, 52, 5, hang_POST)
+        rect(24, 21, 52, 2, dk(hang_POST, 0.75))
         col(hang_POST)
         for o in range(4):
             draw_line(29 + o, 44, 50 + o, 23)
@@ -2385,7 +2479,10 @@ def merge_draw(b, score):
         x = merge_X0 + i % 4 * merge_S
         y = merge_Y0 + i // 4 * merge_S
         c = merge_TC.get(v, (235, 180, 20))
-        rrect(x + 2, y + 2, merge_S - 4, merge_S - 4, 5, c)
+        rrect(x + 2, y + 4, merge_S - 4, merge_S - 5, 5, dk(c, 0.8))
+        rrect(x + 2, y + 2, merge_S - 4, merge_S - 5, 5, c)
+        if v:
+            rect(x + 7, y + 4, merge_S - 14, 2, lt(c, 0.4))
         if v:
             s = str(v)
             if len(s) > 3:
@@ -2393,13 +2490,22 @@ def merge_draw(b, score):
             tc = (60, 55, 50) if v < 8 else WHITE
             text(x + merge_S // 2 - len(s) * 5, y + 25, s, tc)
     rect(0, 180, 320, 30, WHITE)
-    ctext(200, 'Score ' + str(score), (60, 55, 50))
+    rrect(110, 182, 100, 24, 6, merge_BOARD)
+    ctext(200, 'Score ' + str(score), WHITE)
 def merge_game():
     b = [0] * 16
     merge_add(b)
     merge_add(b)
     score = 0
     cls(WHITE)
+    rrect(12, 34, 64, 64, 8, dk((235, 185, 30), 0.8))
+    rrect(12, 32, 64, 64, 8, (235, 185, 30))
+    text(24, 70, '2048', WHITE)
+    text(12, 128, 'Join', (120, 110, 100))
+    text(12, 146, 'same', (120, 110, 100))
+    text(12, 164, 'tiles!', (120, 110, 100))
+    text(250, 60, 'Arrows', (120, 110, 100))
+    text(250, 78, 'slide', (120, 110, 100))
     rrect(merge_X0 - 4, merge_Y0 - 4, merge_S * 4 + 8, merge_S * 4 + 8, 8, merge_BOARD)
     merge_draw(b, score)
     won = False
@@ -2441,25 +2547,39 @@ pong_PH = 36
 pong_TOP = 24
 pong_TABLE = (30, 85, 165)
 pong_BALL = (250, 150, 40)
+pong_LINE = (150, 190, 235)
 def pong_net():
-    for y in range(pong_TOP, 210, 14):
+    col(pong_LINE)
+    draw_circle(160, 117, 28)
+    for y in range(pong_TOP + 2, 208, 14):
         rect(159, y, 2, 7, WHITE)
+def pong_court():
+    cls(pong_TABLE)
+    rect(0, 207, 320, 3, pong_LINE)
+    rect(0, pong_TOP + 1, 320, 1, pong_LINE)
+    pong_net()
+def pong_paddle(x, y, c):
+    block(x, y, 6, pong_PH, c, 1)
+    rect(x + 2, y + 4, 2, pong_PH - 8, lt(c, 0.5))
 def pong_scores(a, b):
     rect(0, 0, 320, pong_TOP - 2, pong_TABLE)
     text(110, 18, str(a))
     text(200, 18, str(b), GOLD)
     rect(0, pong_TOP - 2, 320, 2, WHITE)
+    text(14, 18, 'YOU', pong_LINE)
+    text(250, 18, 'CALC', pong_LINE)
 def pong_game():
-    cls(pong_TABLE)
+    pong_court()
     me = cpu = 0
     py = cy = 100
     pong_scores(me, cpu)
-    pong_net()
     serve = 1
     while me < 7 and cpu < 7:
         bx, by = (160.0, 110.0)
         vx = 4.0 * serve
         vy = random.choice((-2.5, -1.5, 1.5, 2.5))
+        pong_paddle(8, py, WHITE)
+        pong_paddle(306, cy, GOLD)
         pause(0.5)
         st = Steer((UP, DOWN))
         while True:
@@ -2469,23 +2589,23 @@ def pong_game():
             opy, ocy = (py, cy)
             d = st.feed(k)
             if d == UP:
-                py = max(pong_TOP, py - 6)
-                if py == pong_TOP:
+                py = max(pong_TOP + 3, py - 6)
+                if py == pong_TOP + 3:
                     st.stop()
             elif d == DOWN:
-                py = min(210 - pong_PH, py + 6)
-                if py == 210 - pong_PH:
+                py = min(206 - pong_PH, py + 6)
+                if py == 206 - pong_PH:
                     st.stop()
             target = by - pong_PH / 2
             if vx > 0 and bx > 120:
                 cy += max(-4, min(4, target - cy))
-            cy = int(max(pong_TOP, min(210 - pong_PH, cy)))
+            cy = int(max(pong_TOP + 3, min(206 - pong_PH, cy)))
             obx, oby = (bx, by)
             bx += vx
             by += vy
-            if by < pong_TOP + 3 or by > 206:
+            if by < pong_TOP + 6 or by > 202:
                 vy = -vy
-                by = max(pong_TOP + 3, min(206, by))
+                by = max(pong_TOP + 6, min(202, by))
             if bx < 18 and vx < 0 and (py - 4 < by < py + pong_PH + 4):
                 vx = min(9, -vx * 1.06)
                 vy += (by - (py + pong_PH / 2)) / 6
@@ -2494,16 +2614,18 @@ def pong_game():
                 vx = max(-9, -vx * 1.06)
                 vy += (by - (cy + pong_PH / 2)) / 6
                 bx = 302
-            rect(int(obx) - 3, int(oby) - 3, 7, 7, pong_TABLE)
+            rect(int(obx) - 4, int(oby) - 4, 9, 9, pong_TABLE)
             if opy != py:
                 rect(8, opy, 6, pong_PH, pong_TABLE)
             if ocy != cy:
                 rect(306, ocy, 6, pong_PH, pong_TABLE)
-            if 150 < obx < 170:
+            if 126 < obx < 194:
                 pong_net()
-            rect(8, py, 6, pong_PH, WHITE)
-            rect(306, cy, 6, pong_PH, GOLD)
-            rect(int(bx) - 3, int(by) - 3, 7, 7, pong_BALL)
+            if opy != py or 0 < obx < 24:
+                pong_paddle(8, py, WHITE)
+            if ocy != cy or 296 < obx < 320:
+                pong_paddle(306, cy, GOLD)
+            ball(int(bx), int(by), 4, pong_BALL)
             if bx < 0:
                 cpu += 1
                 serve = 1
@@ -2512,7 +2634,8 @@ def pong_game():
                 me += 1
                 serve = -1
                 break
-        rect(int(bx) - 3, int(by) - 3, 7, 7, pong_TABLE)
+        rect(int(bx) - 4, int(by) - 4, 9, 9, pong_TABLE)
+        pong_net()
         pong_scores(me, cpu)
     message(['You ' + str(me) + ' - ' + str(cpu) + ' Calculator'], 'You win!' if me > cpu else 'Calculator wins')
 pong_RULES = "Bounce the ball past the calculator's paddle. First to 7 points wins."
@@ -2528,47 +2651,102 @@ rpg_MAPS = (['TTTTTTTTTTTTTTTT', 'T......TT......T', 'T.HH...........T', 'T.HH..
 rpg_NAMES = ('Meadow', 'Whisper Woods', 'Hollow Cave')
 rpg_FOES = ((), (('Slime', 12, 4, 1, 6, (80, 200, 90)), ('Bat', 10, 5, 0, 7, (120, 90, 160))), (('Bone Rat', 18, 7, 2, 12, (220, 220, 200)), ('Cave Eye', 22, 8, 3, 15, (200, 60, 60))))
 rpg_BOSS = ('Hollow King', 70, 12, 4, 0, (110, 80, 180))
+rpg_GRASS = (40, 110, 50)
+rpg_STONE = (60, 55, 50)
+def rpg_grass(px, py, x, y):
+    rect(px, py, rpg_T, rpg_T, rpg_GRASS)
+    h = (x * 7 + y * 13) % 5
+    rect(px + 3 + h * 2, py + 5 + h, 1, 3, (70, 150, 70))
+    rect(px + 5 + h * 2, py + 6 + h, 1, 2, (70, 150, 70))
+    rect(px + 13 - h, py + 14 - h, 1, 3, (30, 90, 40))
+    if h == 2:
+        rect(px + 14, py + 4, 2, 2, (240, 220, 90))
+    elif h == 4:
+        rect(px + 4, py + 15, 2, 2, (230, 120, 160))
+def rpg_floor(px, py, x, y):
+    rect(px, py, rpg_T, rpg_T, rpg_STONE)
+    o = 0 if y % 2 else 10
+    rect(px, py, rpg_T, 1, (45, 40, 38))
+    rect(px + o, py, 1, rpg_T, (45, 40, 38))
+    rect(px + 2, py + 2, 6, 1, (75, 70, 64))
 def rpg_tile(m, x, y, ch):
     px = x * rpg_T
     py = 20 + y * rpg_T
     if ch in '.>< ':
-        rect(px, py, rpg_T, rpg_T, (40, 110, 50))
+        rpg_grass(px, py, x, y)
     elif ch == 'T':
-        rect(px, py, rpg_T, rpg_T, (40, 110, 50))
+        rpg_grass(px, py, x, y)
+        rect(px + 8, py + 12, 4, 7, (90, 60, 30))
+        rect(px + 10, py + 12, 2, 7, (65, 42, 22))
         circ(px + 10, py + 8, 8, (20, 70, 30))
-        rect(px + 8, py + 13, 4, 6, (90, 60, 30))
+        circ(px + 9, py + 7, 6, (35, 100, 45))
+        rect(px + 6, py + 4, 3, 2, (70, 150, 70))
     elif ch == '~':
         rect(px, py, rpg_T, rpg_T, (40, 90, 190))
+        o = (x * 5 + y * 3) % 8
+        rect(px + o, py + 6, 6, 1, (110, 160, 235))
+        rect(px + (o + 9) % 14, py + 14, 5, 1, (110, 160, 235))
     elif ch == 'H':
-        rect(px, py, rpg_T, rpg_T, (40, 110, 50))
+        rpg_grass(px, py, x, y)
         rect(px + 2, py + 8, 16, 12, (200, 170, 120))
+        rect(px + 2, py + 18, 16, 2, (160, 130, 90))
         col((170, 50, 40))
         fill_poly([px, px + 10, px + 20], [py + 9, py, py + 9])
+        col((120, 35, 30))
+        draw_line(px + 10, py, px + 20, py + 9)
         rect(px + 8, py + 13, 4, 7, (90, 60, 30))
+        rect(px + 4, py + 11, 3, 3, (250, 230, 140))
+        rect(px + 13, py + 11, 3, 3, (250, 230, 140))
     elif ch == 'C':
-        rect(px, py, rpg_T, rpg_T, (40, 110, 50) if m < 2 else (60, 55, 50))
+        if m < 2:
+            rpg_grass(px, py, x, y)
+        else:
+            rpg_floor(px, py, x, y)
+        rect(px + 3, py + 6, 14, 11, (60, 40, 20))
         rect(px + 4, py + 7, 12, 9, (160, 110, 40))
+        rect(px + 4, py + 7, 12, 2, (190, 140, 60))
         rect(px + 4, py + 10, 12, 2, GOLD)
+        rect(px + 9, py + 11, 2, 3, GOLD)
     elif ch == 'c':
-        rect(px, py, rpg_T, rpg_T, (40, 110, 50) if m < 2 else (60, 55, 50))
+        if m < 2:
+            rpg_grass(px, py, x, y)
+        else:
+            rpg_floor(px, py, x, y)
         rect(px + 4, py + 10, 12, 6, (100, 70, 30))
+        rect(px + 4, py + 10, 12, 1, (130, 95, 45))
     elif ch == '#':
         rect(px, py, rpg_T, rpg_T, (30, 28, 35))
+        o = 0 if y % 2 else 5
+        for yy in (0, 7, 14):
+            rect(px, py + yy, rpg_T, 1, (50, 47, 58))
+        for xx in (o, o + 10):
+            rect(px + xx, py, 1, 6, (50, 47, 58))
+            rect(px + (xx + 5) % rpg_T, py + 7, 1, 6, (50, 47, 58))
     elif ch == ':':
-        rect(px, py, rpg_T, rpg_T, (60, 55, 50))
+        rpg_floor(px, py, x, y)
     elif ch == 'B':
-        rect(px, py, rpg_T, rpg_T, (60, 55, 50))
+        rpg_floor(px, py, x, y)
+        circ(px + 10, py + 11, 8, (80, 55, 140))
         circ(px + 10, py + 10, 8, (110, 80, 180))
-        rect(px + 5, py + 7, 3, 3, RED)
-        rect(px + 12, py + 7, 3, 3, RED)
+        col(GOLD)
+        fill_poly([px + 3, px + 6, px + 10, px + 14, px + 17], [py + 4, py - 1, py + 3, py - 1, py + 4])
+        rect(px + 5, py + 8, 3, 3, RED)
+        rect(px + 12, py + 8, 3, 3, RED)
+        rect(px + 6, py + 14, 8, 1, (40, 25, 70))
 def rpg_hero(x, y):
     px = x * rpg_T
     py = 20 + y * rpg_T
+    rect(px + 5, py + 18, 10, 2, (25, 60, 30))
     circ(px + 10, py + 5, 4, (240, 200, 160))
+    rect(px + 6, py + 1, 8, 3, (120, 70, 30))
+    rect(px + 8, py + 5, 1, 1, BLACK)
+    rect(px + 11, py + 5, 1, 1, BLACK)
     rect(px + 6, py + 9, 8, 7, (60, 120, 230))
+    rect(px + 6, py + 13, 8, 1, (120, 80, 40))
     rect(px + 6, py + 16, 3, 4, (60, 40, 30))
     rect(px + 11, py + 16, 3, 4, (60, 40, 30))
-    rect(px + 15, py + 6, 2, 10, (200, 200, 210))
+    rect(px + 15, py + 4, 2, 11, (210, 215, 225))
+    rect(px + 14, py + 12, 4, 2, GOLD)
 def rpg_draw_map(g):
     m = g.m
     for y in range(10):
@@ -2887,11 +3065,18 @@ def soli_card(x, y, cd, h=soli_CHT, sel=False):
     rrect(x, y, soli_CW, h, 4, edge)
     if not up:
         rrect(x + 1, y + 1, soli_CW - 2, h - 2, 3, soli_BACK)
+        rect(x + 3, y + 3, soli_CW - 6, 1, lt(soli_BACK, 0.5))
+        if h >= 12:
+            rect(x + 4, y + 4, soli_CW - 8, h - 8, lt(soli_BACK, 0.15))
+            for i in range(x + 6, x + soli_CW - 6, 6):
+                rect(i, y + 6, 2, h - 12, soli_BACK)
         return
     rrect(x + 1, y + 1, soli_CW - 2, h - 2, 3, (255, 245, 200) if sel else soli_CARD)
     t = soli_RANKS[r]
     text(x + 3, y + 15, t, RED if s < 2 else BLACK)
     soli_suit(x + 31 - (5 if len(t) > 1 else 0) + (5 if len(t) > 1 else 0), y + 9, s)
+    if h >= soli_CHT:
+        soli_suit(x + soli_CW // 2, y + 22, s)
 class soli_G:
     pass
 def soli_new():
@@ -3128,7 +3313,7 @@ def sudoku_clash(b, i):
 def sudoku_cell(b, fixed, i, cur):
     x = sudoku_X0 + i % 9 * sudoku_S
     y = sudoku_Y0 + i // 9 * sudoku_S
-    bg = (250, 225, 140) if i == cur else WHITE
+    bg = (250, 225, 140) if i == cur else (236, 238, 246) if fixed[i] else WHITE
     rect(x + 1, y + 1, sudoku_S - 2, sudoku_S - 2, bg)
     v = b[i]
     if v:
@@ -3150,7 +3335,8 @@ def sudoku_game(holes):
     fixed = [v != 0 for v in b]
     cls(WHITE)
     sudoku_grid()
-    text(214, 30, 'SUDOKU', sudoku_INK)
+    rbox(208, 12, 106, 30, 8, sudoku_PEN, 2, (225, 235, 252))
+    text(222, 33, 'SUDOKU', sudoku_PEN)
     text(214, 70, '0-9 type', GREY)
     text(214, 90, 'ENTER +1', GREY)
     text(214, 110, 'DEL erase', GREY)

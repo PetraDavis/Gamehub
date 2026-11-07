@@ -43,6 +43,10 @@ def ctext(y, s, c=WHITE, cx=160):
 def circ(x, y, r, c):
     col(c)
     fill_circle(x, y, r)
+def lt(c, k=0.35):
+    return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
+def dk(c, k=0.65):
+    return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
 def ring(x, y, r, c, t=2, inner=BLACK):
     col(c)
     fill_circle(x, y, r)
@@ -180,6 +184,8 @@ blocks_CH = 20
 blocks_C = 9
 blocks_OUT = (50, 20, 70)
 blocks_WELL = (35, 30, 90)
+blocks_DOT = (60, 55, 125)
+blocks_PANEL = (70, 35, 100)
 blocks_X0 = 115
 blocks_Y0 = 22
 blocks_SHAPES = (((0, 1), (1, 1), (2, 1), (3, 1)), ((0, 0), (1, 0), (0, 1), (1, 1)), ((1, 0), (0, 1), (1, 1), (2, 1)), ((0, 0), (0, 1), (1, 1), (2, 1)), ((2, 0), (0, 1), (1, 1), (2, 1)), ((1, 0), (2, 0), (0, 1), (1, 1)), ((0, 0), (1, 0), (1, 1), (2, 1)))
@@ -215,11 +221,14 @@ def blocks_sq(x, y, c):
     py = blocks_Y0 + y * blocks_C
     if c == blocks_WELL:
         rect(px, py, blocks_C, blocks_C, blocks_WELL)
+        rect(px + 4, py + 4, 1, 1, blocks_DOT)
     else:
+        rect(px, py, blocks_C, blocks_C, dk(c, 0.55))
         rect(px, py, blocks_C - 1, blocks_C - 1, c)
-        col((min(255, c[0] + 70), min(255, c[1] + 70), min(255, c[2] + 70)))
+        col(lt(c, 0.45))
         draw_line(px, py, px + blocks_C - 2, py)
         draw_line(px, py, px, py + blocks_C - 2)
+        rect(px + 2, py + 2, 2, 2, lt(c, 0.7))
 def blocks_draw_piece(p, c=None):
     for x, y in blocks_get(p):
         blocks_sq(x, y, blocks_COLS[p[0]] if c is None else c)
@@ -229,22 +238,34 @@ def blocks_board(b):
             v = b[y][x]
             blocks_sq(x, y, blocks_COLS[v - 1] if v else blocks_WELL)
 def blocks_side(score, lines, nxt):
-    rect(230, 30, 90, 150, blocks_OUT)
-    text(232, 44, 'NEXT', (175, 160, 210))
+    for y, h in ((26, 64), (96, 40), (142, 40)):
+        rbox(226, y, 88, h, 6, (150, 110, 190), 2, blocks_PANEL)
+    text(234, 44, 'NEXT', (200, 185, 230))
     for x, y in blocks_get((nxt, 0, 0, 0)):
-        rect(240 + x * 9, 56 + y * 9, 8, 8, blocks_COLS[nxt])
-    text(232, 110, 'SCORE', (175, 160, 210))
-    text(232, 128, str(score))
-    text(232, 156, 'LINES', (175, 160, 210))
-    text(232, 174, str(lines))
+        c = blocks_COLS[nxt]
+        rect(244 + x * 9, 54 + y * 9, 9, 9, dk(c, 0.55))
+        rect(244 + x * 9, 54 + y * 9, 8, 8, c)
+        rect(245 + x * 9, 55 + y * 9, 2, 2, lt(c, 0.7))
+    text(234, 114, 'SCORE', (200, 185, 230))
+    text(234, 131, str(score))
+    text(234, 160, 'LINES', (200, 185, 230))
+    text(234, 177, str(lines))
 def blocks_game():
     b = [[0] * blocks_CW for i in range(blocks_CH)]
     cls(blocks_OUT)
+    for i in range(0, 210, 30):
+        rect(0, i, 320, 15, (58, 25, 80))
     rbox(blocks_X0 - 4, blocks_Y0 - 4, blocks_CW * blocks_C + 8, blocks_CH * blocks_C + 8, 4, WHITE, 2, blocks_WELL)
-    text(6, 44, 'STACK', GOLD)
-    text(6, 62, 'DROP', GOLD)
-    text(6, 160, '2nd:', (175, 160, 210))
-    text(6, 178, 'drop', (175, 160, 210))
+    blocks_board(b)
+    rbox(4, 26, 96, 56, 6, GOLD, 2, blocks_PANEL)
+    text(14, 48, 'STACK', GOLD)
+    text(14, 68, 'DROP', GOLD)
+    for i, cc in enumerate(blocks_COLS[:5]):
+        rect(12 + i * 16, 96, 12, 12, dk(cc, 0.55))
+        rect(12 + i * 16, 96, 11, 11, cc)
+    rbox(4, 150, 96, 40, 6, (150, 110, 190), 2, blocks_PANEL)
+    text(12, 167, '2nd key:', (200, 185, 230))
+    text(12, 184, 'drop it', (200, 185, 230))
     score = 0
     lines = 0
     nxt = random.randint(0, 6)

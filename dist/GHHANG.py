@@ -40,6 +40,8 @@ def ctext(y, s, c=WHITE, cx=160):
 def circ(x, y, r, c):
     col(c)
     fill_circle(x, y, r)
+def dk(c, k=0.65):
+    return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
 def ring(x, y, r, c, t=2, inner=BLACK):
     col(c)
     fill_circle(x, y, r)
@@ -191,9 +193,14 @@ def hang_word_line(w, used):
     text(310 - len(s) * 10, 85, s.strip(), hang_INK)
 def hang_figure(n):
     if n == 0:
-        rect(8, 134, 74, 5, hang_POST)
+        rrect(0, 136, 120, 12, 5, (110, 180, 90))
+        rect(0, 140, 120, 4, (80, 150, 70))
+        rect(8, 132, 74, 6, hang_POST)
+        rect(8, 136, 74, 2, dk(hang_POST, 0.75))
         rect(24, 18, 5, 116, hang_POST)
+        rect(27, 18, 2, 116, dk(hang_POST, 0.75))
         rect(24, 18, 52, 5, hang_POST)
+        rect(24, 21, 52, 2, dk(hang_POST, 0.75))
         col(hang_POST)
         for o in range(4):
             draw_line(29 + o, 44, 50 + o, 23)

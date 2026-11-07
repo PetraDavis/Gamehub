@@ -405,8 +405,15 @@ def crypt_render(g):
         x = i * crypt_CWID
         k = crypt_light(g, i, d) * (0.8 if side else 1.0)
         if top > 0:
+            m = top // 2
             rect(x, 0, crypt_CWID, top, crypt_shade(crypt_CEIL, max(k, 0.3)))
+            if m >= 2:
+                rect(x, top - m, crypt_CWID, m, crypt_shade(crypt_CEIL, max(k, 0.3) * 0.8))
             rect(x, top + h, crypt_CWID, crypt_VH - top - h, crypt_shade(crypt_FLOOR, max(k, 0.25)))
+            if m >= 2:
+                rect(x, top + h, crypt_CWID, m, crypt_shade(crypt_FLOOR, max(k, 0.25) * 0.75))
+                if m >= 6:
+                    rect(x, top + h + m + m // 2, crypt_CWID, 1, crypt_shade(crypt_FLOOR, max(k, 0.25) * 0.85))
         rect(x, max(0, top), crypt_CWID, min(crypt_VH, top + h) - max(0, top), crypt_shade(crypt_colour(t), k))
         crypt_wall_detail(g, t, u, top, h, x, k)
     crypt_sprites(g, zb, ca, sa)

@@ -61,6 +61,20 @@ def ctext(y, s, c=WHITE, cx=160):
 def circ(x, y, r, c):
     col(c)
     fill_circle(x, y, r)
+def lt(c, k=0.35):
+    return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
+def dk(c, k=0.65):
+    return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
+def block(x, y, w, h, c, e=2):
+    rect(x, y, w, h, c)
+    rect(x, y, w, e, lt(c))
+    rect(x, y, e, h, lt(c))
+    rect(x, y + h - e, w, e, dk(c))
+    rect(x + w - e, y + e, e, h - e, dk(c))
+def ball(x, y, r, c):
+    circ(x, y, r, c)
+    s = max(1, r // 3)
+    circ(x - s, y - s, s, lt(c, 0.6))
 def ring(x, y, r, c, t=2, inner=BLACK):
     col(c)
     fill_circle(x, y, r)
@@ -193,25 +207,39 @@ pong_PH = 36
 pong_TOP = 24
 pong_TABLE = (30, 85, 165)
 pong_BALL = (250, 150, 40)
+pong_LINE = (150, 190, 235)
 def pong_net():
-    for y in range(pong_TOP, 210, 14):
+    col(pong_LINE)
+    draw_circle(160, 117, 28)
+    for y in range(pong_TOP + 2, 208, 14):
         rect(159, y, 2, 7, WHITE)
+def pong_court():
+    cls(pong_TABLE)
+    rect(0, 207, 320, 3, pong_LINE)
+    rect(0, pong_TOP + 1, 320, 1, pong_LINE)
+    pong_net()
+def pong_paddle(x, y, c):
+    block(x, y, 6, pong_PH, c, 1)
+    rect(x + 2, y + 4, 2, pong_PH - 8, lt(c, 0.5))
 def pong_scores(a, b):
     rect(0, 0, 320, pong_TOP - 2, pong_TABLE)
     text(110, 18, str(a))
     text(200, 18, str(b), GOLD)
     rect(0, pong_TOP - 2, 320, 2, WHITE)
+    text(14, 18, 'YOU', pong_LINE)
+    text(250, 18, 'CALC', pong_LINE)
 def pong_game():
-    cls(pong_TABLE)
+    pong_court()
     me = cpu = 0
     py = cy = 100
     pong_scores(me, cpu)
-    pong_net()
     serve = 1
     while me < 7 and cpu < 7:
         bx, by = (160.0, 110.0)
         vx = 4.0 * serve
         vy = random.choice((-2.5, -1.5, 1.5, 2.5))
+        pong_paddle(8, py, WHITE)
+        pong_paddle(306, cy, GOLD)
         pause(0.5)
         st = Steer((UP, DOWN))
         while True:
@@ -221,23 +249,23 @@ def pong_game():
             opy, ocy = (py, cy)
             d = st.feed(k)
             if d == UP:
-                py = max(pong_TOP, py - 6)
-                if py == pong_TOP:
+                py = max(pong_TOP + 3, py - 6)
+                if py == pong_TOP + 3:
                     st.stop()
             elif d == DOWN:
-                py = min(210 - pong_PH, py + 6)
-                if py == 210 - pong_PH:
+                py = min(206 - pong_PH, py + 6)
+                if py == 206 - pong_PH:
                     st.stop()
             target = by - pong_PH / 2
             if vx > 0 and bx > 120:
                 cy += max(-4, min(4, target - cy))
-            cy = int(max(pong_TOP, min(210 - pong_PH, cy)))
+            cy = int(max(pong_TOP + 3, min(206 - pong_PH, cy)))
             obx, oby = (bx, by)
             bx += vx
             by += vy
-            if by < pong_TOP + 3 or by > 206:
+            if by < pong_TOP + 6 or by > 202:
                 vy = -vy
-                by = max(pong_TOP + 3, min(206, by))
+                by = max(pong_TOP + 6, min(202, by))
             if bx < 18 and vx < 0 and (py - 4 < by < py + pong_PH + 4):
                 vx = min(9, -vx * 1.06)
                 vy += (by - (py + pong_PH / 2)) / 6
@@ -246,16 +274,18 @@ def pong_game():
                 vx = max(-9, -vx * 1.06)
                 vy += (by - (cy + pong_PH / 2)) / 6
                 bx = 302
-            rect(int(obx) - 3, int(oby) - 3, 7, 7, pong_TABLE)
+            rect(int(obx) - 4, int(oby) - 4, 9, 9, pong_TABLE)
             if opy != py:
                 rect(8, opy, 6, pong_PH, pong_TABLE)
             if ocy != cy:
                 rect(306, ocy, 6, pong_PH, pong_TABLE)
-            if 150 < obx < 170:
+            if 126 < obx < 194:
                 pong_net()
-            rect(8, py, 6, pong_PH, WHITE)
-            rect(306, cy, 6, pong_PH, GOLD)
-            rect(int(bx) - 3, int(by) - 3, 7, 7, pong_BALL)
+            if opy != py or 0 < obx < 24:
+                pong_paddle(8, py, WHITE)
+            if ocy != cy or 296 < obx < 320:
+                pong_paddle(306, cy, GOLD)
+            ball(int(bx), int(by), 4, pong_BALL)
             if bx < 0:
                 cpu += 1
                 serve = 1
@@ -264,7 +294,8 @@ def pong_game():
                 me += 1
                 serve = -1
                 break
-        rect(int(bx) - 3, int(by) - 3, 7, 7, pong_TABLE)
+        rect(int(bx) - 4, int(by) - 4, 9, 9, pong_TABLE)
+        pong_net()
         pong_scores(me, cpu)
     message(['You ' + str(me) + ' - ' + str(cpu) + ' Calculator'], 'You win!' if me > cpu else 'Calculator wins')
 pong_RULES = "Bounce the ball past the calculator's paddle. First to 7 points wins."

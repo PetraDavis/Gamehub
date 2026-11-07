@@ -34,7 +34,7 @@ def tree(x, gy, c):
     top = gy + GAP
     y0 = max(22, gy - 27)
     _bar(x - 3, y0, TW + 9, gy + 1 - y0, SKY)
-    _bar(x - 3, top, TW + 9, 24, SKY)
+    _bar(x - 3, top - 2, TW + 9, min(26, 198 - top), SKY)
     _bar(cx + 5, top + 18, 5, 196 - top - 18, SKY)
     # leaves hanging from above, with a bumpy lower edge
     if gy - 14 > 22:
@@ -51,7 +51,10 @@ def tree(x, gy, c):
     _bar(cx - 5, top + 18, 10, 196 - top - 18, trunk)
     _bar(cx + 2, top + 18, 3, 196 - top - 18, dk(trunk))
     for bx, by, r in ((x + 5, top + 14, 8), (x + TW - 5, top + 14, 8), (cx, top + 9, 10)):
-        _blob(bx, by, r, c)
+        if by + r <= 196:
+            _blob(bx, by, r, c)
+        else:
+            _bar(bx - r, by - r, 2 * r, 196 - by + r, c)
     _blob(cx - 3, top + 6, 3, hi)
     _blob(x + 6, top + 13, 2, hi)
 
@@ -82,7 +85,7 @@ def game():
     cls(SKY)
     ground()
     rect(0, 20, 320, 2, INK)
-    trees = [[330, random.randint(40, 120)], [330 + 170, random.randint(40, 120)]]
+    trees = [[330, random.randint(40, 110)], [330 + 170, random.randint(40, 110)]]
     y = 100.0
     v = 0.0
     score = 0
@@ -109,7 +112,7 @@ def game():
             t[0] -= 4
             if t[0] + TW + 3 < 0:
                 t[0] = 330
-                t[1] = random.randint(40, 120)
+                t[1] = random.randint(40, 110)
                 passed[i] = False
             tree(t[0], t[1], TREE)
             if not passed[i] and t[0] + TW < 52:

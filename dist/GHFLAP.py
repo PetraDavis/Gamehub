@@ -44,6 +44,10 @@ def ctext(y, s, c=WHITE, cx=160):
 def circ(x, y, r, c):
     col(c)
     fill_circle(x, y, r)
+def lt(c, k=0.35):
+    return (int(c[0] + (255 - c[0]) * k), int(c[1] + (255 - c[1]) * k), int(c[2] + (255 - c[2]) * k))
+def dk(c, k=0.65):
+    return (int(c[0] * k), int(c[1] * k), int(c[2] * k))
 def ring(x, y, r, c, t=2, inner=BLACK):
     col(c)
     fill_circle(x, y, r)
@@ -190,16 +194,44 @@ flap_TW = 26
 flap_SKY = (110, 195, 240)
 flap_TREE = (50, 140, 60)
 flap_INK = (20, 20, 20)
-def flap_tree(x, gy, c):
-    if x > 319 or x + flap_TW < 0:
-        return
+def flap__bar(x, y, w, h, c):
     x0 = max(0, x)
-    w = min(320, x + flap_TW) - x0
-    if w < 2:
+    w = min(320, x + w) - x0
+    if w >= 2 and h >= 1:
+        rect(x0, y, w, h, c)
+def flap__blob(x, y, r, c):
+    if r <= x <= 319 - r:
+        circ(x, y, r, c)
+def flap_tree(x, gy, c):
+    if x > 322 or x + flap_TW + 3 < 0:
         return
-    if gy > 24:
-        rect(x0, 22, w, gy - 22, c)
-    rect(x0, gy + flap_GAP, w, 196 - gy - flap_GAP, c)
+    hi = lt(c)
+    lo = dk(c, 0.75)
+    cx = x + flap_TW // 2
+    top = gy + flap_GAP
+    y0 = max(22, gy - 27)
+    flap__bar(x - 3, y0, flap_TW + 9, gy + 1 - y0, flap_SKY)
+    flap__bar(x - 3, top - 2, flap_TW + 9, min(26, 198 - top), flap_SKY)
+    flap__bar(cx + 5, top + 18, 5, 196 - top - 18, flap_SKY)
+    if gy - 14 > 22:
+        flap__bar(x, 22, flap_TW, gy - 36, lo)
+        flap__bar(x + 3, 22, flap_TW - 6, gy - 36, c)
+    for bx, by, r in ((x + 5, gy - 18, 8), (x + flap_TW - 5, gy - 16, 8), (cx, gy - 9, 9)):
+        if by - r >= 22:
+            flap__blob(bx, by, r, c)
+        else:
+            flap__bar(bx - r, 22, 2 * r, by + r - 22, c)
+    flap__blob(cx - 3, gy - 12, 3, hi)
+    trunk = (110, 75, 40)
+    flap__bar(cx - 5, top + 18, 10, 196 - top - 18, trunk)
+    flap__bar(cx + 2, top + 18, 3, 196 - top - 18, dk(trunk))
+    for bx, by, r in ((x + 5, top + 14, 8), (x + flap_TW - 5, top + 14, 8), (cx, top + 9, 10)):
+        if by + r <= 196:
+            flap__blob(bx, by, r, c)
+        else:
+            flap__bar(bx - r, by - r, 2 * r, 196 - by + r, c)
+    flap__blob(cx - 3, top + 6, 3, hi)
+    flap__blob(x + 6, top + 13, 2, hi)
 def flap_bird(x, y, c, wing):
     if c == flap_SKY:
         rect(x - 8, max(22, y - 8), 20, 17, flap_SKY)
@@ -210,12 +242,19 @@ def flap_bird(x, y, c, wing):
     circ(x + 3, y - 3, 3, WHITE)
     circ(x + 4, y - 3, 1, BLACK)
     rect(x + 7, y - 1, 5, 3, (245, 140, 30))
-def flap_game():
-    cls(flap_SKY)
+def flap_ground():
     rect(0, 196, 320, 5, (70, 170, 80))
     rect(0, 201, 320, 9, (120, 80, 40))
+    for x in range(0, 320, 16):
+        rect(x + 4, 197, 3, 1, (110, 200, 110))
+        rect(x + 10, 198, 2, 2, (40, 120, 50))
+        rect(x + 7, 204, 3, 2, (95, 60, 30))
+        rect(x + 1, 207, 2, 2, (150, 105, 60))
+def flap_game():
+    cls(flap_SKY)
+    flap_ground()
     rect(0, 20, 320, 2, flap_INK)
-    trees = [[330, random.randint(40, 120)], [330 + 170, random.randint(40, 120)]]
+    trees = [[330, random.randint(40, 110)], [330 + 170, random.randint(40, 110)]]
     y = 100.0
     v = 0.0
     score = 0
@@ -237,11 +276,11 @@ def flap_game():
         flap_bird(60, int(oy), flap_SKY, 0)
         for i in range(2):
             t = trees[i]
-            rect(max(0, t[0] + flap_TW - 4), 22, 4, 174, flap_SKY)
+            flap__bar(t[0] + flap_TW - 1, 22, 6, 174, flap_SKY)
             t[0] -= 4
-            if t[0] + flap_TW < 0:
+            if t[0] + flap_TW + 3 < 0:
                 t[0] = 330
-                t[1] = random.randint(40, 120)
+                t[1] = random.randint(40, 110)
                 passed[i] = False
             flap_tree(t[0], t[1], flap_TREE)
             if not passed[i] and t[0] + flap_TW < 52:
@@ -253,7 +292,7 @@ def flap_game():
         flap_bird(60, int(y), YELLOW, wing)
         hit = y > 189 or y < 28
         for t in trees:
-            if t[0] - 7 < 60 < t[0] + flap_TW + 7 and (not t[1] + 7 < y < t[1] + flap_GAP - 7):
+            if t[0] - 9 < 60 < t[0] + flap_TW + 9 and (not t[1] + 7 < y < t[1] + flap_GAP - 7):
                 hit = True
         if hit:
             pause(0.4)
