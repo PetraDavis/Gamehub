@@ -1,53 +1,13 @@
 # GAMEHUB - game center for the TI-84 Evo. Run this file.
-from ti_draw import*
-from ti_system import*
-import time
-import random
-import math
-from ti_system import store_list,recall_list
-import sys
-import gc
-UP=25
-DOWN=34
-LEFT=24
-RIGHT=26
-OK=105
-CLR=45
-BLACK=(0,0,0)
-WHITE=(255,255,255)
-GOLD=(230,180,40)
-RED=(220,50,50)
-H=210
-def wkey():
- return wait_key()
-_C=[None]
-def col(c):
- if c!=_C[0]:
-  _C[0]=c
-  set_color(c[0],c[1],c[2])
-def fr(x,y,w,h):
- fill_rect(x-1,y-1,w+1,h+1)
+from GAMEHUBB import*
 def rect(x,y,w,h,c):
  if w<1 or h<1:
   return
  col(c)
  fill_rect(x-1,y-1,w+1,h+1)
-COVER=[0]
-def cls(c=BLACK):
- COVER[0]+=1
- col(c)
- fill_rect(-1,-1,321,211)
-TY=6
-def ctext(y,s,c=WHITE,cx=160):
- col(c)
- draw_text(cx-len(s)*5,y+TY,s)
 def circ(x,y,r,c):
  col(c)
  fill_circle(x,y,r)
-def lt(c,k=0.35):
- return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
-def dk(c,k=0.65):
- return(int(c[0]*k),int(c[1]*k),int(c[2]*k))
 def _corners(x,y,w,h,r,t):
  if r<=t:
   return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
@@ -77,7 +37,6 @@ def halo(x,y,r,c,t=2):
  col(c)
  for i in range(t):
   draw_circle(x,y,r-i)
-MSG=[0,0]
 def message(lines,title=None):
  n=len(lines)+(1 if title else 0)
  h=n*18+30
@@ -96,100 +55,6 @@ def message(lines,title=None):
   k=wkey()
   if k in(OK,CLR):
    return k
-I_BLACK=(0,0,0)
-I_WHITE=(255,255,255)
-I_INK=(20,20,20)
-I_RED=(215,40,40)
-I_GOLD=(230,180,40)
-I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE}
-I_FONT={'0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001001001001','8':'111101111101111','9':'111101111001111'}
-def I_c_(c):
- set_color(c[0],c[1],c[2])
-def I_box(x,y,w,h,c):
- I_c_(c)
- fill_rect(int(x)-1,int(y)-1,max(1,int(w))+1,max(1,int(h))+1)
-def I_line(x1,y1,x2,y2,c,t=1):
- I_c_(c)
- for o in range(t):
-  draw_line(int(x1)+o,int(y1),int(x2)+o,int(y2))
-def I_hline(x1,x2,y,c,t=1):
- I_c_(c)
- for o in range(t):
-  draw_line(int(x1),int(y)+o,int(x2),int(y)+o)
-def I_circ(x,y,r,c):
- I_c_(c)
- fill_circle(int(x),int(y),int(r))
-def I_poly(xs,ys,c):
- I_c_(c)
- fill_poly([int(v)for v in xs],[int(v)for v in ys])
-def I_rr(x,y,w,h,r,c):
- I_c_(c)
- fill_rect(x+r-1,y-1,w-2*r+1,h+1)
- fill_rect(x-1,y+r-1,w+1,h-2*r+1)
- for cx in(x+r,x+w-r-1):
-  for cy in(y+r,y+h-r-1):
-   fill_circle(cx,cy,r)
-I_FONT7={'1':'00100011000010000100001000010001110','3':'11110000010000101110000010000111110','5':'11111100001111000001000011000101110','7':'11111000010001000100010000100001000','9':'01110100011000101111000010001001100'}
-def I_digit7(x,y,ch,c):
- I_c_(c)
- bits=I_FONT7[ch]
- for r in range(7):
-  row=bits[r*5:r*5+5]
-  k=0
-  while k<5:
-   if row[k]=='1':
-    e=k
-    while e+1<5 and row[e+1]=='1':
-     e+=1
-    draw_line(x+k,y+r,x+e,y+r)
-    k=e+1
-   else:
-    k+=1
-def I_digits(x,y,s,c,p=2):
- I_c_(c)
- for i,ch in enumerate(s):
-  bits=I_FONT[ch]
-  for n in range(15):
-   if bits[n]=='1':
-    fill_rect(x+i*4*p+n%3*p-1,y+n//3*p-1,p+1,p+1)
-def I_bevel(x,y,s,c):
- lt=tuple((min(255,v+70)for v in c))
- dk=tuple((v//2 for v in c))
- I_box(x,y,s,s,c)
- I_hline(x,x+s-1,y,lt)
- I_line(x,y,x,y+s-1,lt)
- I_hline(x,x+s-1,y+s-1,dk)
- I_line(x+s-1,y,x+s-1,y+s-1,dk)
-def I_ground(x,y,top,c,r=24):
- a=math.asin(top/r)
- xs=[]
- ys=[]
- for i in range(13):
-  t=a+(math.pi-2*a)*i/12
-  xs.append(x+r*math.cos(t))
-  ys.append(y+r*math.sin(t))
- I_poly(xs,ys,c)
-def I_heart(x,y,s,c):
- I_circ(x-s,y-1,s,c)
- I_circ(x+s,y-1,s,c)
- I_poly([x-2*s,x+2*s+1,x],[y,y,y+2*s+1],c)
-def I_diamond(x,y,s,c):
- I_poly([x,x+s+1,x,x-s-1],[y-2*s,y,y+2*s,y],c)
-def I_spade(x,y,s,c):
- I_circ(x-s,y+1,s,c)
- I_circ(x+s,y+1,s,c)
- I_poly([x-2*s,x+2*s+1,x],[y+1,y+1,y-2*s-1],c)
- I_poly([x,x-s,x+s],[y+1,y+2*s+1,y+2*s+1],c)
-def I_solitaire(x,y,c):
- suits=((I_spade,I_INK),(I_diamond,I_RED),(I_heart,I_RED))
- for i in range(3):
-  l=x-18+i*10
-  t=y-12
-  I_box(l-1,t-1,18,26,I_INK)
-  I_box(l,t,16,24,(250,250,245))
-  f,col=suits[i]
-  f(l+4,t+5,2,col)
- I_heart(x+10,y+3,3,I_RED)
 def I_blocks(x,y,c):
  s=8
  cells=((-2,1,(220,70,70)),(-1,1,(220,70,70)),(0,1,(70,110,220)),(1,1,(70,110,220)),(-2,0,(80,190,90)),(0,0,(70,110,220)),(1,0,(230,200,60)),(-2,-1,(80,190,90)),(1,-1,(230,200,60)),(-1,-3,(170,90,210)),(0,-3,(170,90,210)),(0,-2,(170,90,210)))
@@ -212,17 +77,6 @@ def I_sudoku(x,y,c):
  I_c_(I_INK)
  for o in(0,1):
   draw_rect(x0-o-1,y0-o-1,3*s+2*o+1,3*s+2*o+1)
-def I_anim(x,y,c):
- I_box(x-20,y-13,41,27,(35,35,40))
- for i in range(5):
-  I_box(x-18+i*8,y-11,4,3,I_WHITE)
-  I_box(x-18+i*8,y+9,4,3,I_WHITE)
- for i,by in enumerate((4,-2,2)):
-  fx=x-17+i*12
-  I_box(fx,y-6,11,13,(120,200,240))
-  I_box(fx,y+4,11,3,(70,170,80))
-  I_circ(fx+5,y+by,2,(240,120,40))
- I_circ(x+17,y-9,1,I_RED)
 def I_flap(x,y,c):
  I_box(x-14,y-16,10,4,I_WHITE)
  I_circ(x-12,y-15,3,I_WHITE)
@@ -237,40 +91,6 @@ def I_flap(x,y,c):
  I_circ(x+4,y-5,2,I_BLACK)
  I_poly([x+7,x+17,x+7],[y-2,y+1,y+2],(245,140,30))
  I_poly([x+7,x+15,x+7],[y+2,y+3,y+5],(200,100,20))
-def I_ttt(x,y,c):
- s=12
- for i in(-1,1):
-  I_box(x+i*6-1,y-18,2,36,I_INK)
-  I_box(x-18,y+i*6-1,36,2,I_INK)
- for i in(-1,0,1):
-  cx=x+i*s
-  cy=y+i*s
-  I_line(cx-4,cy-4,cx+3,cy+3,I_INK,2)
-  I_line(cx+3,cy-4,cx-4,cy+3,I_INK,2)
-def I_g2048(x,y,c):
- I_rr(x-20,y-12,41,28,4,(200,160,30))
- I_rr(x-20,y-14,41,28,4,(237,194,46))
- I_digits(x-14,y-5,'2048',I_WHITE)
-def I_pong(x,y,c):
- I_c_(I_WHITE)
- draw_rect(x-22,y-16,44,32)
- I_hline(x-21,x+21,y,(200,210,230))
- for i in range(6):
-  I_box(x,y-15+i*6,2,3,I_WHITE)
- I_box(x-17,y-11,4,14,I_WHITE)
- I_box(x+14,y-3,4,14,I_WHITE)
- I_circ(x-6,y-5,2,(250,150,40))
-def I_breakout(x,y,c):
- cols=((220,60,60),(235,140,50),(230,210,60),(70,190,90))
- for r in range(3):
-  for i in range(4):
-   bx=x-19+i*10
-   I_box(bx,y-15+r*6,9,5,cols[(i+r)%4])
-   I_hline(bx,bx+8,y-15+r*6,tuple((min(255,v+60)for v in cols[(i+r)%4])))
- for i,(dx,dy)in enumerate(((-8,12),(-5,8))):
-  I_box(x+dx,y+dy,2,2,(120,150,230))
- I_circ(x-1,y+5,2,I_WHITE)
- I_rr(x-11,y+13,22,4,1,I_WHITE)
 def I_rpg(x,y,c):
  I_circ(x-5,y-8,6,(240,200,160))
  I_box(x-11,y-15,13,5,(110,70,30))
@@ -382,30 +202,19 @@ def I_crypt(x,y,c):
   I_line(a,b-1,a,b+1,(80,175,245))
  for a,b in pts:
   I_hline(a,a,b,(230,250,255))
-def I_keys(x,y,c):
- for i in range(3):
-  for j in range(3):
-   I_box(x-14+j*10,y-12+i*9,8,7,c)
-def I_wipe(x,y,c):
- I_box(x-10,y-8,20,22,c)
- I_box(x-13,y-13,26,3,c)
- I_box(x-4,y-16,8,3,c)
- for i in(-5,0,5):
-  I_box(x+i-1,y-4,2,15,(0,0,0))
-def I_about(x,y,c):
- I_c_(c)
- fill_circle(x,y-10,3)
- fill_rect(x-3,y-5,6,19)
-I_ICONS={'GHSOLI':I_solitaire,'GHBLOCKS':I_blocks,'GHSUDOKU':I_sudoku,'GHANIM':I_anim,'GHFLAP':I_flap,'GHTTT':I_ttt,'GHMERGE':I_g2048,'GHPONG':I_pong,'GHBREAK':I_breakout,'GHRPG':I_rpg,'GHSIMON':I_simon,'GHHANG':I_hangman,'GHCRYPT':I_crypt,'*keys':I_keys,'*wipe':I_wipe,'*about':I_about}
-def I_bg(mod):
- return I_BG.get(mod,I_BLACK)
+def I_space(x,y,c):
+ for sx,sy in((-15,-12),(12,-16),(16,8),(-17,10),(2,17)):
+  I_box(x+sx,y+sy,2,2,(255,240,180))
+ I_poly([x-4,x+4,x+8,x-8],[y-14,y-14,y+6,y+6],(220,225,235))
+ I_box(x-3,y-7,6,5,(90,170,230))
+ I_poly([x-8,x-13,x-8],[y-2,y+8,y+6],(215,40,40))
+ I_poly([x+8,x+13,x+8],[y-2,y+8,y+6],(215,40,40))
+ I_poly([x-5,x+5,x],[y+7,y+7,y+15],(250,170,40))
+I_ICONS={'GHSOLI':I_solitaire,'GHBLOCKS':I_blocks,'GHSUDOKU':I_sudoku,'GHANIM':I_anim,'GHFLAP':I_flap,'GHTTT':I_ttt,'GHMERGE':I_g2048,'GHPONG':I_pong,'GHBREAK':I_breakout,'GHRPG':I_rpg,'GHSIMON':I_simon,'GHHANG':I_hangman,'GHCRYPT':I_crypt,'GHSPACE':I_space,'GHFORTUN':I_fortune,'*keys':I_keys,'*wipe':I_wipe,'*about':I_about}
 def I_draw(mod,x,y,c):
  f=I_ICONS.get(mod)
  if f:
   f(x,y,c)
-S_SLOTS=3
-def S_hname(s):
- return 'A'+str(s)+'H'
 def S_dname(s,i):
  n=str(i)
  return 'A'+str(s)+'0'*(3-len(n))+n
@@ -426,13 +235,7 @@ def S_wipe():
   store_list(S_hname(s),[0])
   n+=1
  return n
-H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG')]),('Adventure',[('Tiny Quest','GHRPG'),('Encrypted Demo','GHCRYPT')]),('Create',[('Animation Studio','GHANIM')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
-H_BAR_Y=34
-H_BAR_H=22
-H_BAR_GAP=27
-def H_header():
- cls()
- ctext(22,'GAMEHUB',WHITE)
+H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG')]),('Adventure',[('Tiny Quest','GHRPG'),('Encrypted Demo','GHCRYPT'),('Lost Orbit','GHSPACE')]),('Create',[('Animation Studio','GHANIM'),('Fortune Cards','GHFORTUN')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
 def H_draw_bar(i,on,first=False):
  y=H_BAR_Y+i*H_BAR_GAP
  c=GOLD if on else WHITE
@@ -459,8 +262,6 @@ def H_cat_screen(sel):
   if sel!=old:
    H_draw_bar(old,False)
    H_draw_bar(sel,True)
-def H_app_pos(i):
- return(50+i%4*73,82+i//4*70)
 def H_draw_app(app,i,on,first=False):
  x,y=H_app_pos(i)
  c=GOLD if on else WHITE
@@ -471,10 +272,6 @@ def H_draw_app(app,i,on,first=False):
   except Exception:
    ctext(y+7,app[0][0],WHITE,x)
  halo(x,y,27,c,3)
-def H_show_title(name,old=None):
- if old:
-  ctext(203,old,BLACK)
- ctext(203,name,GOLD)
 def H_app_screen(ci,sel=0):
  cname,apps=H_CATS[ci]
  cls()
@@ -520,10 +317,11 @@ def H_run_app(mod):
  except Exception as e:
   cls()
   message([str(e)[:26],'Is '+mod+' on the','calculator?'],'Could not run')
- try:
-  del sys.modules[mod]
- except Exception:
-  pass
+ for k in[mod]+[mod[:7]+c for c in 'BCDEF']:
+  try:
+   del sys.modules[k]
+  except Exception:
+   pass
  m=None
  gc.collect()
 def H_key_test():

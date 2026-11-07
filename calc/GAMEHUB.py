@@ -7,8 +7,8 @@ CATS = [
     ("Arcade", [("Wing It", "GHFLAP"), ("Pong", "GHPONG"), ("Breakout", "GHBREAK")]),
     ("Puzzle", [("Stack Drop", "GHBLOCKS"), ("2048", "GHMERGE"), ("Sudoku", "GHSUDOKU"), ("Simon", "GHSIMON")]),
     ("Classics", [("Solitaire", "GHSOLI"), ("Tic-Tac-Toe", "GHTTT"), ("Hangman", "GHHANG")]),
-    ("Adventure", [("Tiny Quest", "GHRPG"), ("Encrypted Demo", "GHCRYPT")]),
-    ("Create", [("Animation Studio", "GHANIM")]),
+    ("Adventure", [("Tiny Quest", "GHRPG"), ("Encrypted Demo", "GHCRYPT"), ("Lost Orbit", "GHSPACE")]),
+    ("Create", [("Animation Studio", "GHANIM"), ("Fortune Cards", "GHFORTUN")]),
     ("Settings", [("Key Test", "*keys"), ("Delete All Saves", "*wipe"), ("About", "*about")]),
 ]
 
@@ -125,10 +125,12 @@ def run_app(mod):
     except Exception as e:
         cls()
         message([str(e)[:26], "Is " + mod + " on the", "calculator?"], "Could not run")
-    try:
-        del sys.modules[mod]
-    except Exception:
-        pass
+    # forget the game and its part files (GHCRYPTB, GHCRYPTC...) to free memory
+    for k in [mod] + [mod[:7] + c for c in "BCDEF"]:
+        try:
+            del sys.modules[k]
+        except Exception:
+            pass
     m = None
     gc.collect()
 

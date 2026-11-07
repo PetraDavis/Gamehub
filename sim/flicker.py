@@ -38,7 +38,7 @@ def frame():
     st['prev'] = cur
     st['start'] = cur
 S.on_poll = frame
-mods = sys.argv[1:] or ['GHTTT', 'GHSIMON', 'GHHANG', 'GHMERGE', 'GHPONG', 'GHBREAK', 'GHFLAP', 'GHBLOCKS', 'GHSUDOKU', 'GHSOLI', 'GHRPG']
+mods = sys.argv[1:] or ['GHTTT', 'GHSIMON', 'GHHANG', 'GHMERGE', 'GHPONG', 'GHBREAK', 'GHFLAP', 'GHBLOCKS', 'GHSUDOKU', 'GHSOLI', 'GHRPG', 'GHSPACE', 'GHFORTUN']
 pool = [25, 34, 24, 26, 105, 105, 21, 23, 92, 93, 0, 0]
 for mod in mods:
     st.update(prev=None, n=None, worst=0, tot=0, frames=0)

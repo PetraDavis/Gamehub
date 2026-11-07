@@ -20,9 +20,9 @@ INK = (20, 20, 20)
 BODY = (240, 200, 40)
 BEAK = (245, 140, 30)
 # physics in pixels and seconds
-GRAV = 900.0
-FLAP = -265.0
-FALL = 430.0
+GRAV = 620.0     # lighter than before: Petra found the bird too heavy
+FLAP = -235.0
+FALL = 330.0
 SPEED = 80.0
 # Every drawing call takes about 7 ms on the calculator, however big it is,
 # and so does every colour change. So the trees are flat green and each frame
@@ -169,7 +169,7 @@ def game():
             return
         if now:
             t = now()
-            dt = min(0.12, max(0.03, t - last))
+            dt = min(0.12, max(0.01, t - last))
             last = t
         else:
             dt = 0.05
