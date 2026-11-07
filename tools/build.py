@@ -23,6 +23,6 @@ runpy.run_path(os.path.join(ROOT, 'tools', 'bundle.py'), run_name='__main__')
 D = os.path.join(ROOT, 'dist')
 with zipfile.ZipFile(os.path.join(ROOT, 'gamehub.zip'), 'w', zipfile.ZIP_DEFLATED) as z:
     for f in sorted(os.listdir(D)):
-        # GHONE.py is the separate one-file test, not part of the zip
-        if f.endswith('.py') and f != 'GHONE.py':
+        # GHONE.py (one-file test) and GHBENCH.py (hand-written speed test) aren't part of the zip
+        if f.endswith('.py') and f not in ('GHONE.py', 'GHBENCH.py'):
             z.write(os.path.join(D, f), 'GAMEHUB/' + f)
