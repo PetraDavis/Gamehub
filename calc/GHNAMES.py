@@ -1,70 +1,102 @@
 # Name Generator: press ENTER for a new made-up name. Left/Right picks what the
-# name is for: a hero, a monster, a pet, a wizard or a planet.
+# name is for (a hero, a monster, a pet, a wizard or a planet), Up/Down picks
+# a female or a male name.
 from GHLIB import *
 import random
 
 BGC = (20, 60, 70)
 PANEL = (10, 35, 45)
 
-# kind: (word on screen, first parts, last parts, titles). A name is a first
-# part plus a last part, and sometimes a title.
+# kind: (word on screen, first parts, female endings, male endings, titles
+# for anyone, female titles, male titles). A name is a first part plus an
+# ending, and sometimes a title. Planets have no female or male.
 KINDS = (
-    ("HERO", ("Bra", "Kael", "Ari", "Thor", "Lyn", "Ro", "Zara", "Fen", "Mira", "Dax", "Elo", "Tam"),
-     ("dor", "wen", "ric", "a", "ion", "dra", "mir", "ia", "lan", "ra", "vin", "eth"),
-     ("the Brave", "the Bold", "Swiftfoot", "of the North", "Lionheart", "the True", "Stormborn")),
+    ("HERO", ("Bra", "Kael", "Ari", "Thor", "Lyn", "Ro", "Zar", "Fen", "Mir", "Dax", "El", "Tam"),
+     ("a", "wen", "dra", "ia", "ra", "elle", "ina", "issa"),
+     ("dor", "ric", "ion", "mir", "lan", "vin", "eth", "an"),
+     ("the Brave", "the Bold", "Swiftfoot", "of the North", "Lionheart", "the True", "Stormborn"),
+     ("Queen of Blades", "the Shieldmaiden", "Lady of Light"),
+     ("King of Blades", "the Shieldbearer", "Lord of Light")),
     ("MONSTER", ("Grak", "Zul", "Mog", "Skrel", "Vor", "Bog", "Kra", "Gul", "Thrax", "Urg", "Snarl", "Drog"),
-     ("thor", "gash", "nok", "lix", "gor", "mire", "zak", "rot", "oom", "ug", "fang", "skar"),
-     ("the Hungry", "of the Swamp", "Bonecrusher", "the Smelly", "the Endless", "of Doom", "the Grumpy")),
-    ("PET", ("Mo", "Pip", "Bis", "Wig", "Noo", "Bun", "Fizz", "Lolly", "Pud", "Snu", "Tib", "Ziggy"),
-     ("chi", "kins", "bles", "gy", "dle", "ster", "bit", "pop", "muffin", "snoot", "beans", "boo"),
-     ("the Fluffy", "Sir Wiggles", "the Sleepy", "Jr.", "the Zoomy", "of the Couch", "the Brave")),
-    ("WIZARD", ("Alda", "Mer", "Zeph", "Quill", "Sol", "Orin", "Vex", "Ilsa", "Bram", "Nim", "Eld", "Myra"),
-     ("bus", "ion", "yra", "dor", "wick", "andra", "oth", "iel", "aris", "ius", "on", "ana"),
-     ("the Grey", "of the Stars", "Moonweaver", "the Wise", "Spellbinder", "of the Tower", "the Odd")),
+     ("ra", "ixa", "mira", "ella", "gra", "ssa", "atha", "ina"),
+     ("thor", "gash", "nok", "gor", "zak", "rot", "ug", "skar"),
+     ("the Hungry", "of the Swamp", "Bonecrusher", "the Smelly", "the Endless", "of Doom", "the Grumpy"),
+     ("Swamp Queen", "Mother of Bats", "the Witch"),
+     ("Swamp King", "Father of Bats", "the Ogre")),
+    ("PET", ("Mo", "Pip", "Bis", "Wig", "Noo", "Bun", "Fizz", "Lol", "Pud", "Snu", "Tib", "Zig"),
+     ("bella", "kins", "lily", "cupcake", "ette", "sy", "pie", "boo"),
+     ("chi", "ster", "bit", "pop", "muffin", "snoot", "beans", "gus"),
+     ("the Fluffy", "the Sleepy", "the Zoomy", "of the Couch", "the Brave", "the Sneaky"),
+     ("the Princess", "the Cuddly Queen", "the Cute"),
+     ("the Prince", "the Cuddly King", "Jr.")),
+    ("WIZARD", ("Ald", "Mer", "Zeph", "Quill", "Sol", "Orin", "Vex", "Ils", "Bram", "Nim", "Eld", "My"),
+     ("yra", "andra", "iel", "ana", "elle", "ora", "ina", "essa"),
+     ("bus", "ion", "dor", "wick", "oth", "aris", "ius", "on"),
+     ("the Grey", "of the Stars", "Moonweaver", "the Wise", "Spellbinder", "of the Tower", "the Odd"),
+     ("the Enchantress", "Witch of the Woods", "Lady of Spells"),
+     ("the Enchanter", "Warlock of the Woods", "Lord of Spells")),
     ("PLANET", ("Zor", "Kep", "Vel", "Astra", "Nyx", "Oro", "Tal", "Xen", "Lumi", "Cyra", "Pol", "Rho"),
      ("ax", "lon", "ia", "us", "tara", "on", "is", "ix", "ara", "eon", "una", "os"),
-     ("Prime", "IV", "Minor", "VII", "Major", "B", "X")),
+     (),
+     ("Prime", "IV", "Minor", "VII", "Major", "B", "X"), (), ()),
 )
+GENDERS = ("FEMALE", "MALE")
 
 
 def one(t):
     return t[random.randint(0, len(t) - 1)]
 
 
-def make(k):
-    w, first, last, titles = KINDS[k]
-    a = one(first) + one(last)
-    if random.randint(0, 3) == 0:
-        a = a + one(last)
+def has_gender(k):
+    return len(KINDS[k][3]) > 0
+
+
+def make(k, g):
+    w, first, fem, male, titles, ftit, mtit = KINDS[k]
+    ends = male if g and male else fem
+    a = one(first) + one(ends)
     if len(a) > 14:
         a = a[:14]
-    return a, (one(titles) if random.randint(0, 1) else "")
+    t = ""
+    if random.randint(0, 1):
+        t = one(titles + ((mtit if g else ftit) if random.randint(0, 2) == 0 else ()))
+    return a, t
 
 
 def show_kind(k, old=None):
     # "< HERO >" at the top: cover the old word, then write the new one
     if old is not None:
-        rect(60, 44, 200, 18, BGC)
-    ctext(56, "< " + KINDS[k][0] + " >", GOLD)
+        rect(60, 38, 200, 18, BGC)
+    ctext(50, "< " + KINDS[k][0] + " >", GOLD)
+
+
+def show_gender(k, g):
+    # FEMALE  MALE under it, the chosen one gold (planets have neither)
+    rect(40, 60, 240, 18, BGC)
+    if has_gender(k):
+        text(80, 72, GENDERS[0], GOLD if g == 0 else GREY)
+        text(190, 72, GENDERS[1], GOLD if g == 1 else GREY)
 
 
 def show_name(nm):
     # the panel's inside is painted over in one go, then the name on top
-    rect(24, 86, 272, 74, PANEL)
-    ctext(116 if nm[1] else 128, nm[0], WHITE)
+    rect(24, 92, 272, 70, PANEL)
+    ctext(120 if nm[1] else 131, nm[0], WHITE)
     if nm[1]:
-        ctext(142, nm[1], GOLD)
+        ctext(146, nm[1], GOLD)
 
 
 def game():
     k = 0
+    g = 0
     cls(BGC)
     ctext(22, "NAME GENERATOR", GOLD)
-    rbox(20, 82, 280, 82, 8, WHITE, 2, PANEL)
-    ctext(180, "ENTER: new name", GREY)
-    ctext(199, "Left/Right: kind  CLEAR: stop", GREY)
+    rbox(20, 88, 280, 78, 8, WHITE, 2, PANEL)
+    ctext(182, "ENTER: new name", GREY)
+    ctext(200, "Up/Down: female or male", GREY)
     show_kind(k)
-    show_name(make(k))
+    show_gender(k, g)
+    show_name(make(k, g))
     while True:
         key_ = wkey()
         if key_ == CLR:
@@ -73,13 +105,19 @@ def game():
             old = k
             k = (k + (1 if key_ == RIGHT else -1)) % len(KINDS)
             show_kind(k, old)
-            show_name(make(k))
-        elif key_ in (OK, UP, DOWN, SECOND):
-            show_name(make(k))
+            if has_gender(k) != has_gender(old):
+                show_gender(k, g)
+            show_name(make(k, g))
+        elif key_ in (UP, DOWN) and has_gender(k):
+            g = 1 - g
+            show_gender(k, g)
+            show_name(make(k, g))
+        elif key_ in (OK, SECOND):
+            show_name(make(k, g))
 
 
-RULES = "Need a name for a story, a game or a drawing? Pick what it is for and press ENTER for as many new names as you like."
-KEYS = ["Left/Right: what it is for", "ENTER: new name", "CLEAR: stop"]
+RULES = "Need a name for a story, a game or a drawing? Pick what it is for, female or male, and press ENTER for as many new names as you like."
+KEYS = ["Left/Right: what it is for", "Up/Down: female or male", "ENTER: new name", "CLEAR: stop"]
 
 
 def main():

@@ -173,35 +173,47 @@ def I_draw(mod,x,y,c):
   f(x,y,c)
 G_BGC=(20,60,70)
 G_PANEL=(10,35,45)
-G_KINDS=(('HERO',('Bra','Kael','Ari','Thor','Lyn','Ro','Zara','Fen','Mira','Dax','Elo','Tam'),('dor','wen','ric','a','ion','dra','mir','ia','lan','ra','vin','eth'),('the Brave','the Bold','Swiftfoot','of the North','Lionheart','the True','Stormborn')),('MONSTER',('Grak','Zul','Mog','Skrel','Vor','Bog','Kra','Gul','Thrax','Urg','Snarl','Drog'),('thor','gash','nok','lix','gor','mire','zak','rot','oom','ug','fang','skar'),('the Hungry','of the Swamp','Bonecrusher','the Smelly','the Endless','of Doom','the Grumpy')),('PET',('Mo','Pip','Bis','Wig','Noo','Bun','Fizz','Lolly','Pud','Snu','Tib','Ziggy'),('chi','kins','bles','gy','dle','ster','bit','pop','muffin','snoot','beans','boo'),('the Fluffy','Sir Wiggles','the Sleepy','Jr.','the Zoomy','of the Couch','the Brave')),('WIZARD',('Alda','Mer','Zeph','Quill','Sol','Orin','Vex','Ilsa','Bram','Nim','Eld','Myra'),('bus','ion','yra','dor','wick','andra','oth','iel','aris','ius','on','ana'),('the Grey','of the Stars','Moonweaver','the Wise','Spellbinder','of the Tower','the Odd')),('PLANET',('Zor','Kep','Vel','Astra','Nyx','Oro','Tal','Xen','Lumi','Cyra','Pol','Rho'),('ax','lon','ia','us','tara','on','is','ix','ara','eon','una','os'),('Prime','IV','Minor','VII','Major','B','X')))
+G_KINDS=(('HERO',('Bra','Kael','Ari','Thor','Lyn','Ro','Zar','Fen','Mir','Dax','El','Tam'),('a','wen','dra','ia','ra','elle','ina','issa'),('dor','ric','ion','mir','lan','vin','eth','an'),('the Brave','the Bold','Swiftfoot','of the North','Lionheart','the True','Stormborn'),('Queen of Blades','the Shieldmaiden','Lady of Light'),('King of Blades','the Shieldbearer','Lord of Light')),('MONSTER',('Grak','Zul','Mog','Skrel','Vor','Bog','Kra','Gul','Thrax','Urg','Snarl','Drog'),('ra','ixa','mira','ella','gra','ssa','atha','ina'),('thor','gash','nok','gor','zak','rot','ug','skar'),('the Hungry','of the Swamp','Bonecrusher','the Smelly','the Endless','of Doom','the Grumpy'),('Swamp Queen','Mother of Bats','the Witch'),('Swamp King','Father of Bats','the Ogre')),('PET',('Mo','Pip','Bis','Wig','Noo','Bun','Fizz','Lol','Pud','Snu','Tib','Zig'),('bella','kins','lily','cupcake','ette','sy','pie','boo'),('chi','ster','bit','pop','muffin','snoot','beans','gus'),('the Fluffy','the Sleepy','the Zoomy','of the Couch','the Brave','the Sneaky'),('the Princess','the Cuddly Queen','the Cute'),('the Prince','the Cuddly King','Jr.')),('WIZARD',('Ald','Mer','Zeph','Quill','Sol','Orin','Vex','Ils','Bram','Nim','Eld','My'),('yra','andra','iel','ana','elle','ora','ina','essa'),('bus','ion','dor','wick','oth','aris','ius','on'),('the Grey','of the Stars','Moonweaver','the Wise','Spellbinder','of the Tower','the Odd'),('the Enchantress','Witch of the Woods','Lady of Spells'),('the Enchanter','Warlock of the Woods','Lord of Spells')),('PLANET',('Zor','Kep','Vel','Astra','Nyx','Oro','Tal','Xen','Lumi','Cyra','Pol','Rho'),('ax','lon','ia','us','tara','on','is','ix','ara','eon','una','os'),(),('Prime','IV','Minor','VII','Major','B','X'),(),()))
+G_GENDERS=('FEMALE','MALE')
 def G_one(t):
  return t[random.randint(0,len(t)-1)]
-def G_make(k):
- w,first,last,titles=G_KINDS[k]
- a=G_one(first)+G_one(last)
- if random.randint(0,3)==0:
-  a=a+G_one(last)
+def G_has_gender(k):
+ return len(G_KINDS[k][3])>0
+def G_make(k,g):
+ w,first,fem,male,titles,ftit,mtit=G_KINDS[k]
+ ends=male if g and male else fem
+ a=G_one(first)+G_one(ends)
  if len(a)>14:
   a=a[:14]
- return(a,G_one(titles)if random.randint(0,1)else '')
+ t=''
+ if random.randint(0,1):
+  t=G_one(titles+((mtit if g else ftit)if random.randint(0,2)==0 else()))
+ return(a,t)
 def G_show_kind(k,old=None):
  if old is not None:
-  rect(60,44,200,18,G_BGC)
- ctext(56,'< '+G_KINDS[k][0]+' >',GOLD)
+  rect(60,38,200,18,G_BGC)
+ ctext(50,'< '+G_KINDS[k][0]+' >',GOLD)
+def G_show_gender(k,g):
+ rect(40,60,240,18,G_BGC)
+ if G_has_gender(k):
+  text(80,72,G_GENDERS[0],GOLD if g==0 else GREY)
+  text(190,72,G_GENDERS[1],GOLD if g==1 else GREY)
 def G_show_name(nm):
- rect(24,86,272,74,G_PANEL)
- ctext(116 if nm[1]else 128,nm[0],WHITE)
+ rect(24,92,272,70,G_PANEL)
+ ctext(120 if nm[1]else 131,nm[0],WHITE)
  if nm[1]:
-  ctext(142,nm[1],GOLD)
+  ctext(146,nm[1],GOLD)
 def G_game():
  k=0
+ g=0
  cls(G_BGC)
  ctext(22,'NAME GENERATOR',GOLD)
- rbox(20,82,280,82,8,WHITE,2,G_PANEL)
- ctext(180,'ENTER: new name',GREY)
- ctext(199,'Left/Right: kind  CLEAR: stop',GREY)
+ rbox(20,88,280,78,8,WHITE,2,G_PANEL)
+ ctext(182,'ENTER: new name',GREY)
+ ctext(200,'Up/Down: female or male',GREY)
  G_show_kind(k)
- G_show_name(G_make(k))
+ G_show_gender(k,g)
+ G_show_name(G_make(k,g))
  while True:
   key_=wkey()
   if key_==CLR:
@@ -210,11 +222,17 @@ def G_game():
    old=k
    k=(k+(1 if key_==RIGHT else-1))%len(G_KINDS)
    G_show_kind(k,old)
-   G_show_name(G_make(k))
-  elif key_ in(OK,UP,DOWN,SECOND):
-   G_show_name(G_make(k))
-G_RULES='Need a name for a story, a game or a drawing? Pick what it is for and press ENTER for as many new names as you like.'
-G_KEYS=['Left/Right: what it is for','ENTER: new name','CLEAR: stop']
+   if G_has_gender(k)!=G_has_gender(old):
+    G_show_gender(k,g)
+   G_show_name(G_make(k,g))
+  elif key_ in(UP,DOWN)and G_has_gender(k):
+   g=1-g
+   G_show_gender(k,g)
+   G_show_name(G_make(k,g))
+  elif key_ in(OK,SECOND):
+   G_show_name(G_make(k,g))
+G_RULES='Need a name for a story, a game or a drawing? Pick what it is for, female or male, and press ENTER for as many new names as you like.'
+G_KEYS=['Left/Right: what it is for','Up/Down: female or male','ENTER: new name','CLEAR: stop']
 def G_main():
  while True:
   c=home('GHNAMES','NAME GENERATOR',G_RULES,G_KEYS,('Play','Back'))
