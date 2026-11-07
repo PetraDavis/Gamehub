@@ -7,6 +7,7 @@ import math
 from ti_system import store_list,recall_list
 import sys
 import gc
+UP=25
 DOWN=34
 LEFT=24
 RIGHT=26
@@ -48,7 +49,7 @@ I_WHITE=(255,255,255)
 I_INK=(20,20,20)
 I_RED=(215,40,40)
 I_GOLD=(230,180,40)
-I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE,'GHSPACE':(15,20,50),'GHFORTUN':(55,25,85),'GHNAMES':(20,60,70),'GHSTAR':(8,10,32),'GHMATCH':(30,90,80),'GHDRAGON':(50,130,60),'GHDETECT':(35,30,55)}
+I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE,'GHSPACE':(15,20,50),'GHFORTUN':(55,25,85),'GHNAMES':(20,60,70),'GHSTAR':(8,10,32),'GHMATCH':(30,90,80),'GHDRAGON':(50,130,60),'GHDETECT':(35,30,55),'GHSUPER':I_WHITE}
 I_FONT={'0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001001001001','8':'111101111101111','9':'111101111001111'}
 def I_c_(c):
  col(c)
@@ -127,16 +128,6 @@ def I_spade(x,y,s,c):
  I_circ(x+s,y+1,s,c)
  I_poly([x-2*s,x+2*s+1,x],[y+1,y+1,y-2*s-1],c)
  I_poly([x,x-s,x+s],[y+1,y+2*s+1,y+2*s+1],c)
-def I_solitaire(x,y,c):
- suits=((I_spade,I_INK),(I_diamond,I_RED),(I_heart,I_RED))
- for i in range(3):
-  l=x-18+i*10
-  t=y-12
-  I_box(l-1,t-1,18,26,I_INK)
-  I_box(l,t,16,24,(250,250,245))
-  f,col=suits[i]
-  f(l+4,t+5,2,col)
- I_heart(x+10,y+3,3,I_RED)
 def I_ttt(x,y,c):
  s=12
  for i in(-1,1):
@@ -181,6 +172,20 @@ def I_names(x,y,c):
  I_box(x-17,y-1,3,3,(20,60,70))
  I_box(x-8,y-4,17,3,I_GOLD)
  I_box(x-8,y+2,11,3,I_INK)
+def I_dragon(x,y,c):
+ I_poly([x-2,x+10,x+4],[y-2,y-17,y+2],(240,190,40))
+ I_box(x-10,y-2,20,11,(220,70,40))
+ I_box(x-18,y-9,11,9,(220,70,40))
+ I_box(x+9,y+3,9,3,(220,70,40))
+ I_box(x-7,y+9,4,5,(220,70,40))
+ I_box(x+4,y+9,4,5,(220,70,40))
+ I_box(x-15,y-7,3,3,I_BLACK)
+def I_detect(x,y,c):
+ I_box(x-14,y+4,6,9,(120,90,60))
+ I_box(x-6,y+8,6,9,(120,90,60))
+ I_circ(x+2,y-4,11,(230,180,40))
+ I_circ(x+2,y-4,8,(190,220,245))
+ I_poly([x+9,x+13,x+19,x+15],[y+5,y+1,y+13,y+17],(120,80,40))
 def I_match(x,y,c):
  I_box(x-19,y-12,17,24,(200,70,90))
  I_box(x-15,y-8,9,16,(225,120,135))
@@ -200,6 +205,9 @@ def S_hname(s):
 H_BAR_Y=34
 H_BAR_H=22
 H_BAR_GAP=27
+def H_header():
+ cls()
+ ctext(22,'GAMEHUB',WHITE)
 def H_app_pos(i):
  return(50+i%4*73,82+i//4*70)
 def H_show_title(name,old=None):
