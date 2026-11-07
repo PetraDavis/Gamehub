@@ -1,70 +1,123 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-def choose(title,opts,sel=0):
- cls()
- ctext(24,title,GOLD)
- n=len(opts)
- for i in range(n):
-  y=40+i*30
-  c=GOLD if i==sel else WHITE
-  rbox(60,y,200,24,8,c,2,BLACK,False)
-  ctext(y+18,opts[i],c)
- while True:
-  k=wkey()
-  old=sel
-  if k==UP:
-   sel=(sel-1)%n
-  elif k==DOWN:
-   sel=(sel+1)%n
-  elif k==OK:
-   return sel
-  elif k==CLR:
-   return-1
-  if sel==old:
-   continue
-  for i in(old,sel):
-   y=40+i*30
-   c=GOLD if i==sel else WHITE
-   edge(60,y,200,24,8,c)
-   ctext(y+18,opts[i],c)
-G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
-G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
-G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
+from GHDRAGOC import _C
+def col(c):
+ if c!=_C[0]:
+  _C[0]=c
+  set_color(c[0],c[1],c[2])
+def fr(x,y,w,h):
+ fill_rect(x-1,y-1,w+1,h+1)
+def rect(x,y,w,h,c):
+ if w<1 or h<1:
+  return
+ col(c)
+ fill_rect(x-1,y-1,w+1,h+1)
+def cls(c=BLACK):
+ COVER[0]+=1
+ col(c)
+ fill_rect(-1,-1,321,211)
+def text(x,y,s,c=WHITE):
+ col(c)
+ draw_text(x,y+TY,s)
+def ctext(y,s,c=WHITE,cx=160):
+ col(c)
+ draw_text(cx-len(s)*5,y+TY,s)
+def circ(x,y,r,c):
+ col(c)
+ fill_circle(x,y,r)
+def lt(c,k=0.35):
+ return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
+def _corners(x,y,w,h,r,t):
+ return((x,y,w,t),(x,y+h-t,w,t),(x,y+t,t,h-2*t),(x+w-t,y+t,t,h-2*t))
+def rbox(x,y,w,h,r,c,t=2,inner=BLACK,fill=True):
+ edge(x,y,w,h,r,c,t)
+ if fill:
+  rect(x+t,y+t,w-2*t,h-2*t,inner)
+def edge(x,y,w,h,r,c,t=2,inner=BLACK):
+ col(c)
+ for bx,by,bw,bh in _corners(x,y,w,h,r,t):
+  if bw>0 and bh>0:
+   fr(bx,by,bw,bh)
+G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','T..........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^^....','^^^^^^^^^^^^^^^^'])
+G_GROUND=((50,130,60),(85,65,55),(215,225,240))
+G_TALL=((35,100,45),(120,90,60),(170,190,220))
+G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum')
+G_DT=list(zip(('Pyrrak','Smoldedrake','Aquawyrm','Gillwing','Fernling','Lichenwing','Stonewyrm','Volcanox','Ashveil','Glacius','Tempestra','Thornwyrm','Dawnwing','Pearlhorn','Jadewyrm','Petalwyrm','Blazequill','Abyssar','Rootwyrm','Lumora','Quantum'),b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03',b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05',G_cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP')))
+G_GEARC=[None]+G_cl(b'\xfa\x96\xc8(((\x82<\xbe\xe6\xb4(<\xe6\xe6\x00\x00\x00\xfa\x96\xc8\xbe\xc3\xcd\xdc(\x1eZ<\x1e(P\xc8\xbe\xc3\xcd(P\xc8Z\xbeP\xdc(\x1e\xe6\xb4(')
+G_BOSS=('Shadow Wyrm',110,12,0,(90,50,140),3)
 def G_egg_type(m):
  r=random.randint(0,99)+m*6
  rar=4 if r>=99 else 3 if r>=92 else 2 if r>=78 else 1 if r>=52 else 0
  return random.choice([i for i in range(20)if G_DT[i][2]==rar])
-def G_egg(x,y,s,t):
- r=G_DT[t][2]
- shell=((245,235,210),(225,240,205),(215,230,250),(235,215,250),(30,30,70),(20,20,45))[r]
- G_oval(x,y,s,BLACK,-1)
- G_oval(x,y,s,dk(shell,0.7))
- G_oval(x-s,y-s,s,shell,2*s)
- if r==4:
-  for dx,dy,n in((-3,-4,1),(3,3,1),(-2,5,0),(-1,-7,0),(-5,1,0),(4,-5,0)):
-   rect(x+(dx-n)*s,y+dy*s,(2*n+1)*s,s,YELLOW)
-   rect(x+dx*s,y+(dy-n)*s,s,(2*n+1)*s,YELLOW)
-  circ(x+s,y-s,2*s,(250,230,140))
-  circ(x+2*s,y-2*s,2*s,shell)
- elif r==5:
-  circ(x+2*s,y+4*s,4*s,(35,40,110))
-  circ(x-3*s,y+1*s,2*s,(35,40,110))
-  Z=(-1,-8,2,-4,-2,-1,2,2,-1,5,1,8)
-  for c,w in(((110,50,180),s+1),((210,150,255),max(1,s//2))):
-   col(c)
-   for i in range(0,10,2):
-    ax,ay,bx,by=(x+Z[i]*s,y+Z[i+1]*s,x+Z[i+2]*s,y+Z[i+3]*s)
-    fill_poly([ax-w,ax+w,bx+w,bx-w],[ay,ay,by,by])
-  rect(x-5*s,y-3*s,s,s,(210,150,255))
-  rect(x+4*s,y-6*s,s,s,(210,150,255))
- else:
-  sp=((190,150,100),(90,170,80),(60,120,230),(150,80,220))[r]
-  if r>=2:
-   for i in range(-5,5,2):
-    rect(x+i*s,y+(i%4==1)*s,2*s,2*s,sp)
-  for dx,dy in((-3,-5),(2,-3),(-2,5),(3,5),(-5,2))[:3+r]:
-   rect(x+dx*s,y+dy*s,2*s,2*s,sp)
- circ(x-3*s,y-5*s,s+1,WHITE)
+def G_base(m,ch):
+ if ch=='~':
+  return G_WATER
+ if ch=='L':
+  return G_LAVA
+ if ch=='"':
+  return G_TALL[m]
+ return G_GROUND[m]
+def G_shapes(m,x,y,ch,out):
+ px=x*G_T
+ py=20+y*G_T
+ if ch=='T':
+  out.append((0,G_BARK,0,(px+8,py+14,4,6)))
+  out.append((1,G_LEAF,1,(px+10,py+8,8)))
+ elif ch=='~':
+  out.append((0,(110,160,235),0,(px+(x*5+y*3)%8,py+8,6,1)))
+ elif ch=='L':
+  out.append((0,(250,200,60),0,(px+(x*7+y*5)%12,py+6,5,3)))
+ elif ch=='"':
+  c=G_GROUND[m]
+  for o in(3,9,15):
+   out.append((0,c,0,(px+o,py+6+o%4,2,8)))
+ elif ch=='^':
+  out.append((0,G_ROCK,2,([px,px+10,px+20],[py+20,py+1,py+20])))
+  out.append((1,WHITE,2,([px+6,px+10,px+14],[py+8,py+1,py+8])))
+ elif ch=='H':
+  out.append((0,G_BARK,1,(px+10,py+12,9)))
+  out.append((1,(60,40,20),1,(px+10,py+12,6)))
+  out.append((2,(245,235,210),1,(px+7,py+12,3)))
+  out.append((2,(245,235,210),1,(px+13,py+11,3)))
+  out.append((3,(200,160,90),0,(px+1,py+15,18,2)))
+ elif ch=='E':
+  r=G_DT[G_EGGS.get((m,x,y),0)][2]
+  sh=(25,25,35)if r==4 else G_CYAN if r==5 else(245,235,210)
+  sp=G_MAG if r==5 else YELLOW if r==4 else G_RCOL[r]if r else(200,170,120)
+  out.append((0,G_BARK,0,(px+3,py+15,14,4)))
+  out.append((1,sh,1,(px+10,py+10,6)))
+  out.append((2,sp,0,(px+7,py+8,3,3)))
+  out.append((2,sp,0,(px+11,py+12,3,3)))
+ elif ch=='B':
+  out.append((0,(40,30,60),1,(px+10,py+10,9)))
+  out.append((1,G_BOSS[4],1,(px+10,py+10,6)))
+  out.append((2,(255,60,60),0,(px+6,py+8,3,3)))
+  out.append((2,(255,60,60),0,(px+11,py+8,3,3)))
+def G_hero(g,out):
+ px=g.x*G_T
+ py=20+g.y*G_T
+ d=g.ride
+ if d is not None:
+  c=d[6]
+  out.append((5,lt(c,0.45),2,([px,px+9,px+4],[py+2,py+11,py+14])))
+  out.append((6,c,0,(px+2,py+11,13,7)))
+  out.append((6,c,0,(px+13,py+6,7,7)))
+  out.append((6,c,0,(px,py+15,3,3)))
+  out.append((6,c,0,(px+4,py+18,3,2)))
+  out.append((6,c,0,(px+11,py+18,3,2)))
+  out.append((7,YELLOW if d[1]==19 else BLACK,0,(px+17,py+8,2,2)))
+  if d[8]:
+   out.append((7,G_GEARC[d[8]],0,(px+5,py+11,6,3)))
+  if d[7]:
+   out.append((8,G_GEARC[d[7]],0,(px+14,py+3,5,3)))
+  out.append((8,(240,200,160),1,(px+8,py+5,3)))
+  out.append((8,(60,120,230),0,(px+6,py+8,5,4)))
+  return
+ out.append((5,(240,200,160),1,(px+10,py+5,4)))
+ out.append((6,G_BARK,0,(px+6,py+1,8,3)))
+ out.append((6,(60,120,230),0,(px+6,py+9,8,7)))
+ out.append((6,(60,40,30),0,(px+6,py+16,3,4)))
+ out.append((6,(60,40,30),0,(px+11,py+16,3,4)))
 def G_paint(ops):
  ops.sort(key=lambda o:(o[0],o[1],o[2],o[3][1]if o[2]==0 else 0,o[3][0]))
  last=None
@@ -87,132 +140,87 @@ def G_paint(ops):
    fill_poly(a[0],a[1])
  if last:
   rect(last[1],last[2],last[3],last[4],last[0][1])
-def G_cells(g,todo,with_hero):
- mp=g.maps[g.m]
- ops=[]
- rows={}
- for x,y in todo:
-  rows.setdefault(y,[]).append(x)
- for y in rows:
-  xs=sorted(rows[y])
-  i=0
-  while i<len(xs):
-   c=G_base(g.m,mp[y][xs[i]])
-   j=i+1
-   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
-    j+=1
-   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
-   i=j
- for x,y in todo:
-  G_shapes(g.m,x,y,mp[y][x],ops)
- if with_hero:
-  G_hero(g,ops)
- G_paint(ops)
-def G_draw_map(g,after_msg=False):
- r0,r1=(0,9)
- if after_msg:
-  r0=max(0,(MSG[0]-20)//G_T)
-  r1=min(9,(MSG[0]+MSG[1]-20)//G_T+1)
+def G_hud(g):
+ d=g.ride
+ if d is not None:
+  who=d[0]+' '+str(d[3])+'/'+str(d[4])
  else:
-  cls()
-  G_HUD[0]=None
- G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
- G_hud(g)
-def G_save(g):
- s=[2,g.coins,g.own,g.book]+(g.bag+[-1]*5)[:5]
- for d in g.pen:
-  p=G_PAINT.index(d[6])+1 if d[6]in G_PAINT and d[6]!=G_DT[d[1]][3]else 0
-  s+=[G_NAMES.index(d[0])*32+d[1],d[2],d[5],p*200+d[7]*20+d[8]]
+  who='You '+str(g.hp)+'/'+str(g.mhp)
+ t=(G_LANDS[g.m],who,'Egg '+str(g.warm)if g.bag else str(g.coins)+'c')
+ if t==G_HUD[0]:
+  return
+ old=G_HUD[0]or('','','')
+ if G_HUD[0]is None:
+  rect(0,0,320,20,BLACK)
+ for i,x,c in((0,4,GOLD),(1,140,WHITE),(2,262,YELLOW)):
+  if t[i]!=old[i]:
+   text(x,15,old[i],BLACK)
+   text(x,15,t[i],c)
+ G_HUD[0]=t
+def G_battle(*a):
+ import GHDRAGOW
+ r=GHDRAGOW.G_battle(*a)
+ GHDRAGOW=None
+ G__drop('GHDRAGOW')
+ return r
+def G_evil(*a):
+ import GHDRAGOW
+ r=GHDRAGOW.G_evil(*a)
+ GHDRAGOW=None
+ G__drop('GHDRAGOW')
+ return r
+def G_rest(*a):
+ import GHDRAGOX
+ r=GHDRAGOX.G_rest(*a)
+ GHDRAGOX=None
+ G__drop('GHDRAGOX')
+ return r
+def G_load(*a):
+ import GHDRAGOX
+ r=GHDRAGOX.G_load(*a)
+ GHDRAGOX=None
+ G__drop('GHDRAGOX')
+ return r
+def G_nest(*a):
+ import GHDRAGOX
+ r=GHDRAGOX.G_nest(*a)
+ GHDRAGOX=None
+ G__drop('GHDRAGOX')
+ return r
+def G_menu(*a):
+ import GHDRAGOX
+ r=GHDRAGOX.G_menu(*a)
+ GHDRAGOX=None
+ G__drop('GHDRAGOX')
+ return r
+def G_win(*a):
+ import GHDRAGOX
+ r=GHDRAGOX.G_win(*a)
+ GHDRAGOX=None
+ G__drop('GHDRAGOX')
+ return r
+def G_backpack(*a):
+ import GHDRAGOY
+ r=GHDRAGOY.G_backpack(*a)
+ GHDRAGOY=None
+ G__drop('GHDRAGOY')
+ return r
+def G_book(*a):
+ import GHDRAGOY
+ r=GHDRAGOY.G_book(*a)
+ GHDRAGOY=None
+ G__drop('GHDRAGOY')
+ return r
+def G_hatch(*a):
+ import GHDRAGOY
+ r=GHDRAGOY.G_hatch(*a)
+ GHDRAGOY=None
+ G__drop('GHDRAGOY')
+ return r
+def G__drop(m):
+ import sys,gc
  try:
-  from ti_system import store_list
-  store_list('DRG',s)
+  del sys.modules[m]
  except Exception:
   pass
-def G_new_quest(g):
- k=random.randint(0,2)
- if k==0:
-  n=random.randint(2,4)
-  land=random.randint(0,g.seen)
-  nm=random.choice(G_FOES[land])[0]
-  return[0,nm,n,0,8*n+6*land,'Beat '+str(n)+' '+nm+'s']
- if k==1:
-  return[1,None,1,0,20,'Hatch an egg']
- land=random.randint(0,g.seen)
- n=random.randint(3,5)
- return[2,land,n,0,7*n+6*land,str(n)+' wins: '+G_LANDS[land]]
-def G_board(g):
- if g.quest is not None:
-  q=g.quest
-  c=choose(q[5]+' '+str(q[3])+'/'+str(q[2]),['Keep going','Give up quest'])
-  if c==1:
-   g.quest=None
-  return
- qs=[G_new_quest(g)for i in range(3)]
- c=choose('Quests: pick one',[q[5][:15]+' '+str(q[4])+'c'for q in qs]+['Not now'])
- if 0<=c<3:
-  g.quest=qs[c]
-def G_lst(title,opts):
- cls()
- ctext(24,title,GOLD)
- n=len(opts)
- sel=old=0
- for i in range(n):
-  text(70,50+i*17,opts[i],GOLD if i==0 else WHITE)
- while True:
-  if sel!=old:
-   for i in(old,sel):
-    rect(0,34+i*17,320,17,BLACK)
-    text(70,50+i*17,opts[i],GOLD if i==sel else WHITE)
-  rect(54,40+sel*17,8,6,GOLD)
-  k=wkey()
-  old=sel
-  if k==UP:
-   sel=(sel-1)%n
-  elif k==DOWN:
-   sel=(sel+1)%n
-  elif k==OK:
-   return sel
-  elif k==CLR:
-   return-1
-def G_dress(g,d,first):
- ids=[i for i in range(first,first+8)if g.own>>i&1]
- if not ids:
-  message(['Buy one in the shop first.'],'Nothing to wear')
-  return
- c=G_lst('Wear on '+('head'if first==1 else 'body'),[G_GEAR[i][0]for i in ids]+['Nothing'])
- if c<0:
-  return
- v=ids[c]if c<len(ids)else 0
- if first==1:
-  d[7]=v
- else:
-  d[8]=v
- G_portrait(d)
- message([d[0]+' looks great!'],'Dressed up')
-def G_put_egg(g,t,near):
- mp=g.maps[g.m]
- for n in range(30):
-  if near:
-   x=g.x+random.randint(-1,1)
-   y=g.y+random.randint(-1,1)
-  else:
-   x=random.randint(1,14)
-   y=random.randint(1,7)
-  if 0<=x<16 and 0<=y<9 and(mp[y][x]in '."')and((x,y)!=(g.x,g.y))and(near or abs(x-g.x)+abs(y-g.y)>3):
-   mp[y][x]='E'
-   G_EGGS[g.m,x,y]=t
-   G_cells(g,[(x,y)],False)
-   return True
- return False
-def G_evil(g):
- cls()
- ctext(90,'The sky goes dark...',RED)
- pause(0.8)
- if not G_battle(g,G_DREAD):
-  return False
- G_draw_map(g)
- if not G_put_egg(g,20,True)and len(g.bag)<5:
-  g.bag.append(20)
- message(['The Dread Drake flies','away... and leaves a','strange egg behind!'],'Whoa!')
- G_draw_map(g,True)
- return True
+ gc.collect()

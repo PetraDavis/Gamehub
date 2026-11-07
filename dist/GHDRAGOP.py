@@ -1,199 +1,150 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
-class G_Game:
- pass
-def G_rest(g):
- g.hp=g.mhp
- g.ride=None
- for d in g.pen:
-  d[3]=d[4]
-def G_load(g):
- try:
-  from ti_system import recall_list
-  s=[int(v)for v in recall_list('DRG')]
- except Exception:
-  return
- if len(s)<9 or s[0]!=2:
-  return
- g.coins,g.own,g.book=(s[1],s[2],s[3])
- g.bag=[e for e in s[4:9]if e>=0]
- for i in range(9,len(s)-3,4):
-  t=s[i]%32
-  lv=s[i+1]
-  mh=20+6*min(4,G_DT[t][2])+6*(lv-1)
-  p=s[i+3]//200
-  g.pen.append([G_NAMES[s[i]//32],t,lv,mh,mh,s[i+2],G_PAINT[p-1]if p else G_DT[t][3],s[i+3]//20%10,s[i+3]%20])
- if g.pen:
-  g.pick=g.pen[0]
- g.warm=12
-def G_pen(g):
- while g.pen:
-  opts=[('> 'if d is g.pick else '')+d[0]+' L'+str(d[2])+' '+G_DT[d[1]][0][:6]for d in g.pen]
-  c=choose('Dragon pen '+str(len(g.pen))+'/10',opts+['Back'])
-  if c<0 or c>=len(g.pen):
-   return
-  d=g.pen[c]
-  a=choose(d[0]+' the '+G_DT[d[1]][0],['Pick as partner','See '+d[0],'Let it go free','Back'])
-  if a==0:
-   g.pick=d
-  elif a==1:
-   t=G_DT[d[1]]
-   G_portrait(d)
-   message([t[0]+' ('+G_RARE[t[2]]+')','Element: '+G_ENAME[t[1]],'Level '+str(d[2])+'  HP '+str(d[4])],d[0])
-  elif a==2 and len(g.pen)>1:
-   g.pen.remove(d)
-   if g.pick is d:
-    g.pick=g.pen[0]
-def G_shop(g):
+GREY=(110,110,110)
+def dk(c,k=0.65):
+ return(int(c[0]*k),int(c[1]*k),int(c[2]*k))
+def pause(s):
+ time.sleep(s)
+def message(lines,title=None):
+ n=len(lines)+(1 if title else 0)
+ h=n*18+30
+ y=(H-h)//2
+ rbox(20,y,280,h,8,WHITE)
+ MSG[0],MSG[1]=(y,h)
+ COVER[0]+=1
+ yy=y+24
+ if title:
+  ctext(yy,title,GOLD)
+  yy+=18
+ for s in lines:
+  ctext(yy,s)
+  yy+=18
  while True:
-  d=g.pick
-  c=choose(d[0]+': '+str(g.coins)+' coins',['Buy accessories','Head: '+(G_GEAR[d[7]][0]or 'nothing'),'Body: '+(G_GEAR[d[8]][0]or 'nothing'),'Paint it 20c','Back'])
-  if c==0:
-   f=choose('Buy for the',['Head','Body','Back'])
-   if f not in(0,1):
-    continue
-   f=1+8*f
-   opts=[G_GEAR[i][0]+(' (have)'if g.own>>i&1 else ' '+str(G_GEAR[i][1])+'c')for i in range(f,f+8)]
-   i=G_lst(str(g.coins)+' coins',opts+['Back'])
-   i=f+i if 0<=i<8 else 0
-   if i and(not g.own>>i&1):
-    if g.coins<G_GEAR[i][1]:
-     message(['You need '+str(G_GEAR[i][1])+' coins.','Do quests to earn more.'],'Not enough')
-    else:
-     g.coins-=G_GEAR[i][1]
-     g.own|=1<<i
-     message([G_GEAR[i][0]+' is in your bag.'],'Bought!')
-  elif c in(1,2):
-   G_dress(g,d,1 if c==1 else 9)
-  elif c==3:
-   if g.coins<20:
-    message(['You need 20 coins.'],'Not enough')
-    continue
-   p=choose('Pick a colour',list(G_PAINTN))
-   if p>=0:
-    g.coins-=20
-    d[6]=G_PAINT[p]
-    G_portrait(d)
-    message([d[0]+' looks great!'],'Painted')
-  else:
-   return
-def G_nest(g):
- G_rest(g)
- G_save(g)
- while True:
-  c=choose('The Nest (saved)',['Dragon pen','Quest board','Shop','Backpack and book','Leave the nest'])
-  if c==0:
-   G_pen(g)
-  elif c==1:
-   G_board(g)
-  elif c==2:
-   if g.pick is None:
-    message(['Hatch a dragon first!'])
-   else:
-    G_shop(g)
-  elif c==3:
-   if choose('Look at your',['Backpack','Dragon book'])==1:
-    G_book(g)
-   else:
-    G_backpack(g)
-  else:
-   G_save(g)
-   return
-def G_backpack(g):
- cls(G_NIGHT)
- ctext(22,'BACKPACK',GOLD)
- if not g.bag:
-  ctext(100,'No eggs. Go and find some!')
- for i in range(len(g.bag)):
-  G_egg(40+i*60,90,3,g.bag[i])
-  r=G_DT[g.bag[i]][2]
-  text(16+i*60,150,'???'if r>4 else G_RARE[r][:5],G_RCOL[r])
- if g.bag:
-  text(6,186,'The first egg hatches in '+str(g.warm),WHITE)
- n=len([i for i in range(1,17)if g.own>>i&1])
- text(6,204,'Accessories: '+str(n)+' of 16',GREY)
- while wkey()not in(OK,CLR):
-  pass
-def G_book(g):
- n=21 if g.book>>20&1 else 20
- i=0
- while True:
-  cls(G_NIGHT)
-  t=G_DT[i]
-  got=g.book>>i&1
-  ctext(22,'DRAGON BOOK  '+str(i+1)+'/'+str(n),GOLD)
-  if got:
-   G_drag(102,30,2,i,t[3])
-   ctext(150,t[0],WHITE)
-   ctext(172,G_RARE[t[2]]+' '+G_ENAME[t[1]],G_RCOL[t[2]])
-  else:
-   G_oval(160,90,4,(30,32,55))
-   ctext(98,'?',GREY)
-   ctext(150,'???',GREY)
-   ctext(172,'Not found yet',GREY)
-  f=len([k for k in range(20)if g.book>>k&1])
-  text(6,204,'Found '+str(f)+' of 20   Left/Right',GREY)
   k=wkey()
-  if k in(LEFT,RIGHT):
-   i=(i+(1 if k==RIGHT else-1))%n
-  elif k in(OK,CLR):
-   return
-def G_hatch(g):
- e=g.bag.pop(0)
- g.warm=12
- t=G_DT[e]
- cls(G_NIGHT)
- ctext(24,'The egg is cracking!',GOLD)
- G_egg(160,110,5,e)
- pause(1.0)
- cls(G_NIGHT)
- G_drag(73,30,3,e,t[3])
- ctext(200,(''if t[2]>4 else G_RARE[t[2]]+' ')+t[0]+' dragon!',G_RCOL[t[2]])
- pause(1.2)
- names=sample(G_NAMES,4)
- i=choose('Name your '+t[0]+':',names)
- nm=names[max(0,i)]
- mh=20+6*min(4,t[2])
- d=[nm,e,1,mh,mh,0,t[3],0,0]
- g.pen.append(d)
- msg=[nm+' joins your pen!']
- if not g.book>>e&1:
-  g.book|=1<<e
-  msg.append('New page in your book!')
- if g.pick is None:
-  g.pick=d
-  msg+=['Press ENTER to ride.','Dragons fly over water,','lava and mountains.']
- G_draw_map(g)
- message(msg,t[0])
- G_quest_step(g,1,None)
- G_draw_map(g,True)
-def G_menu(g):
- d=g.pick
- if g.ride is not None:
-  first='Get off '+d[0]
- else:
-  first='Ride '+d[0]+(''if d[3]>0 else ' (tired)')
- c=choose(d[0]+' the '+G_DT[d[1]][0],[first,'Backpack','Dragon book','Keep exploring'])
- if c==0:
-  if g.ride is not None:
-   if g.maps[g.m][g.y][g.x]in '~L^':
-    G_draw_map(g)
-    message(["You can't get off here!"])
-    G_draw_map(g,True)
-    return
-   g.ride=None
-  elif d[3]==0:
-   G_draw_map(g)
-   message([d[0]+' is too tired.','Rest at the nest first.'])
-   G_draw_map(g,True)
-   return
+  if k in(OK,CLR):
+   return k
+def choose(title,opts,sel=0):
+ cls()
+ ctext(24,title,GOLD)
+ n=len(opts)
+ for i in range(n):
+  y=40+i*30
+  c=GOLD if i==sel else WHITE
+  rbox(60,y,200,24,8,c,2,BLACK,False)
+  ctext(y+18,opts[i],c)
+ while True:
+  k=wkey()
+  old=sel
+  if k==UP:
+   sel=(sel-1)%n
+  elif k==DOWN:
+   sel=(sel+1)%n
+  elif k==OK:
+   return sel
+  elif k==CLR:
+   return-1
+  if sel==old:
+   continue
+  for i in(old,sel):
+   y=40+i*30
+   c=GOLD if i==sel else WHITE
+   edge(60,y,200,24,8,c)
+   ctext(y+18,opts[i],c)
+G_NIGHT=(45,50,80)
+G_ENAME=('fire','water','plant','star')
+G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
+G_ARTF=(b'\x02\x036\x1e<\x10@\x1e\x02\x029\x1e<\x15>\x1e',b'\x00\x10\x1e\x1d\x02\x02\x00\x00\x00\x10$\x1e\x02\x02\x00\x00\x00\x10+\x1d\x02\x02\x00\x00',b'\x02\x0f.\x1c3\x156\x1d\x02\x100\x1c3\x175\x1d\x01\x0e\x1e\x1d\x01\x00\x00\x00\x01\x0e#\x1c\x01\x00\x00\x00\x01\x0e)\x1d\x01\x00\x00\x00',b'\x00\x01\x16\x1c\x07\x02\x00\x00\x00\x01\x1d\x1d\x07\x02\x00\x00\x00\x01$\x1c\x08\x02\x00\x00\x00\x01,\x1d\x04\x01\x00\x00',b'',b'\x00\x07\x1a\x1b\x05\x03\x00\x00\x00\x07#\x1e\x05\x02\x00\x00\x00\x07+\x1c\x03\x02\x00\x00\x00\x070\x1d\x03\x02\x00\x00',b'\x01\x05-\x1b\x02\x00\x00\x00\x01\x051\x1c\x02\x00\x00\x00\x01\x055\x1e\x01\x00\x00\x00\x01\x05\x1e\x1e\x02\x00\x00\x00\x01\x05&\x1f\x02\x00\x00\x00\x01\x06\x1e\x1d\x01\x00\x00\x00\x01\x06&\x1e\x01\x00\x00\x00',b'\x00\x03\x19\x1c\x06\x01\x00\x00\x00\x03\x1e\x1c\x01\x04\x00\x00\x00\x03#\x1b\x01\x05\x00\x00\x00\x03#\x1f\x06\x01\x00\x00\x00\x03,\x1d\x05\x01\x00\x00',b'',b'\x02\x01\x1d\x19\x1f\x13!\x19\x02\x01+\x1b-\x16/\x1c\x02\x010\x1d2\x184\x1e',b'',b'\x02\x10\x1d\x19\x1f\x14!\x19\x02\x10+\x1b-\x16/\x1c\x02\x100\x1d2\x184\x1e',b'',b'',b'\x00\x1e\x1c\x1d\x02\x01\x00\x00\x00\x1e"\x1e\x02\x01\x00\x00\x00\x1e(\x1d\x02\x01\x00\x00',b'',b'\x02\x035\x1e;\rA\x1e\x02\x028\x1e;\x13>\x1e',b'\x02\x0f)\x1a,\x14/\x1b\x02\x0f0\x1d4\x176\x1e\x01\x0b\x1d\x1d\x01\x00\x00\x00\x01\x0b#\x1e\x01\x00\x00\x00\x01\x0b*\x1d\x01\x00\x00\x00',b'\x00\x10\x1c\x1a\x01\x08\x00\x00\x00\x10!\x1a\x01\x08\x00\x00\x00\x10&\x1a\x01\x08\x00\x00\x00\x10-\x1c\x01\x04\x00\x00',b'',b'\x00\x00"\x19\x07\n\x00\x00\x01\x00)\x1e\x05\x00\x00\x00\x02\x00)\x1a9\x1f)#\x02\x16\x12\x10\x19\n\x15\x12\x00\x16\x11\x18\x02\x06\x00\x00\x00\x16\x19\x1d\x08\x01\x00\x00\x00\x16 \x1d\x01\x03\x00\x00\x00\x16 \x1f\t\x01\x00\x00\x00\x16)\x1c\x01\x04\x00\x00\x00\x16.\x1d\x07\x01\x00\x00',b'\x02\x17\x1c\x19\x1e\x13 \x19\x02\x17+\x1b-\x150\x1c\x02\x171\x1d3\x186\x1e\x02\x17\x13\x14\x15\x0f\x18\x14\x00\x19\x18 \x13\x03\x00\x00\x00\x17\x11\x18\x02\x06\x00\x00')
+G_ARTO=(b'',b'\x01\x06\x06\x12\x02\x00\x00\x00\x01\x06\x04\x0e\x02\x00\x00\x00\x01\x05\x03\n\x01\x00\x00\x00',b'\x02\x0f\x11\x13\x16\x10\x14\x16',b'\x00\x10\x13\x15\x01\x03\x00\x00\x00\x10\x15\x15\x01\x03\x00\x00',b'\x02\x08\x0c\x10\x0f\x08\x12\x10\x02\x07\x0f\x10\x0f\x08\x12\x10\x00\x07\x0f\x0c\x01\x04\x00\x00',b'\x00\x07\x11\x11\x03\x02\x00\x00',b'\x01\x05\x14\x14\x02\x00\x00\x00',b'\x00\x03\x11\x15\x03\x01\x00\x00',b'\x01\x06\x06\x14\x02\x00\x00\x00',b'\x00\x0e\x0b\x11\x02\x01\x00\x00',b'\x00\x02$\x0f\x02\x04\x00\x00\x00\x02"\x12\x04\x02\x00\x00\x00\x02"\x13\x02\x05\x00\x00',b'',b'\x01\x02!\x1f\x03\x00\x00\x00\x01\r!\x1f\x01\x00\x00\x00',b'\x00\t\r\t\x02\x07\x00\x00\x00\t\x0b\n\x02\x02\x00\x00\x00\t\x12\x08\x02\x08\x00\x00\x00\t\x14\t\x02\x02\x00\x00\x00\x1d\x0e\t\x01\x07\x00\x00\x00\x1d\x13\x08\x01\x08\x00\x00',b'\x00\x0b\x10\x10\x03\x02\x00\x00\x00\x01\x10\x10\x01\x01\x00\x00',b'\x01\t$\x12\x02\x00\x00\x00\x01\x01!\x16\x02\x00\x00\x00\x01\t\x1e\x18\x01\x00\x00\x00\x01\x02$\x18\x01\x00\x00\x00',b'\x02\x02\x0b\x10\x0e\x08\x11\x10',b'',b'\x00\n\x0e\x08\x02\x08\x00\x00\x00\n\x0b\t\x04\x02\x00\x00\x00\n\x12\x08\x02\x08\x00\x00\x00\n\x13\x08\x04\x02\x00\x00',b'\x02\x02!\x1c$!\x1e!\x00\x02#\x10\x02\x02\x00\x00\x00\x02!\x15\x02\x02\x00\x00\x00\x02\x1d\x18\x01\x01\x00\x00\x00\x02%\r\x01\x01\x00\x00\x00\x02#\x19\x01\x01\x00\x00\x00\x02\r\x12\x02\x02\x00\x00',b'\x00\x16\n\x15\x06\x01\x00\x00\x00\x16\r\x12\x02\x02\x00\x00',b'\x02\x00\x11\x11\x1c\x02\x16\x12\x02\x00\x0e\x10\x14\x04\x12\x11\x00\x17\x08\x17\x0b\x01\x00\x00\x00\x01\n\x17\x01\x02\x00\x00\x00\x01\r\x17\x01\x02\x00\x00\x00\x01\x10\x17\x01\x02\x00\x00\x00\x12\x0b\x11\x05\x04\x00\x00\x00\x16\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00\x02\x00\x0b\x10\x11\x10\x11\x12')
+G_ARTG=(b'',b'\x02\t\x14\x0e\x10\n\x10\x12\x02\t\x14\x0e\x18\n\x18\x12\x02\x1d\x14\x0e\x11\r\x11\x11\x02\x1d\x14\x0e\x17\r\x17\x11\x00\x0c\x13\r\x02\x02\x00\x00',b'\x00\x1a\x0b\x11\x0c\x02\x00\x00\x00\x1c\x0b\x10\x06\x05\x00\x00\x00\x0e\x0c\x11\x04\x03\x00\x00\x00\x01\x0c\x11\x01\x01\x00\x00',b'\x02\x12\x0b\x0f\x10\x01\x14\x0f\x02\x15\x10\x01\x14\x0f\x11\x0f\x00\x12\t\x0f\x0c\x02\x00\x00\x00\x15\t\x10\x0c\x01\x00\x00\x00\x16\x0c\x0c\x07\x01\x00\x00\x00\x02\x0e\x08\x02\x02\x00\x00\x00\x02\x11\x0b\x01\x01\x00\x00',b'\x00\r\x0b\r\t\x03\x00\x00\x02\r\x0b\r\x0b\t\x0e\r\x02\r\r\r\x0f\x08\x12\r\x02\r\x11\r\x14\t\x14\r\x00\x1b\x0b\x0f\t\x01\x00\x00\x00\x02\x0c\r\x01\x01\x00\x00\x00\x04\r\x0e\x01\x01\x00\x00\x00\x0b\x11\x0e\x01\x01\x00\x00',b'\x02\x0b\x0b\x10\x0f\x02\x13\x10\x02\x1e\x0f\x02\x13\x10\x10\x10\x00\x02\r\n\x04\x01\x00\x00\x00\x02\x0c\r\x06\x01\x00\x00\x01\x0c\x0f\x02\x02\x00\x00\x00',b'\x00\x00\t\x0f\r\x02\x00\x00\x00\x00\x0b\x05\t\n\x00\x00\x00\x04\x0b\x0c\t\x02\x00\x00\x00\x1c\x0c\x06\x01\x06\x00\x00',b'\x02\x08\x13\x0f\x18\x0c\x15\x10\x01\t\x11\x0b\x02\x00\x00\x00\x01\t\x14\x0e\x02\x00\x00\x00\x01\t\x0e\x0e\x02\x00\x00\x00\x01\x1d\x11\x10\x02\x00\x00\x00\x01\x02\x11\x0e\x02\x00\x00\x00\x00\x03\x11\x0e\x01\x01\x00\x00',b'\x02\x06\x0c\x0e\x07\x07\x0c\x0b\x02\x06\x14\x0e\x19\x07\x14\x0b\x01\x13\x10\r\x04\x00\x00\x00\x00\x13\x0b\r\n\x03\x00\x00\x00\x1c\x11\x0c\x04\x04\x00\x00\x00\r\n\x10\x0c\x01\x00\x00\x00\x01\x0e\x0b\x01\x02\x00\x00',b'\x00\x04\x10\x16\t\x03\x00\x00\x00\x04\x14\x19\x03\x06\x00\x00\x00\x17\x10\x18\t\x01\x00\x00\x00\x17\x16\x19\x01\x06\x00\x00\x00\x01\x12\x16\x01\x03\x00\x00\x00\x01\x14\x1c\x03\x01\x00\x00',b'\x00\n\x1b\x17\x0b\x04\x00\x00\x00 \x1c\x17\t\x01\x00\x00\x00\x1a\x1b\x1a\x0b\x01\x00\x00\x00\x1a\x1b\x14\x02\x04\x00\x00\x00\x1a \x1b\x01\x06\x00\x00\x00\r\x1f!\x03\x01\x00\x00',b"\x02\x14\x12\x16&\x170'\x02\x1f\x1c\x17&\x170'\x01\r\x13\x17\x02\x00\x00\x00\x00\x02\x12\x16\x01\x01\x00\x00",b'\x00\x13\x16\x1c\x16\x06\x00\x00\x00\x13\x11\x15\x06\x08\x00\x00\x00\x01\x17\x1c\x14\x01\x00\x00\x00\x1c\x16!\x16\x01\x00\x00\x00\x1c\x11\x19\x06\x01\x00\x00\x00\x1c \x1c\x01\x06\x00\x00\x00\r\x1a\x1e\x01\x01\x00\x00\x00\r&\x1e\x01\x01\x00\x00',b'\x00\x14\x10\x16\t\x02\x00\x00\x00\x1f\x10\x17\t\x01\x00\x00\x01\x1b\x14\x1a\x02\x00\x00\x00\x01\r\x14\x19\x01\x00\x00\x00\x00\x00\x13\x1b\x02\x01\x00\x00',b"\x00\x1a&\x17\x01\x05\x00\x00\x00\x08'\x13\x07\x07\x00\x00\x00\x07'\x13\x07\x02\x00\x00\x00\x07,\x15\x02\x05\x00\x00\x00\r*\x15\x01\x01\x00\x00\x00\x01(\x16\x01\x02\x00\x00",b'\x00\x1a*\x04\x01\x15\x00\x00\x00\x04+\x04\t\x06\x00\x00\x00\x17+\x08\t\x02\x00\x00\x00\x02.\x06\x02\x02\x00\x00\x00\r)\x03\x03\x01\x00\x00',b'\x00\r\x11\x19\x07\x01\x00\x00\x00\x1b\x13\x1a\x03\x01\x00\x00\x01\x0b\x14\x1c\x02\x00\x00\x00\x00\x1e\x14\x1d\x02\x01\x00\x00\x00\x01\x13\x1b\x01\x01\x00\x00')
+G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
+def G_art(b,x,y,s,P):
+ for i in range(0,len(b),8):
+  c=P[b[i+1]]
+  a1,a2,a3,a4,a5,a6=(b[i+2],b[i+3],b[i+4],b[i+5],b[i+6],b[i+7])
+  if b[i]==0:
+   rect(x+a1*s,y+a2*s,a3*s,a4*s,c)
+  elif b[i]==1:
+   circ(x+a1*s,y+a2*s,a3*s,c)
   else:
-   g.ride=d
- elif c==1:
-  G_backpack(g)
- elif c==2:
-  G_book(g)
- G_draw_map(g)
+   col(c)
+   fill_poly([x+a1*s,x+a3*s,x+a5*s],[y+a2*s,y+a4*s,y+a6*s])
+def G_drag(x,y,s,t,c,head=0,body=0):
+ P=G_PAL+[lt(c,0.45),dk(c,0.6),c]+G_PAL2+[lt(c,0.2),dk(c,0.4)]+G_PAL3
+ G_art(G_ARTB,x,y,s,P)
+ G_art(G_ARTF[t],x,y,s,P)
+ w,b=(G_ARTW[2*t],G_ARTW[2*t+1])
+ G_art(bytes((2,w,24,26,40,10,37,28,2,b,40,10,28,27,30,27,2,b,40,10,33,28,35,28,2,17,23,26,40,9,26,26,1,17,26,27,3,0,0,0,2,1,40,9,42,7,41,11)),x,y,s,P)
+ G_art(G_ARTL,x,y,s,P)
+ G_art(G_ARTO[t],x,y,s,P)
+ if body:
+  G_art(G_ARTG[body],x,y,s,P)
+ if head:
+  G_art(G_ARTG[head],x,y,s,P)
+def G_cells(g,todo,with_hero):
+ mp=g.maps[g.m]
+ ops=[]
+ rows={}
+ for x,y in todo:
+  rows.setdefault(y,[]).append(x)
+ for y in rows:
+  xs=sorted(rows[y])
+  i=0
+  while i<len(xs):
+   c=G_base(g.m,mp[y][xs[i]])
+   j=i+1
+   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
+    j+=1
+   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
+   i=j
+ for x,y in todo:
+  G_shapes(g.m,x,y,mp[y][x],ops)
+ if with_hero:
+  G_hero(g,ops)
+ G_paint(ops)
+def G_draw_map(g,after_msg=False):
+ r0,r1=(0,9)
+ if after_msg:
+  r0=max(0,(MSG[0]-20)//G_T)
+  r1=min(9,(MSG[0]+MSG[1]-20)//G_T+1)
+ else:
+  cls()
+  G_HUD[0]=None
+ G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
+ G_hud(g)
+def G_save(g):
+ s=[2,g.coins,g.own,g.book]+(g.bag+[-1]*5)[:5]
+ for d in g.pen:
+  p=G_PAINT.index(d[6])+1 if d[6]in G_PAINT and d[6]!=G_DT[d[1]][3]else 0
+  s+=[G_NAMES.index(d[0])*32+d[1],d[2],d[5],p*200+d[7]*20+d[8]]
+ try:
+  from ti_system import store_list
+  store_list('DRG',s)
+ except Exception:
+  pass
+def G_quest_step(g,kind,what):
+ q=g.quest
+ if q is None or q[0]!=kind or(q[1]is not None and q[1]!=what):
+  return
+ q[3]+=1
+ if q[3]>=q[2]:
+  g.coins+=q[4]
+  g.quest=None
+  message(['You finished:',q[5],'+'+str(q[4])+' coins!'],'Quest done!')
+def G_put_egg(g,t,near):
+ mp=g.maps[g.m]
+ for n in range(30):
+  if near:
+   x=g.x+random.randint(-1,1)
+   y=g.y+random.randint(-1,1)
+  else:
+   x=random.randint(1,14)
+   y=random.randint(1,7)
+  if 0<=x<16 and 0<=y<9 and(mp[y][x]in '."')and((x,y)!=(g.x,g.y))and(near or abs(x-g.x)+abs(y-g.y)>3):
+   mp[y][x]='E'
+   G_EGGS[g.m,x,y]=t
+   G_cells(g,[(x,y)],False)
+   return True
+ return False
 def G_play():
  g=G_Game()
  g.maps=[[list(r)for r in mp]for mp in G_MAPS]
@@ -234,10 +185,9 @@ def G_play():
    G_draw_map(g,True)
    continue
   if k in(OK,SECOND):
-   if g.pick is not None:
-    G_menu(g)
-   else:
-    G_backpack(g)
+   c=G_menu(g)if g.pick is not None else 1
+   if c:
+    (G_backpack if c==1 else G_book)(g)
     G_draw_map(g)
    continue
   dx,dy={LEFT:(-1,0),RIGHT:(1,0),UP:(0,-1),DOWN:(0,1)}.get(k,(0,0))
@@ -262,12 +212,7 @@ def G_play():
    continue
   if ch=='B':
    if G_battle(g,G_BOSS):
-    cls()
-    if g.pick:
-     G_drag(73,30,3,g.pick[1],g.pick[6],g.pick[7],g.pick[8])
-    message(['The Shadow Wyrm flies far','away. Dragons return to','every land. You did it!'],'THE END')
-    G_rest(g)
-    G_save(g)
+    G_win(g)
     return
    if g.hp<=0:
     return
@@ -292,7 +237,11 @@ def G_play():
    G_draw_map(g,True)
    continue
   if ch=='H':
-   G_nest(g)
+   while True:
+    c=G_nest(g)
+    if not c:
+     break
+    (G_backpack if c==1 else G_book)(g)
    G_draw_map(g)
    continue
   G_cells(g,[(ox,oy),(nx,ny)],True)
