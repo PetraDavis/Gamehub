@@ -7,7 +7,7 @@ CATS = [
     ("Arcade", [("Wing It", "GHFLAP"), ("Pong", "GHPONG"), ("Breakout", "GHBREAK")]),
     ("Puzzle", [("Stack Drop", "GHBLOCKS"), ("2048", "GHMERGE"), ("Sudoku", "GHSUDOKU"), ("Simon", "GHSIMON")]),
     ("Classics", [("Solitaire", "GHSOLI"), ("Tic-Tac-Toe", "GHTTT"), ("Hangman", "GHHANG")]),
-    ("Adventure", [("Tiny Quest", "GHRPG"), ("Encrypted Demo", "GHCRYPT")]),
+    ("Adventure", [("Tiny Quest", "GHRPG"), ("Encrypted Demo", "GHCRYPT"), ("Lost Orbit", "GHSPACE")]),
     ("Create", [("Animation Studio", "GHANIM")]),
     ("Settings", [("Key Test", "*keys"), ("Delete All Saves", "*wipe"), ("About", "*about")]),
 ]

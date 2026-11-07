@@ -11,7 +11,7 @@ GOLD = (230, 180, 40)
 
 BG = {"GHSOLI": (25, 110, 55), "GHBLOCKS": (40, 30, 90), "GHSUDOKU": WHITE, "GHANIM": WHITE,
       "GHFLAP": (110, 195, 240), "GHTTT": WHITE, "GHMERGE": (187, 173, 160), "GHPONG": (30, 85, 165),
-      "GHBREAK": (30, 70, 170), "GHHANG": WHITE}
+      "GHBREAK": (30, 70, 170), "GHHANG": WHITE, "GHSPACE": (15, 20, 50)}
 
 # 3x5 digits, read row by row
 FONT = {"0": "111101101101111", "1": "010110010010111", "2": "111001111100111",
@@ -403,6 +403,17 @@ def wipe(x, y, c):
         box(x + i - 1, y - 4, 2, 15, (0, 0, 0))
 
 
+def space(x, y, c):
+    # an escape pod flying past a few stars
+    for sx, sy in ((-15, -12), (12, -16), (16, 8), (-17, 10), (2, 17)):
+        box(x + sx, y + sy, 2, 2, (255, 240, 180))
+    poly([x - 4, x + 4, x + 8, x - 8], [y - 14, y - 14, y + 6, y + 6], (220, 225, 235))
+    box(x - 3, y - 7, 6, 5, (90, 170, 230))
+    poly([x - 8, x - 13, x - 8], [y - 2, y + 8, y + 6], (215, 40, 40))
+    poly([x + 8, x + 13, x + 8], [y - 2, y + 8, y + 6], (215, 40, 40))
+    poly([x - 5, x + 5, x], [y + 7, y + 7, y + 15], (250, 170, 40))
+
+
 def about(x, y, c):
     c_(c)
     fill_circle(x, y - 10, 3)
@@ -411,7 +422,7 @@ def about(x, y, c):
 
 ICONS = {"GHSOLI": solitaire, "GHBLOCKS": blocks, "GHSUDOKU": sudoku, "GHANIM": anim,
          "GHFLAP": flap, "GHTTT": ttt, "GHMERGE": g2048, "GHPONG": pong, "GHBREAK": breakout,
-         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHCRYPT": crypt,
+         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHCRYPT": crypt, "GHSPACE": space,
          "*keys": keys, "*wipe": wipe, "*about": about}
 
 

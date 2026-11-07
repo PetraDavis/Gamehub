@@ -101,7 +101,7 @@ I_WHITE=(255,255,255)
 I_INK=(20,20,20)
 I_RED=(215,40,40)
 I_GOLD=(230,180,40)
-I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE}
+I_BG={'GHSOLI':(25,110,55),'GHBLOCKS':(40,30,90),'GHSUDOKU':I_WHITE,'GHANIM':I_WHITE,'GHFLAP':(110,195,240),'GHTTT':I_WHITE,'GHMERGE':(187,173,160),'GHPONG':(30,85,165),'GHBREAK':(30,70,170),'GHHANG':I_WHITE,'GHSPACE':(15,20,50)}
 I_FONT={'0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001001001001','8':'111101111101111','9':'111101111001111'}
 def I_c_(c):
  set_color(c[0],c[1],c[2])
@@ -392,11 +392,19 @@ def I_wipe(x,y,c):
  I_box(x-4,y-16,8,3,c)
  for i in(-5,0,5):
   I_box(x+i-1,y-4,2,15,(0,0,0))
+def I_space(x,y,c):
+ for sx,sy in((-15,-12),(12,-16),(16,8),(-17,10),(2,17)):
+  I_box(x+sx,y+sy,2,2,(255,240,180))
+ I_poly([x-4,x+4,x+8,x-8],[y-14,y-14,y+6,y+6],(220,225,235))
+ I_box(x-3,y-7,6,5,(90,170,230))
+ I_poly([x-8,x-13,x-8],[y-2,y+8,y+6],(215,40,40))
+ I_poly([x+8,x+13,x+8],[y-2,y+8,y+6],(215,40,40))
+ I_poly([x-5,x+5,x],[y+7,y+7,y+15],(250,170,40))
 def I_about(x,y,c):
  I_c_(c)
  fill_circle(x,y-10,3)
  fill_rect(x-3,y-5,6,19)
-I_ICONS={'GHSOLI':I_solitaire,'GHBLOCKS':I_blocks,'GHSUDOKU':I_sudoku,'GHANIM':I_anim,'GHFLAP':I_flap,'GHTTT':I_ttt,'GHMERGE':I_g2048,'GHPONG':I_pong,'GHBREAK':I_breakout,'GHRPG':I_rpg,'GHSIMON':I_simon,'GHHANG':I_hangman,'GHCRYPT':I_crypt,'*keys':I_keys,'*wipe':I_wipe,'*about':I_about}
+I_ICONS={'GHSOLI':I_solitaire,'GHBLOCKS':I_blocks,'GHSUDOKU':I_sudoku,'GHANIM':I_anim,'GHFLAP':I_flap,'GHTTT':I_ttt,'GHMERGE':I_g2048,'GHPONG':I_pong,'GHBREAK':I_breakout,'GHRPG':I_rpg,'GHSIMON':I_simon,'GHHANG':I_hangman,'GHCRYPT':I_crypt,'GHSPACE':I_space,'*keys':I_keys,'*wipe':I_wipe,'*about':I_about}
 def I_bg(mod):
  return I_BG.get(mod,I_BLACK)
 def I_draw(mod,x,y,c):
@@ -426,7 +434,7 @@ def S_wipe():
   store_list(S_hname(s),[0])
   n+=1
  return n
-H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG')]),('Adventure',[('Tiny Quest','GHRPG'),('Encrypted Demo','GHCRYPT')]),('Create',[('Animation Studio','GHANIM')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
+H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG')]),('Adventure',[('Tiny Quest','GHRPG'),('Encrypted Demo','GHCRYPT'),('Lost Orbit','GHSPACE')]),('Create',[('Animation Studio','GHANIM')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
 H_BAR_Y=34
 H_BAR_H=22
 H_BAR_GAP=27
