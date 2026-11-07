@@ -47,124 +47,140 @@ BOSS = ("Hollow King", 70, 12, 4, 0, (110, 80, 180))
 
 GRASS = (40, 110, 50)
 STONE = (60, 55, 50)
+BASE = {".": GRASS, ">": GRASS, "<": GRASS, " ": GRASS, "T": GRASS, "H": GRASS,
+        "~": (40, 90, 190), "#": (30, 28, 35), ":": STONE, "B": STONE}
+LEAF = (25, 85, 35)
+BARK = (90, 60, 30)
+LINE = (45, 40, 38)
+WOOD = (120, 75, 35)
 
 
-def grass(px, py, x, y):
-    rect(px, py, T, T, GRASS)
-    h = (x * 7 + y * 13) % 5
-    rect(px + 3 + h * 2, py + 5 + h, 1, 3, (70, 150, 70))
-    rect(px + 5 + h * 2, py + 6 + h, 1, 2, (70, 150, 70))
-    rect(px + 13 - h, py + 14 - h, 1, 3, (30, 90, 40))
-    if h == 2:
-        rect(px + 14, py + 4, 2, 2, (240, 220, 90))
-    elif h == 4:
-        rect(px + 4, py + 15, 2, 2, (230, 120, 160))
-
-
-def floor(px, py, x, y):
-    rect(px, py, T, T, STONE)
-    o = 0 if y % 2 else 10
-    rect(px, py, T, 1, (45, 40, 38))
-    rect(px + o, py, 1, T, (45, 40, 38))
-    rect(px + 2, py + 2, 6, 1, (75, 70, 64))
-
-
-def tile(m, x, y, ch):
+# Each map cell is a base colour plus a few shapes, listed as
+# (layer, colour, kind, args). The base colours of a row are joined into long
+# rectangles, and the shapes are drawn layer by layer, one colour at a time,
+# so a whole map takes few drawing calls.
+def shapes(m, x, y, ch, out):
     px = x * T
     py = 20 + y * T
     if ch in ".>< ":
-        grass(px, py, x, y)
+        h = (x * 7 + y * 13) % 5
+        if h == 2:
+            out.append((0, (240, 220, 90), 0, (px + 14, py + 4, 2, 2)))
+        elif h == 4:
+            out.append((0, (230, 120, 160), 0, (px + 4, py + 15, 2, 2)))
     elif ch == "T":
-        grass(px, py, x, y)
-        rect(px + 8, py + 12, 4, 7, (90, 60, 30))
-        rect(px + 10, py + 12, 2, 7, (65, 42, 22))
-        circ(px + 10, py + 8, 8, (20, 70, 30))
-        circ(px + 9, py + 7, 6, (35, 100, 45))
-        rect(px + 6, py + 4, 3, 2, (70, 150, 70))
+        out.append((0, BARK, 0, (px + 8, py + 14, 4, 6)))
+        out.append((1, LEAF, 1, (px + 10, py + 8, 8)))
     elif ch == "~":
-        rect(px, py, T, T, (40, 90, 190))
         o = (x * 5 + y * 3) % 8
-        rect(px + o, py + 6, 6, 1, (110, 160, 235))
-        rect(px + (o + 9) % 14, py + 14, 5, 1, (110, 160, 235))
+        out.append((0, (110, 160, 235), 0, (px + o, py + 8, 6, 1)))
     elif ch == "H":
-        grass(px, py, x, y)
-        rect(px + 2, py + 8, 16, 12, (200, 170, 120))
-        rect(px + 2, py + 18, 16, 2, (160, 130, 90))
-        col((170, 50, 40))
-        fill_poly([px, px + 10, px + 20], [py + 9, py, py + 9])
-        col((120, 35, 30))
-        draw_line(px + 10, py, px + 20, py + 9)
-        rect(px + 8, py + 13, 4, 7, (90, 60, 30))
-        rect(px + 4, py + 11, 3, 3, (250, 230, 140))
-        rect(px + 13, py + 11, 3, 3, (250, 230, 140))
-    elif ch == "C":
-        if m < 2:
-            grass(px, py, x, y)
+        out.append((0, (200, 170, 120), 0, (px + 2, py + 9, 16, 11)))
+        out.append((1, (170, 50, 40), 2, ([px, px + 10, px + 20], [py + 9, py, py + 9])))
+        out.append((2, BARK, 0, (px + 8, py + 13, 4, 7)))
+        out.append((2, (250, 230, 140), 0, (px + 4, py + 11, 3, 3)))
+        out.append((2, (250, 230, 140), 0, (px + 13, py + 11, 3, 3)))
+    elif ch == "C" or ch == "c":
+        if m == 2:
+            out.append((0, LINE, 0, (px, py, T, 1)))
+        if ch == "C":
+            out.append((0, (60, 40, 20), 0, (px + 3, py + 6, 14, 11)))
+            out.append((1, (160, 110, 40), 0, (px + 4, py + 7, 12, 9)))
+            out.append((2, GOLD, 0, (px + 4, py + 10, 12, 2)))
         else:
-            floor(px, py, x, y)
-        rect(px + 3, py + 6, 14, 11, (60, 40, 20))
-        rect(px + 4, py + 7, 12, 9, (160, 110, 40))
-        rect(px + 4, py + 7, 12, 2, (190, 140, 60))
-        rect(px + 4, py + 10, 12, 2, GOLD)
-        rect(px + 9, py + 11, 2, 3, GOLD)
-    elif ch == "c":
-        if m < 2:
-            grass(px, py, x, y)
-        else:
-            floor(px, py, x, y)
-        rect(px + 4, py + 10, 12, 6, (100, 70, 30))
-        rect(px + 4, py + 10, 12, 1, (130, 95, 45))
+            out.append((0, (100, 70, 30), 0, (px + 4, py + 10, 12, 6)))
     elif ch == "#":
-        rect(px, py, T, T, (30, 28, 35))
-        o = 0 if y % 2 else 5
-        for yy in (0, 7, 14):
-            rect(px, py + yy, T, 1, (50, 47, 58))
-        for xx in (o, o + 10):
-            rect(px + xx, py, 1, 6, (50, 47, 58))
-            rect(px + (xx + 5) % T, py + 7, 1, 6, (50, 47, 58))
+        for yy in (6, 13):
+            out.append((0, (50, 47, 58), 0, (px, py + yy, T, 1)))
     elif ch == ":":
-        floor(px, py, x, y)
+        out.append((0, LINE, 0, (px, py, T, 1)))
     elif ch == "B":
-        floor(px, py, x, y)
-        circ(px + 10, py + 11, 8, (80, 55, 140))
-        circ(px + 10, py + 10, 8, (110, 80, 180))
-        col(GOLD)
-        fill_poly([px + 3, px + 6, px + 10, px + 14, px + 17], [py + 4, py - 1, py + 3, py - 1, py + 4])
-        rect(px + 5, py + 8, 3, 3, RED)
-        rect(px + 12, py + 8, 3, 3, RED)
-        rect(px + 6, py + 14, 8, 1, (40, 25, 70))
+        out.append((0, LINE, 0, (px, py, T, 1)))
+        out.append((1, (110, 80, 180), 1, (px + 10, py + 11, 8)))
+        out.append((2, GOLD, 2, ([px + 3, px + 6, px + 10, px + 14, px + 17], [py + 4, py - 1, py + 3, py - 1, py + 4])))
+        out.append((3, RED, 0, (px + 5, py + 8, 3, 3)))
+        out.append((3, RED, 0, (px + 12, py + 8, 3, 3)))
 
 
-def hero(x, y):
+def base(m, ch):
+    if ch in "Cc":
+        return GRASS if m < 2 else STONE
+    return BASE.get(ch, GRASS)
+
+
+def hero(x, y, out):
     px = x * T
     py = 20 + y * T
-    rect(px + 5, py + 18, 10, 2, (25, 60, 30))
-    circ(px + 10, py + 5, 4, (240, 200, 160))
-    rect(px + 6, py + 1, 8, 3, (120, 70, 30))
-    rect(px + 8, py + 5, 1, 1, BLACK)
-    rect(px + 11, py + 5, 1, 1, BLACK)
-    rect(px + 6, py + 9, 8, 7, (60, 120, 230))
-    rect(px + 6, py + 13, 8, 1, (120, 80, 40))
-    rect(px + 6, py + 16, 3, 4, (60, 40, 30))
-    rect(px + 11, py + 16, 3, 4, (60, 40, 30))
-    rect(px + 15, py + 4, 2, 11, (210, 215, 225))
-    rect(px + 14, py + 12, 4, 2, GOLD)
+    out.append((5, (240, 200, 160), 1, (px + 10, py + 5, 4)))
+    out.append((6, WOOD, 0, (px + 6, py + 1, 8, 3)))
+    out.append((6, BLACK, 0, (px + 8, py + 5, 1, 1)))
+    out.append((6, BLACK, 0, (px + 11, py + 5, 1, 1)))
+    out.append((6, (60, 120, 230), 0, (px + 6, py + 9, 8, 7)))
+    out.append((6, (60, 40, 30), 0, (px + 6, py + 16, 3, 4)))
+    out.append((6, (60, 40, 30), 0, (px + 11, py + 16, 3, 4)))
+    out.append((6, (210, 215, 225), 0, (px + 15, py + 4, 2, 8)))
+    out.append((6, GOLD, 0, (px + 14, py + 12, 4, 2)))
+
+
+def paint(ops):
+    # rectangles of one colour that touch side by side become one
+    ops.sort(key=lambda o: (o[0], o[1], o[2], o[3][1] if o[2] == 0 else 0, o[3][0]))
+    last = None
+    for layer, c, kind, a in ops:
+        if kind == 0:
+            if last and last[0] == (layer, c) and last[2] == a[1] and last[4] == a[3] and last[1] + last[3] == a[0]:
+                last[3] += a[2]
+                continue
+            if last:
+                rect(last[1], last[2], last[3], last[4], last[0][1])
+            last = [(layer, c), a[0], a[1], a[2], a[3]]
+            continue
+        if last:
+            rect(last[1], last[2], last[3], last[4], last[0][1])
+            last = None
+        if kind == 1:
+            circ(a[0], a[1], a[2], c)
+        else:
+            col(c)
+            fill_poly(a[0], a[1])
+    if last:
+        rect(last[1], last[2], last[3], last[4], last[0][1])
+
+
+def cells(g, todo, with_hero):
+    # draw the map cells in todo (x, y): their base colours joined along each
+    # row, then their shapes, and the hero if with_hero
+    mp = g.maps[g.m]
+    ops = []
+    rows = {}
+    for x, y in todo:
+        rows.setdefault(y, []).append(x)
+    for y in rows:
+        xs = sorted(rows[y])
+        i = 0
+        while i < len(xs):
+            c = base(g.m, mp[y][xs[i]])
+            j = i + 1
+            while j < len(xs) and xs[j] == xs[j - 1] + 1 and base(g.m, mp[y][xs[j]]) == c:
+                j += 1
+            ops.append((-1, c, 0, (xs[i] * T, 20 + y * T, (j - i) * T, T)))
+            i = j
+    for x, y in todo:
+        shapes(g.m, x, y, mp[y][x], ops)
+    if with_hero:
+        hero(g.x, g.y, ops)
+    paint(ops)
 
 
 def draw_map(g, after_msg=False):
     # after a message box, only the rows it covered are drawn again
-    m = g.m
     r0, r1 = 0, 10
     if after_msg:
         r0 = max(0, (MSG[0] - 20) // T)
         r1 = min(10, (MSG[0] + MSG[1] - 20) // T + 1)
     else:
         HUD[0] = None
-    for y in range(r0, r1):
-        for x in range(16):
-            tile(m, x, y, g.maps[m][y][x])
-    if r0 <= g.y < r1:
-        hero(g.x, g.y)
+    cells(g, [(x, y) for y in range(r0, r1) for x in range(16)], r0 <= g.y < r1)
     hud(g)
 
 
@@ -371,8 +387,8 @@ def play():
             return
         ox, oy = g.x, g.y
         g.x, g.y = nx, ny
-        tile(g.m, ox, oy, mp[oy][ox])
-        hero(g.x, g.y)
+        # the cell the hero left and the hero, drawn together colour by colour
+        cells(g, [(ox, oy)], True)
         steps += 1
         if FOES[g.m] and steps > 6 and random.random() < 0.12:
             steps = 0

@@ -11,11 +11,24 @@ BALL = (250, 150, 40)
 LINE = (150, 190, 235)
 
 
-def net():
-    col(LINE)
-    draw_circle(160, 117, 28)
+def net(box=None):
+    # box: only repair the parts of the net an old ball square covered
+    if box is None or ring_hit(box):
+        col(LINE)
+        draw_circle(160, 117, 28)
     for y in range(TOP + 2, 208, 14):
-        rect(159, y, 2, 7, WHITE)
+        if box is None or (box[1] < y + 7 and y < box[1] + 8 and box[0] < 161 and 159 < box[0] + 8):
+            rect(159, y, 2, 7, WHITE)
+
+
+def ring_hit(b):
+    # does the 8x8 square at b touch the centre circle's line?
+    x0, y0 = b
+    nx = min(max(160, x0), x0 + 7) - 160
+    ny = min(max(117, y0), y0 + 7) - 117
+    fx = max(abs(x0 - 160), abs(x0 + 7 - 160))
+    fy = max(abs(y0 - 117), abs(y0 + 7 - 117))
+    return nx * nx + ny * ny <= 29 * 29 and fx * fx + fy * fy >= 27 * 27
 
 
 def court():
@@ -25,20 +38,15 @@ def court():
     net()
 
 
+# Each drawing call is slow on the calculator, so paddles and the ball are
+# plain rectangles and a moving paddle only paints the strips it gains and
+# leaves.
 def paddle(x, y, c):
-    # side by side pieces that never overlap, so redrawing it can't flash
-    rect(x, y, 1, PH, lt(c))
-    rect(x + 1, y, 1, PH, c)
-    rect(x + 2, y, 2, 4, c)
-    rect(x + 2, y + 4, 2, PH - 8, lt(c, 0.5))
-    rect(x + 2, y + PH - 4, 2, 4, c)
-    rect(x + 4, y, 1, PH, c)
-    rect(x + 5, y, 1, PH, dk(c))
+    rect(x, y, 6, PH, c)
 
 
 def puck(x, y):
     rect(x - 4, y - 4, 8, 8, BALL)
-    rect(x - 2, y - 2, 2, 2, lt(BALL, 0.6))
 
 
 def scores(a, b):
@@ -96,17 +104,22 @@ def game():
                 vx = max(-9, -vx * 1.06)
                 vy += (by - (cy + PH / 2)) / 6
                 bx = 302
-            vacate(int(obx) - 4, int(oby) - 4, int(bx) - 4, int(by) - 4, 8, 8, TABLE)
+            ob = (int(obx) - 4, int(oby) - 4)
+            vacate(ob[0], ob[1], int(bx) - 4, int(by) - 4, 8, 8, TABLE)
             if opy != py:
                 vacate(8, opy, 8, py, 6, PH, TABLE)
             if ocy != cy:
                 vacate(306, ocy, 306, cy, 6, PH, TABLE)
-            if 126 < obx < 194:
-                net()
-            if opy != py or 0 < obx < 24:
+            if 0 < obx < 24:
                 paddle(8, py, WHITE)
-            if ocy != cy or 296 < obx < 320:
+            elif opy != py:
+                vacate(8, py, 8, opy, 6, PH, WHITE)
+            if 126 < obx < 194:
+                net(ob)
+            if 296 < obx < 320:
                 paddle(306, cy, GOLD)
+            elif ocy != cy:
+                vacate(306, cy, 306, ocy, 6, PH, GOLD)
             puck(int(bx), int(by))
             if bx < 0:
                 cpu += 1

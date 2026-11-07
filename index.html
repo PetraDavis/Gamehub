@@ -93,8 +93,9 @@
       </div>
       <div class="actions">
         <button class="btn small" id="sendBench" type="button">Test: send speed check</button>
+        <button class="btn small" id="sendSize" type="button">Test: send size check</button>
       </div>
-      <p class="note">Test version: all of GAMEHUB in a single file called GHONE. Run GHONE on the calculator. If it shows a memory error, use the normal button above.</p>
+      <p class="note">Test version: all of GAMEHUB in a single file called GHONE. Run GHONE on the calculator. If it shows a memory error, use the normal button above. The size check sends GHSZA, GHSZB, GHSZC and GHSZD (40, 48, 56 and 64 KB); run each one and see which ones say OK.</p>
       <p class="note" id="support"></p>
       <div id="status" aria-live="polite">
         <div class="msg" id="msg"></div>
@@ -191,6 +192,7 @@
   $('sendAll').addEventListener('click', () => send(['GAMEHUB'].concat(GAMES.map(g => g.mod)), 'GAMEHUB'));
   $('sendOne').addEventListener('click', () => send(['GHONE'], 'GHONE (one-file test)'));
   $('sendBench').addEventListener('click', () => send(['GHBENCH'], 'GHBENCH (speed check)'));
+  $('sendSize').addEventListener('click', () => send(['GHSZA', 'GHSZB', 'GHSZC', 'GHSZD'], 'size check files'));
 
   const ok = window.EvoSend && EvoSend.supported();
   if (!ok) {

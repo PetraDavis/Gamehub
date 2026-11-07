@@ -27,7 +27,7 @@ def draw_bar(i, on, first=False):
     y = BAR_Y + i * BAR_GAP
     c = GOLD if on else WHITE
     if first:
-        rbox(50, y, 220, BAR_H, 9, c)
+        rbox(50, y, 220, BAR_H, 9, c, 2, BLACK, False)
     else:
         edge(50, y, 220, BAR_H, 9, c)
     ctext(y + 17, CATS[i][0], c)
@@ -80,7 +80,7 @@ def show_title(name, old=None):
 def app_screen(ci, sel=0):
     cname, apps = CATS[ci]
     cls()
-    rbox(90, 8, 140, 24, 9, WHITE)
+    rbox(90, 8, 140, 24, 9, WHITE, 2, BLACK, False)
     ctext(26, cname, WHITE)
     for i in range(len(apps)):
         draw_app(apps[i], i, i == sel, True)

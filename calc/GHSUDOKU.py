@@ -56,7 +56,7 @@ def cell(b, fixed, i, cur):
     # or the gold cursor outline (which sits around the number, never on it)
     x = X0 + (i % 9) * S
     y = Y0 + (i // 9) * S
-    bg = (236, 238, 246) if fixed[i] else WHITE
+    bg = FIX if fixed[i] else WHITE
     v = b[i]
     c = (INK if fixed[i] else (RED if clash(b, i) else PEN)) if v else None
     on = i == cur
@@ -73,6 +73,36 @@ def cell(b, fixed, i, cur):
         rect(x + 1, y + 3, 2, S - 6, k)
         rect(x + S - 3, y + 3, 2, S - 6, k)
     SHOWN[i] = (v, c, on)
+
+
+FIX = (236, 238, 246)
+
+
+def first(b, fixed, cur):
+    # the whole board in few calls (each one is slow on the calculator):
+    # the shaded cells of a row joined into one strip, then the lines on top,
+    # then each row's numbers as one line of text (cells are 20 px apart,
+    # two characters)
+    for r in range(9):
+        c = 0
+        while c < 9:
+            if fixed[r * 9 + c]:
+                e = c
+                while e < 9 and fixed[r * 9 + e]:
+                    e += 1
+                rect(X0 + c * S, Y0 + r * S, (e - c) * S, S, FIX)
+                c = e
+            else:
+                c += 1
+    grid()
+    for r in range(9):
+        row = "".join([(str(b[r * 9 + c]) if b[r * 9 + c] else " ") + " " for c in range(9)])
+        if row.strip():
+            text(X0 + 5, Y0 + r * S + 16, row.rstrip(), INK)
+    for i in range(81):
+        v = b[i]
+        SHOWN[i] = (v, (INK if fixed[i] else (RED if clash(b, i) else PEN)) if v else None, False)
+    cell(b, fixed, cur, cur)
 
 
 def grid():
@@ -92,7 +122,6 @@ def game(holes):
     b = make(holes)
     fixed = [v != 0 for v in b]
     cls(WHITE)
-    grid()
     rbox(208, 12, 106, 30, 8, PEN, 2, (225, 235, 252))
     text(222, 33, "SUDOKU", PEN)
     text(214, 70, "0-9 type", GREY)
@@ -103,8 +132,7 @@ def game(holes):
     cur = 0
     while fixed[cur]:
         cur += 1
-    for i in range(81):
-        cell(b, fixed, i, cur)
+    first(b, fixed, cur)
     while True:
         k = wkey()
         old = cur

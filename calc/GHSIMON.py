@@ -22,16 +22,17 @@ SHAPE = []
 def shapes():
     # quarter q spans angle q*90 .. q*90+90 (0 = bottom right, screen y down)
     for q in range(4):
+        # the quarter stops short of the dark gaps, so lighting it up never
+        # has to draw the gaps again
         xs = []
         ys = []
-        for i in range(9):
-            a = math.pi / 2 * (q + i / 8)
-            xs.append(int(CX + RO * math.cos(a)))
-            ys.append(int(CY + RO * math.sin(a)))
-        for i in range(8, -1, -1):
-            a = math.pi / 2 * (q + i / 8)
-            xs.append(int(CX + RI * math.cos(a)))
-            ys.append(int(CY + RI * math.sin(a)))
+        for r, order in ((RO, range(9)), (RI + 3, range(8, -1, -1))):
+            for i in order:
+                a = math.pi / 2 * (q + i / 8)
+                dx = r * math.cos(a)
+                dy = r * math.sin(a)
+                xs.append(int(CX + (max(dx, 4) if q in (0, 3) else min(dx, -5))))
+                ys.append(int(CY + (max(dy, 4) if q in (0, 1) else min(dy, -5))))
         SHAPE.append((xs, ys))
 
 
@@ -51,7 +52,6 @@ def pad(i, lit):
     col(bright if lit else dim)
     xs, ys = SHAPE[q]
     fill_poly(xs, ys)
-    gaps()
 
 
 def body():
@@ -61,16 +61,18 @@ def body():
     circ(CX, CY, RO + 5, (15, 15, 15))
     for i in range(4):
         pad(i, False)
+    gaps()
     ring(CX, CY, RI, (15, 15, 15), 3, (70, 70, 75))
 
 
 def score(n):
     # rub out only the old number, by writing it in the background colour
     if n:
-        text(6, 17, "Score " + str(n - 1), BLACK)
+        text(66, 17, str(n - 1), BLACK)
     else:
         text(204, 17, "CLEAR quit", GREY)
-    text(6, 17, "Score " + str(n))
+        text(6, 17, "Score")
+    text(66, 17, str(n))
     if n:
         s = str(n - 1)
         text(CX - len(s) * 5, CY + 7, s, (25, 25, 28))

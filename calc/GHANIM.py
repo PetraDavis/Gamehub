@@ -172,38 +172,60 @@ def paint(s, i, v):
 
 def refresh(s, src=None):
     # paint the cells that differ from s.shown; src is a frame (for playback),
-    # or None for the frame being edited with its onion skin
-    runs = {}
-    hide = s.hide
-    for r in range(CHG):
-        base = r * CWD
-        c = 0
-        while c < CWD:
-            i = base + c
-            v = src[i] if src is not None else want(s, i)
-            if i == hide and s.shown[i] == v:
-                c += 1
-                continue
-            e = c
-            dirty = False
-            while e < CWD:
-                j = base + e
-                w = src[j] if src is not None else want(s, j)
-                if w != v or (j == hide and s.shown[j] == v):
+    # or None for the frame being edited with its onion skin.
+    # Every drawing call is slow on the calculator, so changed cells are joined
+    # into rectangles as big as possible. A rectangle may also cover cells that
+    # already show its colour (painting them again changes nothing), and all
+    # rectangles of one colour are drawn together.
+    t = src if src is not None else bytearray([want(s, i) for i in range(N)])
+    sh = s.shown
+    hb = s.hide if s.hide >= 0 and sh[s.hide] == t[s.hide] else -1
+    todo = {}
+    for i in range(N):
+        v = t[i]
+        if sh[i] == v:
+            continue
+        r = i // CWD
+        c = i - r * CWD
+        # the run of cells to the right that end up colour v
+        e = 1
+        while c + e < CWD and t[i + e] == v and i + e != hb:
+            e += 1
+        # or only up to the last of them that still needs painting
+        n = e
+        while n > 1 and sh[i + n - 1] == v:
+            n -= 1
+        best = None
+        for w in ((e, n) if n < e else (e,)):
+            h = 1
+            while r + h < CHG:
+                j = i + h * CWD
+                k = 0
+                while k < w and t[j + k] == v and j + k != hb:
+                    k += 1
+                if k < w:
                     break
-                if s.shown[j] != v:
-                    dirty = True
-                    s.shown[j] = v
-                e += 1
-            if dirty:
-                if v in runs:
-                    runs[v].append((c, r, e - c))
-                else:
-                    runs[v] = [(c, r, e - c)]
-            c = e
-    for v in runs:
-        for c, r, n in runs[v]:
-            rect(CX + c * P, CY + r * P, n * P, P, COL[v])
+                h += 1
+            g = 0
+            for q in range(h):
+                j = i + q * CWD
+                for k in range(w):
+                    if sh[j + k] != v:
+                        g += 1
+            if best is None or g > best[0]:
+                best = (g, w, h)
+        g, w, h = best
+        for q in range(h):
+            j = i + q * CWD
+            for k in range(w):
+                sh[j + k] = v
+        if v in todo:
+            todo[v].append((c, r, w, h))
+        else:
+            todo[v] = [(c, r, w, h)]
+    for v in todo:
+        for c, r, w, h in todo[v]:
+            rect(CX + c * P, CY + r * P, w * P, h * P, COL[v])
 
 
 def cursor(s):
@@ -224,24 +246,31 @@ def uncursor(s):
 
 def label(s, key, x, y, t, c, bg=WHITE):
     # write t at x, y; if something was written there before, change only
-    # the letters that differ
+    # the letters that differ. Neighbouring changed letters are erased with
+    # one rectangle and written with one text call, because each call is slow.
     old = s.lab.get(key)
     s.lab[key] = (t, c)
     if old is None:
         text(x, y, t, c)
         return
     o, oc = old
-    for k in range(max(len(o), len(t))):
-        a = o[k] if k < len(o) else " "
-        b = t[k] if k < len(t) else " "
-        if a != b:
-            if a != " ":
-                rect(x + k * 10, y - 12, 10, 16, bg)
-            if b != " ":
-                text(x + k * 10, y, b, c)
-        elif oc != c and b != " ":
-            # same letter, new colour: drawing over it is enough
-            text(x + k * 10, y, b, c)
+    n = max(len(o), len(t))
+    o = o + " " * (n - len(o))
+    t2 = t + " " * (n - len(t))
+    segs = []
+    for k in range(n):
+        if o[k] != t2[k] or (oc != c and t2[k] != " "):
+            if segs and k - segs[-1][1] <= 2:
+                segs[-1][1] = k + 1
+            else:
+                segs.append([k, k + 1])
+    rub = [g for g in segs if o[g[0]:g[1]].strip()]
+    for a, b in rub:
+        rect(x + a * 10, y - 12, (b - a) * 10, 16, bg)
+    for a, b in segs:
+        w = t2[a:b]
+        if w.strip():
+            text(x + a * 10, y, w, c)
 
 
 def swatch(s, c, sel=-1):
@@ -260,10 +289,10 @@ def palette(s):
         x = 210 + (c % 4) * 26
         y = 30 + (c // 4) * 26
         rect(x + 1, y + 1, 20, 20, PAL[c])
-        if c == 0:
-            col(GREY)
-            draw_rect(x, y, 20, 20)
-        swatch(s, c)
+    # the panel behind is white, so only outlines of another colour are drawn
+    col(GREY)
+    draw_rect(210, 30, 20, 20)
+    swatch(s, s.col)
 
 
 def topbar(s):
@@ -482,25 +511,42 @@ def scrollbar(top, old=None):
 
 
 def mbox(x, y, w, h, c):
-    # an outline with stepped corners, made only of rectangles, so it can be
+    # an outline with notched corners: four rectangles, so it can be
     # recoloured without touching the inside
-    rect(x + 4, y, w - 8, 2, c)
-    rect(x + 4, y + h - 2, w - 8, 2, c)
-    rect(x, y + 4, 2, h - 8, c)
-    rect(x + w - 2, y + 4, 2, h - 8, c)
-    rect(x + 2, y + 2, 2, 2, c)
-    rect(x + w - 4, y + 2, 2, 2, c)
-    rect(x + 2, y + h - 4, 2, 2, c)
-    rect(x + w - 4, y + h - 4, 2, 2, c)
+    rect(x + 2, y, w - 4, 2, c)
+    rect(x + 2, y + h - 2, w - 4, 2, c)
+    rect(x, y + 2, 2, h - 4, c)
+    rect(x + w - 2, y + 2, 2, h - 4, c)
 
 
-def mrow(s, r, i, on):
-    y = MY + r * MH
-    c = GOLD if on else WHITE
-    if s.lab.get(("mb", r)) != c:
+def mrows(s, top, sel):
+    # bring the 6 visible rows up to date, drawing each colour in one go:
+    # first the outlines, then black over words that change, then the words
+    boxes = []
+    rub = []
+    words = []
+    for r in range(MV):
+        i = top + r
+        y = MY + r * MH
+        c = GOLD if i == sel else WHITE
+        if s.lab.get(("mb", r)) != c:
+            boxes.append((c, y))
+            s.lab[("mb", r)] = c
+        old = s.lab.get(("m", r))
+        t = ITEMS[i]
+        if old != (t, c):
+            if old and old[0] != t:
+                rub.append((y, len(old[0])))
+            words.append((c, y, t))
+            s.lab[("m", r)] = (t, c)
+    boxes.sort()
+    for c, y in boxes:
         mbox(MX + 1, y, MW, 22, c)
-        s.lab[("mb", r)] = c
-    label(s, ("m", r), MX + 5, y + 16, ITEMS[i], c, BLACK)
+    for y, n in rub:
+        rect(MX + 5, y + 4, n * 10, 16, BLACK)
+    words.sort()
+    for c, y, t in words:
+        text(MX + 5, y + 16, t, c)
 
 
 def menu(s, sel):
@@ -511,8 +557,7 @@ def menu(s, sel):
         s.lab.pop(("m", r), None)
     botbar(s, "MENU  Up/Down: pick", "ENTER: do it  2nd: close")
     top = min(max(0, sel - 2), 16 - MV)
-    for r in range(MV):
-        mrow(s, r, top + r, top + r == sel)
+    mrows(s, top, sel)
     scrollbar(top)
     while True:
         k = wkey()
@@ -535,8 +580,7 @@ def menu(s, sel):
             nt = sel - MV + 1
         scrollbar(nt, top)
         top = nt
-        for r in range(MV):
-            mrow(s, r, top + r, top + r == sel)
+        mrows(s, top, sel)
     side(s)
     botbar(s)
     return sel

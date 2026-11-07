@@ -20,9 +20,10 @@ for mod in I.ICONS:
 # the one-file builds the site sends: dist/GAMEHUB.py and one file per game
 import runpy, zipfile
 runpy.run_path(os.path.join(ROOT, 'tools', 'bundle.py'), run_name='__main__')
+runpy.run_path(os.path.join(ROOT, 'tools', 'probes.py'), run_name='__main__')
 D = os.path.join(ROOT, 'dist')
 with zipfile.ZipFile(os.path.join(ROOT, 'gamehub.zip'), 'w', zipfile.ZIP_DEFLATED) as z:
     for f in sorted(os.listdir(D)):
-        # GHONE.py (one-file test) and GHBENCH.py (hand-written speed test) aren't part of the zip
-        if f.endswith('.py') and f not in ('GHONE.py', 'GHBENCH.py'):
+        # GHONE.py (one-file test), GHBENCH.py (speed test) and GHSZ*.py (size tests) aren't part of the zip
+        if f.endswith('.py') and f not in ('GHONE.py', 'GHBENCH.py') and not f.startswith('GHSZ'):
             z.write(os.path.join(D, f), 'GAMEHUB/' + f)

@@ -32,19 +32,30 @@ def cpu(b):
     return random.choice(free)
 
 
+# Each drawing call is slow on the calculator, so the cursor is an outline
+# of four rectangles and only marks that are new get drawn.
+def frame(i, c):
+    x = X0 + (i % 3) * S + 3
+    y = Y0 + (i // 3) * S + 3
+    w = S - 6
+    rect(x + 3, y, w - 6, 3, c)
+    rect(x + 3, y + w - 3, w - 6, 3, c)
+    rect(x, y + 3, 3, w - 6, c)
+    rect(x + w - 3, y + 3, 3, w - 6, c)
+
+
 def cell(b, i, cur, full=True):
-    # full: the whole cell. Otherwise only the cursor outline changes colour
+    # full: draw the mark in cell i. Otherwise only the cursor outline
     x = X0 + (i % 3) * S
     y = Y0 + (i // 3) * S
-    if full:
-        rect(x + 3, y + 3, S - 6, S - 6, WHITE)
-    edge(x + 3, y + 3, S - 6, S - 6, 4, GOLD if i == cur else WHITE, 3, WHITE)
     m = b[i]
-    if m == 1:
+    if not full:
+        frame(i, GOLD if i == cur else WHITE)
+    elif m == 1:
         col(INK)
-        for o in (-1, 0, 1):
-            draw_line(x + 12 + o, y + 12, x + S - 12 + o, y + S - 12)
-            draw_line(x + S - 12 + o, y + 12, x + 12 + o, y + S - 12)
+        a, e = 12, S - 12
+        fill_poly([x + a - 1, x + a + 2, x + e + 1, x + e - 2], [y + a, y + a, y + e, y + e])
+        fill_poly([x + e - 2, x + e + 1, x + a + 2, x + a - 1], [y + a, y + a, y + e, y + e])
     elif m == 2:
         ring(x + S // 2, y + S // 2, 15, INK, 3, WHITE)
 
@@ -60,10 +71,21 @@ SHOWN = [""]
 
 def status(s):
     # rub out the old words by writing them in the background colour
-    if s != SHOWN[0]:
-        ctext(203, SHOWN[0], WHITE)
+    o = SHOWN[0]
+    if s == o:
+        return
+    if len(s) == len(o):
+        # same length: change only the letters between the first and last
+        # that differ, so the rest of the line doesn't flash
+        d = [k for k in range(len(s)) if s[k] != o[k]]
+        a, e = d[0], d[-1] + 1
+        x = 160 - len(s) * 5 + a * 10
+        text(x, 203, o[a:e], WHITE)
+        text(x, 203, s[a:e], INK)
+    else:
+        ctext(203, o, WHITE)
         ctext(203, s, INK)
-        SHOWN[0] = s
+    SHOWN[0] = s
 
 
 def game(vs_cpu):
@@ -73,8 +95,7 @@ def game(vs_cpu):
     grid()
     cur = 4
     turn = 1
-    for i in range(9):
-        cell(b, i, cur)
+    frame(cur, GOLD)
     while True:
         w = winner(b)
         if w:
