@@ -7,6 +7,9 @@ def drop(names):
    del sys.modules[k]
   except Exception:
    pass
+# a game that stopped with an error last time can leave its files in memory
+# (and stale, even after new ones are sent): clear every GH file first
+drop([k for k in sys.modules if k[:2]=="GH"])
 st=[0,0,0,"",""]
 while True:
  gc.collect()
