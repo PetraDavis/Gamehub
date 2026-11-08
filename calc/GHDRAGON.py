@@ -1270,11 +1270,13 @@ TAMERS = (("Timmy", 0, 2, "Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak
 
 
 # what tamers say about a Legendary (19), Quantum (20) or Petralith (21) partner, and (WOW) how they
-# react when it's shiny too, more the rarer the shine
+# react when it's shiny too: different for each of the three, bigger the rarer the shine
 SPECIAL = {19: {"Timmy": "Is that a LUMORA?!/Those are, like,/super legendary!", "Lulu": "A Lumora?! Okay,/that is NOT tiny./That's amazing.", "Mira": "A Lumora... I've/only seen Aurora's./Where'd you get it?", "Captain Vex": "A Lumora! Stars on/its wings, like a/sailor's night sky!", "Duchess Ivy": "A Lumora! Even I/don't own one./How dare you.", "Aurora": "A Lumora, like/mine. Finally, a/real match."},
            20: {"Timmy": "WHAT is THAT?!/It looks like space!/Is it even real?!", "Lulu": "What... IS that?/I'm scared. And/also jealous.", "Rocco": "That thing isn't/rock. I don't trust/it. At all.", "Mira": "I've read about that/dragon. I thought it/was just a story.", "Captain Vex": "Blimey! A dragon/made of night sky!/I've heard tales!", "Duchess Ivy": "That dragon... it's/darker than my/castle dungeon!", "Grim": "......!#...Finally. A dragon/as dark as me.", "Sheen": "Ooh, nice dragon./Wanna sell it? I'll/give you 20 coins.", "Aurora": "A Quantum. I didn't/think anyone could/find one. Respect."},
            21: {"Timmy": "A ROCK DRAGON?!/With GOLD cracks?!/Best rock EVER!", "Lulu": "Is it... a statue?/Wait, it MOVED!/Ahh!", "Rocco": "A dragon made of/ROCK! I TOLD you/rocks are the best!", "Mira": "Gold cracks and/crystals... is that/from the Stone Titan?", "Captain Vex": "That's no dragon,/it's a walking/treasure chest! Arr!", "Duchess Ivy": "Gold AND crystals!/The fanciest dragon/in all the land!", "Grim": "...A stone dragon.#...It looks older/than the mountains.", "Sheen": "Those crystals look/valuable. Wanna/trade? Heh heh.", "Aurora": "Petralith. So the/old legends were/true. This is hard."}}
-WOW = ("And it's shiny?!/No way!|Shiny too?! Some/people get ALL/the luck.|A shiny one?!/Ugh, show-off.", "And GOLDEN?!/I can't believe/my eyes!|Gold?! That's like/a double rare!|A golden one?!/That's not fair!", "And it GLOWS?!/I think I need to/sit down...|Neon?! My knees/are shaking!|It's glowing?!/How is that even/possible?!", "Purple and blue AND/THAT dragon?! Nobody/will believe me!|The rarest shine/on the rarest/dragon?! WHAT?!|I... I can't even/talk right now./Wow.")
+WOW = {19: ("A silver Lumora?!/Its stars look like/moonlight!|Silver stars on a/Lumora?! So pretty!", "A GOLD Lumora?! It/looks like a sunrise/full of stars!|Golden Lumora?!/That's a legend of/a legend!", "A NEON Lumora?!/It's brighter than/the night sky!|Its stars are/GLOWING?! I can't/look away!", "A purple-blue/Lumora?! That's a/galaxy with wings!|The rarest Lumora/in the world?! I'm/shaking!"),
+       20: ("A SILVER Quantum?!/It's like a ghost/from space!|Silver?! The night/dragon has a silver/moon now?!", "A GOLD Quantum?!/A secret dragon AND/a golden one?!|Gold?! That dragon/shouldn't even/EXIST like that!", "A NEON Quantum?!/It glows in the/dark! I'm scared!|It's like a glowing/black hole! My/brain hurts!", "A purple-blue/QUANTUM?! Is this/a dream?! Pinch me!|That's impossible./That's IMPOSSIBLE!/...isn't it?"),
+       21: ("A silver Petralith?!/Like a statue made/of moonstone!|Silver stone?! It/looks carved from/the stars!", "A GOLDEN Petralith?!/That rock is worth/a whole kingdom!|Solid gold stone?!/I'd never stop/staring at it!", "A NEON Petralith?!/The ROCKS are/GLOWING?!|Glowing crystals?!/It's like a cave/full of magic!", "A purple-blue/PETRALITH?! The/rarest of the rare!|I'll remember this/day for the rest/of my life.")}
 # what some tamers say when your dragon is shiny, one line for each kind (Silver, Gold, Neon, Purple-blue: rarest last)
 SHINE = {"Timmy": "WHOA! It's SILVER!/Is that normal?!/That's so cool!|It's GOLD! Like a/treasure! Can my/Pyrrak be gold too?|It GLOWS! Mom has/to see this! Wait,/do I still fight it?|PURPLE AND BLUE?!/Best. Day. EVER!/I'm telling everyone!",
          "Lulu": "Ooh, a silver one!/Okay, that's kind/of cute.|Is that GOLD? Fine,/it's not tiny./It's adorable.|It GLOWS?! I want/one so bad! This/isn't fair!|Purple AND blue?!/Only in books! Can/I pet it? PLEASE?",
@@ -1314,12 +1316,13 @@ def arena(g, *a):
         s = SPECIAL.get(d[1], {}).get(n)
         for p in (s.split("#") if s else ()):
             message(p.split("/"), n)
-        p = SHINE.get(n) if q else 0
+        # (for those three, their own shiny lines below replace the usual compliment)
+        p = SHINE.get(n) if q and not s else 0
         if p:
             message(p.split("|")[q - 1].split("/"), n)
         if s and q:
             if n not in ("Grim", "Sheen"):
-                message(WOW[q - 1].split("|")[w % 3].split("/"), n)
+                message(WOW[d[1]][q - 1].split("|")[w % 2].split("/"), n)
             if not w:
                 # the crowd notices once, more loudly the rarer the shine
                 message((["People in the crowd", "point at your dragon."], ["The crowd starts", "whispering..."], ["The whole crowd", "goes silent..."],
