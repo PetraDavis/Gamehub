@@ -1,5 +1,7 @@
 # GHMENU: the GAMEHUB menu. Run GAMEHUB, not this.
 from GHMENUB import*
+def fr(x,y,w,h):
+ fill_rect(x-1,y-1,w+1,h+1)
 def rect(x,y,w,h,c):
  if w<1 or h<1:
   return
@@ -52,16 +54,33 @@ def message(lines,title=None):
   k=wkey()
   if k in(OK,CLR):
    return k
-def I_solitaire(x,y,c):
- suits=((I_spade,I_INK),(I_diamond,I_RED),(I_heart,I_RED))
- for i in range(3):
-  l=x-18+i*10
-  t=y-12
-  I_box(l-1,t-1,18,26,I_INK)
-  I_box(l,t,16,24,(250,250,245))
-  f,col=suits[i]
-  f(l+4,t+5,2,col)
- I_heart(x+10,y+3,3,I_RED)
+def choose(title,opts,sel=0):
+ cls()
+ ctext(24,title,GOLD)
+ n=len(opts)
+ for i in range(n):
+  y=40+i*30
+  c=GOLD if i==sel else WHITE
+  rbox(60,y,200,24,8,c,2,BLACK,False)
+  ctext(y+18,opts[i],c)
+ while True:
+  k=wkey()
+  old=sel
+  if k==UP:
+   sel=(sel-1)%n
+  elif k==DOWN:
+   sel=(sel+1)%n
+  elif k==OK:
+   return sel
+  elif k==CLR:
+   return-1
+  if sel==old:
+   continue
+  for i in(old,sel):
+   y=40+i*30
+   c=GOLD if i==sel else WHITE
+   edge(60,y,200,24,8,c)
+   ctext(y+18,opts[i],c)
 def I_blocks(x,y,c):
  s=8
  cells=((-2,1,(220,70,70)),(-1,1,(220,70,70)),(0,1,(70,110,220)),(1,1,(70,110,220)),(-2,0,(80,190,90)),(0,0,(70,110,220)),(1,0,(230,200,60)),(-2,-1,(80,190,90)),(1,-1,(230,200,60)),(-1,-3,(170,90,210)),(0,-3,(170,90,210)),(0,-2,(170,90,210)))
@@ -84,17 +103,6 @@ def I_sudoku(x,y,c):
  I_c_(I_INK)
  for o in(0,1):
   draw_rect(x0-o-1,y0-o-1,3*s+2*o+1,3*s+2*o+1)
-def I_anim(x,y,c):
- I_box(x-20,y-13,41,27,(35,35,40))
- for i in range(5):
-  I_box(x-18+i*8,y-11,4,3,I_WHITE)
-  I_box(x-18+i*8,y+9,4,3,I_WHITE)
- for i,by in enumerate((4,-2,2)):
-  fx=x-17+i*12
-  I_box(fx,y-6,11,13,(120,200,240))
-  I_box(fx,y+4,11,3,(70,170,80))
-  I_circ(fx+5,y+by,2,(240,120,40))
- I_circ(x+17,y-9,1,I_RED)
 def I_flap(x,y,c):
  I_box(x-14,y-16,10,4,I_WHITE)
  I_circ(x-12,y-15,3,I_WHITE)
@@ -206,9 +214,9 @@ def I_draw(mod,x,y,c):
 def S_dname(s,i):
  n=str(i)
  return 'A'+str(s)+'0'*(3-len(n))+n
-def S_wipe():
+def S_wipe(what=3):
  n=0
- for s in range(1,S_SLOTS+1):
+ for s in range(1,S_SLOTS+1 if what&1 else 1):
   try:
    h=recall_list(S_hname(s))
    nl=int(h[3])
@@ -222,7 +230,7 @@ def S_wipe():
     pass
   store_list(S_hname(s),[0])
   n+=1
- for nm in('DRG','DRB'):
+ for nm in('DRG','DRB')if what&2 else():
   try:
    recall_list(nm)
    store_list(nm,[0])
@@ -230,7 +238,7 @@ def S_wipe():
   except Exception:
    pass
  return n
-H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK'),('Star Patrol','GHSTAR')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON'),('Super Tic-Tac-Toe','GHSUPER')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG'),('Memory Match','GHMATCH')]),('Adventure',[('Tiny Quest','GHRPG'),('Dragon Tamer','GHDRAGON'),('Detective Case','GHDETECT'),('Lost Orbit','GHSPACE')]),('Create',[('Animation Studio','GHANIM'),('Fortune Cards','GHFORTUN'),('Name Generator','GHNAMES')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
+H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK'),('Star Patrol','GHSTAR')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON'),('Super Tic-Tac-Toe','GHSUPER')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG'),('Memory Match','GHMATCH')]),('Adventure',[('Tiny Quest','GHRPG'),('Dragon Tamer','GHDRAGON'),('Detective Case','GHDETECT'),('Lost Orbit','GHSPACE')]),('Create',[('Animation Studio','GHANIM'),('Fortune Cards','GHFORTUN'),('Name Generator','GHNAMES')]),('Settings',[('Key Test','*keys'),('Delete Saves','*wipe'),('About','*about')])]
 def H_draw_bar(i,on,first=False):
  y=H_BAR_Y+i*H_BAR_GAP
  c=GOLD if on else WHITE
@@ -334,18 +342,24 @@ def H_key_test():
    return
   last=k
 def H_wipe():
+ c=choose('DELETE SAVES',['Animations only','Dragon Tamer only','Both','Keep everything'],3)
+ if c<0 or c>2:
+  return
+ what=('all your animations','your dragons, coins,','all your animations')[c]
+ more=('','eggs and Dragon Book','and Dragon Tamer progress')[c]
  cls()
- ctext(40,'DELETE ALL SAVES',GOLD)
- ctext(70,'This erases every')
- ctext(90,'Animation Studio animation')
- ctext(110,'and your Dragon Tamer dragons.')
- ctext(150,'ENTER: delete',RED)
- ctext(175,'CLEAR: keep them')
+ ctext(40,'DELETE SAVES',GOLD)
+ ctext(80,'This erases')
+ ctext(100,what)
+ if more:
+  ctext(120,more)
+ ctext(160,'ENTER: delete',RED)
+ ctext(185,'CLEAR: keep them')
  if wkey()!=OK:
   return
  n=0
  try:
-  n=S_wipe()
+  n=S_wipe(c+1)
  except Exception:
   pass
  cls()

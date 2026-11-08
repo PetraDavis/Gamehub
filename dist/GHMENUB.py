@@ -25,8 +25,6 @@ def col(c):
  if c!=_C[0]:
   _C[0]=c
   set_color(c[0],c[1],c[2])
-def fr(x,y,w,h):
- fill_rect(x-1,y-1,w+1,h+1)
 COVER=[0]
 def cls(c=BLACK):
  COVER[0]+=1
@@ -128,6 +126,27 @@ def I_spade(x,y,s,c):
  I_circ(x+s,y+1,s,c)
  I_poly([x-2*s,x+2*s+1,x],[y+1,y+1,y-2*s-1],c)
  I_poly([x,x-s,x+s],[y+1,y+2*s+1,y+2*s+1],c)
+def I_solitaire(x,y,c):
+ suits=((I_spade,I_INK),(I_diamond,I_RED),(I_heart,I_RED))
+ for i in range(3):
+  l=x-18+i*10
+  t=y-12
+  I_box(l-1,t-1,18,26,I_INK)
+  I_box(l,t,16,24,(250,250,245))
+  f,col=suits[i]
+  f(l+4,t+5,2,col)
+ I_heart(x+10,y+3,3,I_RED)
+def I_anim(x,y,c):
+ I_box(x-20,y-13,41,27,(35,35,40))
+ for i in range(5):
+  I_box(x-18+i*8,y-11,4,3,I_WHITE)
+  I_box(x-18+i*8,y+9,4,3,I_WHITE)
+ for i,by in enumerate((4,-2,2)):
+  fx=x-17+i*12
+  I_box(fx,y-6,11,13,(120,200,240))
+  I_box(fx,y+4,11,3,(70,170,80))
+  I_circ(fx+5,y+by,2,(240,120,40))
+ I_circ(x+17,y-9,1,I_RED)
 def I_ttt(x,y,c):
  s=12
  for i in(-1,1):

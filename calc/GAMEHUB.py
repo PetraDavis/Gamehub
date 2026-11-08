@@ -9,7 +9,7 @@ CATS = [
     ("Classics", [("Solitaire", "GHSOLI"), ("Tic-Tac-Toe", "GHTTT"), ("Hangman", "GHHANG"), ("Memory Match", "GHMATCH")]),
     ("Adventure", [("Tiny Quest", "GHRPG"), ("Dragon Tamer", "GHDRAGON"), ("Detective Case", "GHDETECT"), ("Lost Orbit", "GHSPACE")]),
     ("Create", [("Animation Studio", "GHANIM"), ("Fortune Cards", "GHFORTUN"), ("Name Generator", "GHNAMES")]),
-    ("Settings", [("Key Test", "*keys"), ("Delete All Saves", "*wipe"), ("About", "*about")]),
+    ("Settings", [("Key Test", "*keys"), ("Delete Saves", "*wipe"), ("About", "*about")]),
 ]
 
 BAR_Y = 34
@@ -152,19 +152,26 @@ def key_test():
 
 
 def wipe():
+    # pick what to delete, then make sure
+    c = choose("DELETE SAVES", ["Animations only", "Dragon Tamer only", "Both", "Keep everything"], 3)
+    if c < 0 or c > 2:
+        return
+    what = ("all your animations", "your dragons, coins,", "all your animations")[c]
+    more = ("", "eggs and Dragon Book", "and Dragon Tamer progress")[c]
     cls()
-    ctext(40, "DELETE ALL SAVES", GOLD)
-    ctext(70, "This erases every")
-    ctext(90, "Animation Studio animation")
-    ctext(110, "and your Dragon Tamer dragons.")
-    ctext(150, "ENTER: delete", RED)
-    ctext(175, "CLEAR: keep them")
+    ctext(40, "DELETE SAVES", GOLD)
+    ctext(80, "This erases")
+    ctext(100, what)
+    if more:
+        ctext(120, more)
+    ctext(160, "ENTER: delete", RED)
+    ctext(185, "CLEAR: keep them")
     if wkey() != OK:
         return
     n = 0
     try:
         import GHSAVE
-        n = GHSAVE.wipe()
+        n = GHSAVE.wipe(c + 1)
     except Exception:
         pass
     cls()
