@@ -23,6 +23,7 @@ def G_load(g):
   return
  v=s[0]
  k=min(1,v-2)
+ pk=0
  g.coins,g.own,g.book=(s[1],s[2],s[3])
  if k:
   g.dread=s[4]
@@ -43,6 +44,8 @@ def G_load(g):
  try:
   b=[int(v)for v in recall_list('DRB')]
   if b[0]>1:
+   pk=b[1]//500000
+   b[1]%=500000
    g.glim,g.luck,g.curse,g.buys,g.done=(b[1]%100,b[1]//100%2,b[1]//200%2,b[1]//400%11,b[1]//4400)
    b=b[1:]
   for i in range(1,len(b)-1,2):
@@ -50,7 +53,8 @@ def G_load(g):
    g.pen.append([G_unpack(b[i]),t,1,10,10,0,G_DT[t][3],0,0,8+b[i+1]//32])
  except Exception:
   pass
- g.pick=G_grown(g)
+ big=[d for d in g.pen if not d[9]&8]
+ g.pick=big[pk]if pk<len(big)else G_grown(g)
  g.warm=12
 def G_new_quest(g):
  t=min(10,g.done)
@@ -75,7 +79,7 @@ def G_board(g):
    g.quest=None
   return
  qs=[G_new_quest(g)for i in range(3)]
- c=choose('Quests (level '+str(min(10,g.done)+1)+')',[q[5][:15]+' '+str(q[4])+'c'for q in qs]+['Not now'])
+ c=G_lst('Quests (level '+str(min(10,g.done)+1)+')',[q[5]+'  '+str(q[4])+'c'for q in qs]+['Not now'])
  if 0<=c<3:
   g.quest=qs[c]
 def G_portrait(d):
@@ -112,7 +116,13 @@ def G_pen(g):
    t=G_DT[d[1]]
    G_portrait(d)
    q=d[9]&7
-   message([(G_SCH[q][0]+' 'if q else '')+t[0]+' ('+G_RARE[t[2]]+')','Element: '+G_ENAME[t[1]],'A baby'if b else 'Level '+str(d[2])+'  HP '+str(d[4])],d[0])
+   ctext(122,d[0],GOLD)
+   ctext(142,(G_SCH[q][0]+' 'if q else '')+t[0])
+   ctext(160,G_RARE[t[2]]+'  '+G_ENAME[t[1]]+' element')
+   ctext(178,'A baby'if b else 'Level '+str(d[2])+'  HP '+str(d[4]))
+   ctext(200,'ENTER: back',GREY)
+   while wkey()not in(OK,CLR):
+    pass
   elif a==2 and choose('Free '+d[0]+' forever?',['No, keep '+d[0],'Yes, let it go'])==1:
    g.pen.remove(d)
    if g.pick is d:
@@ -210,43 +220,6 @@ def G_nest(g):
   else:
    G_save(g)
    return 0
-def G_menu(g):
- d=g.pick
- opts=['Backpack','Dragon book','Save game','Keep exploring']
- if d is None:
-  c=choose('Dragon Tamer',opts)
-  c=c+1 if c>=0 else 4
- else:
-  if g.ride is not None:
-   first='Get off '+d[0]
-  else:
-   first='Ride '+d[0]+(''if d[3]>0 else ' (tired)')
-  c=choose(d[0]+' the '+G_DT[d[1]][0],[first]+opts)
- if c==3:
-  G_save(g)
-  G_draw_map(g)
-  message(['Your dragons, coins and','eggs are saved.'],'Saved!')
-  G_draw_map(g,True)
-  return 0
- if c==0:
-  if g.ride is not None:
-   if g.maps[g.m][g.y][g.x]in '~L^':
-    G_draw_map(g)
-    message(["You can't get off here!"])
-    G_draw_map(g,True)
-    return 0
-   g.ride=None
-  elif d[3]==0:
-   G_draw_map(g)
-   message([d[0]+' is too tired.','Rest at the nest first.'])
-   G_draw_map(g,True)
-   return 0
-  else:
-   g.ride=d
- elif c in(1,2):
-  return c
- G_draw_map(g)
- return 0
 def G_win(g):
  cls()
  if g.pick:

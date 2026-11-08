@@ -15,11 +15,11 @@ T = 20
 # functions is called and dropped from memory again when it returns.
 SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
         "X": ("rest", "load", "new_quest", "board", "portrait", "pen", "lst", "dress", "shop", "nest",
-              "menu", "win"),
+              "win"),
         # the merchant has a file of his own, with its own copy of the list, so the
         # pen and fights don't have to carry his code
         "Z": ("shen", "who", "glim", "zl", "shen_off"),
-        "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed")}
+        "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed", "menu")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
      'T.....""".....~~',
@@ -704,7 +704,8 @@ def rest(g):
 #  eggs in the bag (up to 5, -1 = none), then 5 numbers a dragon: name (letters 1-26 in base 27),
 #  kind, level, xp, shiny*4000+paint*200+head*20+body]
 # DRB: [2, things from the merchant (Glimmer Stones + 100 * Lucky Charm + 200 * Golden Coin
-#  + 400 * things bought from him, up to 10, + 4400 * quests finished, up to 99),
+#  + 400 * things bought from him, up to 10, + 4400 * quests finished, up to 99,
+#  + 500000 * which grown dragon is your partner),
 #  then 2 numbers a baby: name, kind + 32 * shiny]  (version 1 had no second number)
 def pack(nm):
     n = 0
@@ -723,7 +724,9 @@ def unpack(n):
 
 def save(g):
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
-    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done)]
+    big = [d for d in g.pen if not d[9] & 8]
+    pk = ([i for i in range(len(big)) if big[i] is g.pick] + [0])[0]
+    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk]
     for d in g.pen:
         if d[9] & 8:
             b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
@@ -748,6 +751,7 @@ def load(g):
         return
     v = s[0]
     k = min(1, v - 2)
+    pk = 0
     g.coins, g.own, g.book = s[1], s[2], s[3]
     if k:
         g.dread = s[4]
@@ -769,6 +773,8 @@ def load(g):
     try:
         b = [int(v) for v in recall_list("DRB")]
         if b[0] > 1:
+            pk = b[1] // 500000
+            b[1] %= 500000
             g.glim, g.luck, g.curse, g.buys, g.done = b[1] % 100, b[1] // 100 % 2, b[1] // 200 % 2, b[1] // 400 % 11, b[1] // 4400
             b = b[1:]
         for i in range(1, len(b) - 1, 2):
@@ -776,7 +782,8 @@ def load(g):
             g.pen.append([unpack(b[i]), t, 1, 10, 10, 0, DT[t][3], 0, 0, 8 + b[i + 1] // 32])
     except Exception:
         pass
-    g.pick = grown(g)
+    big = [d for d in g.pen if not d[9] & 8]
+    g.pick = big[pk] if pk < len(big) else grown(g)
     g.warm = 12
 
 
@@ -819,7 +826,7 @@ def board(g):
             g.quest = None
         return
     qs = [new_quest(g) for i in range(3)]
-    c = choose("Quests (level " + str(min(10, g.done) + 1) + ")", [q[5][:15] + " " + str(q[4]) + "c" for q in qs] + ["Not now"])
+    c = lst("Quests (level " + str(min(10, g.done) + 1) + ")", [q[5] + "  " + str(q[4]) + "c" for q in qs] + ["Not now"])
     if 0 <= c < 3:
         g.quest = qs[c]
 
@@ -862,8 +869,14 @@ def pen(g):
             t = DT[d[1]]
             portrait(d)
             q = d[9] & 7
-            message([(SCH[q][0] + " " if q else "") + t[0] + " (" + RARE[t[2]] + ")", "Element: " + ENAME[t[1]],
-                     "A baby" if b else "Level " + str(d[2]) + "  HP " + str(d[4])], d[0])
+            # the facts go under the picture, so nothing covers the dragon
+            ctext(122, d[0], GOLD)
+            ctext(142, (SCH[q][0] + " " if q else "") + t[0])
+            ctext(160, RARE[t[2]] + "  " + ENAME[t[1]] + " element")
+            ctext(178, "A baby" if b else "Level " + str(d[2]) + "  HP " + str(d[4]))
+            ctext(200, "ENTER: back", GREY)
+            while wkey() not in (OK, CLR):
+                pass
         elif a == 2 and choose("Free " + d[0] + " forever?", ["No, keep " + d[0], "Yes, let it go"]) == 1:
             g.pen.remove(d)
             if g.pick is d:
@@ -1308,10 +1321,10 @@ def hatch(g):
 def menu(g):
     # ENTER on the map: ride or get off your partner, look in your things, or save
     d = g.pick
-    opts = ["Backpack", "Dragon book", "Save game", "Keep exploring"]
+    opts = ["Backpack", "Dragon book", "My quest", "Save game", "Keep exploring"]
     if d is None:
         c = choose("Dragon Tamer", opts)
-        c = c + 1 if c >= 0 else 4
+        c = c + 1 if c >= 0 else 5
     else:
         if g.ride is not None:
             first = "Get off " + d[0]
@@ -1319,6 +1332,15 @@ def menu(g):
             first = "Ride " + d[0] + ("" if d[3] > 0 else " (tired)")
         c = choose(d[0] + " the " + DT[d[1]][0], [first] + opts)
     if c == 3:
+        q = g.quest
+        draw_map(g)
+        if q is None:
+            message(["You have no quest.", "Visit the quest hall", "in the village."], "My quest")
+        else:
+            message([q[5], "Done: " + str(q[3]) + " of " + str(q[2]), "Reward: " + str(q[4]) + " coins"], "My quest")
+        draw_map(g, True)
+        return 0
+    if c == 4:
         save(g)
         draw_map(g)
         message(["Your dragons, coins and", "eggs are saved."], "Saved!")
@@ -1354,7 +1376,7 @@ def shen_off(g):
             if m == g.m:
                 cells(g, [(x, y)], False)
         g.shen = None
-        g.shn = random.randint(250, 350)
+        g.shn = random.randint(120, 180)
 
 
 def put_egg(g, t, near, ch="E"):
@@ -1464,7 +1486,7 @@ def play():
     g.dread = 0
     g.glim = g.luck = g.curse = g.buys = g.done = 0
     g.shen = None
-    g.shn = random.randint(250, 350)
+    g.shn = random.randint(120, 180)
     load(g)
     steps = 0
     draw_map(g)
