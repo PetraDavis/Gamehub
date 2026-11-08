@@ -33,3 +33,55 @@ def G_tamer(s,i,k,g=0):
   return
  T=(G_TAMERS,G_SEC2,G_SEC3)[s].split('\n')[i].split('~')
  return(T[0],int(T[1]),int(T[2]),T[3],T[4].split('|')[k-19]if 18<k<22 else '',T[5]if len(T)>5 else 0)
+def G_arena(g,*a):
+ import gc
+ d=g.pick
+ if d is None:
+  message(['Come back when you','have a grown dragon!'],'Arena')
+  return
+ op=(1,g.book>>37&1 or g.book>>35&1,g.book>>38&1)
+ s=choose('THE ARENA',['Section '+str(i+1)+(': '+str(10*i+10)+' tamers'if op[i]else ': locked')for i in range(3)]+['Leave'])
+ if not 0<=s<3:
+  return
+ if not op[s]:
+  message(['Win Section '+str(s),'first!'],'Arena')
+  return
+ fee=min(500,25+25*g.ar)
+ if choose('SECTION '+str(s+1),['Enter: '+str(fee)+'c','Leave'])!=0:
+  return
+ if g.coins<fee:
+  message(['The entry fee is',str(fee)+' coins. Come','back with more!'],'Arena')
+  return
+ g.coins-=fee
+ g.ar+=1
+ w=0
+ N=10*s+10
+ for i in range(N):
+  n,k,lv,say,e,sh=G_tamer(s,i,d[1])
+  n='???'if n[0]=='*'else n
+  cls(G_NIGHT)
+  ctext(24,'ROUND '+str(w+1)+' OF '+str(N),GOLD)
+  for p in say.split('#'):
+   message(p.split('/'),n)
+  q=d[9]&7
+  for p in e.split('#')if e else():
+   message(p.split('/'),n)
+  if sh and q:
+   message(sh.split('|')[q-1].split('/'),n)
+  if e and q and(not w):
+   message((['People in the crowd','point at your dragon.'],['The crowd starts','whispering...'],['The whole crowd','goes silent...'],['The crowd ROARS!','Everyone jumps up','to see your dragon!'])[q-1],'Arena')
+  d[3]=d[4]
+  g.ride=d
+  t=G_DT[k]
+  r=4 if k==23 else t[2]
+  f=(t[0],20+6*r+6*lv,4+lv+2*r,3*lv,t[3],t[1],k)
+  if k==23:
+   f=('Gold Dragon',)+f[1:4]+(GOLD,)+f[5:]+(2,)
+  elif random.random()<0.17:
+   f+=(random.randint(1,s+2),)
+  gc.collect()
+  if not G_battle(g,f,0,1):
+   break
+  w+=1
+ d[3]=d[4]
+ G_tamer(s,w,N,g)

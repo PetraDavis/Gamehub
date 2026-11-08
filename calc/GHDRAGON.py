@@ -21,7 +21,7 @@ SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
         # things you step on or talk to (eggs, chests, villagers, Shen's package): small, loaded on use
         "V": ("found",),
         # the arena tamers and their lines (loaded for a moment before each match)
-        "A": ("tamer",),
+        "A": ("arena",),
         "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed", "menu")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
@@ -1335,7 +1335,7 @@ SEC3 = ("Tara~15~31~I'm Tara. Welcome/to Section 3, where/dreams end.#Just kiddi
 
 
 def tamer(s, i, k, g=0):
-    # Kept in a small file of its own (A) that loads for a moment, so the fight file stays small.
+    # (in the arena's own file, A)
     # With g: the prize for winning i of k matches in section s. Otherwise: tamer i of section s
     # as (name, kind, level, intro, what they say to your partner of kind k, Timmy's shiny lines)
     if g:
@@ -1374,7 +1374,8 @@ def tamer(s, i, k, g=0):
 
 
 def arena(g, *a):
-    # lives in the fight file (W) so a match never needs a second file loaded beside it
+    # In a small file of its own (A) with the tamers, so stepping into the arena loads very little;
+    # the fight file (W) is loaded only during each match.
     import gc
     # 3 sections of 10, 20 and 30 tamers; your partner is healed before every match and gets no XP.
     # Lose (or run) and the prize is what you've earned so far. Winning all three gives the Crestwyrm egg (bit 35).
@@ -1986,10 +1987,7 @@ def evil(g):
     return True
 
 
-def titan(g, a=0):
-    # (titan(g, 1) opens the arena instead: it shares this fight file, so a match never loads a second file)
-    if a:
-        return arena(g)
+def titan(g):
     # the hidden cave: a giant of living rock guards a stone egg. Running away is fine,
     # it waits in its cave; beat it once (book bit 26) and it leaves the egg
     draw_map(g)
@@ -2100,7 +2098,7 @@ def play():
             continue
         if ch in "MOVNA":
             # talk to the merchant (or the officer, a villager, Old Nettle, the arena) without stepping on them
-            (found if ch in "VN" else shen)(g, ch, nx) if ch != "A" else titan(g, 1)
+            (found if ch in "VN" else shen)(g, ch, nx) if ch != "A" else arena(g)
             # what you bought is saved right away
             save(g)
             draw_map(g)
