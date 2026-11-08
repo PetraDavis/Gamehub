@@ -15,11 +15,11 @@ T = 20
 # functions is called and dropped from memory again when it returns.
 SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
         "X": ("rest", "load", "new_quest", "board", "portrait", "pen", "lst", "dress", "shop", "nest",
-              "menu", "win"),
+              "win"),
         # the merchant has a file of his own, with its own copy of the list, so the
         # pen and fights don't have to carry his code
         "Z": ("shen", "who", "glim", "zl", "shen_off"),
-        "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed")}
+        "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed", "menu")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
      'T.....""".....~~',

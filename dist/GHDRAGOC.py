@@ -197,12 +197,6 @@ def G_nest(*a):
  GHDRAGOX=None
  G__drop('GHDRAGOX')
  return r
-def G_menu(*a):
- import GHDRAGOX
- r=GHDRAGOX.G_menu(*a)
- GHDRAGOX=None
- G__drop('GHDRAGOX')
- return r
 def G_win(*a):
  import GHDRAGOX
  r=GHDRAGOX.G_win(*a)
@@ -224,6 +218,12 @@ def G_book(*a):
 def G_hatch(*a):
  import GHDRAGOY
  r=GHDRAGOY.G_hatch(*a)
+ GHDRAGOY=None
+ G__drop('GHDRAGOY')
+ return r
+def G_menu(*a):
+ import GHDRAGOY
+ r=GHDRAGOY.G_menu(*a)
  GHDRAGOY=None
  G__drop('GHDRAGOY')
  return r
