@@ -30,10 +30,6 @@ def rect(x,y,w,h,c):
  col(c)
  fill_rect(x-1,y-1,w+1,h+1)
 COVER=[0]
-def cls(c=BLACK):
- COVER[0]+=1
- col(c)
- fill_rect(-1,-1,321,211)
 TY=6
 def text(x,y,s,c=WHITE):
  col(c)
@@ -79,6 +75,7 @@ def message(lines,title=None):
   if k in(OK,CLR):
    return k
 G_TEST=False
+G_EVIL=0.12 if G_TEST else 0.004
 G_T=20
 G_LANDS=('Green Valley','Fire Mountain','Frost Peaks','Village')
 G_GROUND=((50,130,60),(85,65,55),(215,225,240),(75,150,70))
@@ -164,6 +161,13 @@ def G_egg_roll(g,t):
 def G_kids(g):
  return sum((1 if d[9]&8 else 4 for d in g.pen))+sum((1 if e%32==G_SMALL else 4 for e in g.bag))
 G_HUD=[None]
+class G_Game:
+ pass
+def G_pack(nm):
+ n=0
+ for ch in nm.upper():
+  n=n*27+G_ABC.index(ch)+1
+ return n
 def G_battle(*a):
  import GHDRAGOW
  r=GHDRAGOW.G_battle(*a)
