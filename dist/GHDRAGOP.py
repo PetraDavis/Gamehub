@@ -30,18 +30,38 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
+G_EVIL=0.12 if G_TEST else 0.004
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
-def G_kids(g):
- return sum((1 if d[9]&8 else 4 for d in g.pen))+sum((1 if e%32==G_SMALL else 4 for e in g.bag))
 def G_grown(g):
  for d in g.pen:
   if not d[9]&8:
    return d
  return None
+def G_cells(g,todo,with_hero):
+ mp=g.maps[g.m]
+ ops=[]
+ rows={}
+ for x,y in todo:
+  rows.setdefault(y,[]).append(x)
+ for y in rows:
+  xs=sorted(rows[y])
+  i=0
+  while i<len(xs):
+   c=G_base(g.m,mp[y][xs[i]])
+   j=i+1
+   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
+    j+=1
+   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
+   i=j
+ for x,y in todo:
+  G_shapes(g.m,x,y,mp[y][x],ops)
+ if with_hero:
+  G_hero(g,ops)
+ G_paint(ops)
 def G_draw_map(g,after_msg=False):
  r0,r1=(0,9)
  if after_msg:
@@ -99,29 +119,13 @@ def G_put_egg(g,t,near,ch='E'):
    mp[y][x]=ch
    if ch=='E':
     G_EGGS[g.m,x,y]=t
-   elif ch=='M':
+   elif ch in 'MO':
     g.shen=(g.m,x,y)
    G_cells(g,[(x,y)],False)
    return True
  return False
 def G_play():
  g=G_Game()
- g.maps=[[list(r)for r in mp]for mp in G_MAPS]
- G_EGGS.clear()
- for m in range(3):
-  for y in range(9):
-   for x in range(16):
-    if G_MAPS[m][y][x]=='E':
-     G_EGGS[m,x,y]=random.randint(0,6)if m==0 else G_egg_type(m)
- g.m,g.x,g.y=(0,3,2)
- g.hp=g.mhp=30
- g.pen=[]
- g.bag=[]
- g.warm=12
- g.spawn=100
- g.pick=g.ride=g.quest=g.pol=g.shen=None
- g.coins=g.own=g.book=g.seen=g.face=g.dread=g.glim=g.luck=g.curse=g.buys=g.done=g.cd=g.sad=0
- g.shn=random.randint(120,180)
  G_load(g)
  steps=0
  G_draw_map(g)
@@ -190,7 +194,7 @@ def G_play():
    message(['Your backpack is full.']if len(g.bag)>=5 else['No room in your pen.','Let a dragon go first.'],'Egg')
    G_draw_map(g,True)
    continue
-  if ch=='M':
+  if ch in 'MO':
    G_shen(g)
    G_save(g)
    G_draw_map(g)
@@ -258,7 +262,7 @@ def G_play():
   if g.shen:
    if g.shn<0:
     G_shen_off(g)
-  elif g.shn<=0 and g.m<3 and G_put_egg(g,0,False,'M'):
+  elif g.shn<=0 and g.m<3 and(not g.book>>31&1)and G_put_egg(g,0,False,'O'if g.book>>27&1 and(not g.book>>30&1)and(random.random()<0.3)else 'M'):
    g.shn=60
   if g.curse and random.random()<0.01:
    g.coins-=min(g.coins,random.randint(1,3))
