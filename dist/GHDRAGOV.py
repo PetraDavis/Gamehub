@@ -6,24 +6,34 @@ def G_deliver(g):
  message(['A hooded stranger is',"waiting for Shen's",'package.'],'Village')
  c=choose('The package',['Hand it over','Peek inside'])
  g.book&=~(1<<24)
- if c!=1:
-  n=random.randint(60,120)
-  g.coins+=n
-  message(['He nods and pays you',str(n)+' coins. Shen keeps','his word. This time.'],'Village')
-  return
- g.book|=1<<32
- r=random.random()
- if r<0.15 and len(g.bag)<5 and(G_kids(g)+4<=40):
+ if c==1:
   r=random.random()
-  g.bag.append(30+32*random.randint(1,4)if r<0.08 else 30 if r<0.4 else random.choice([i for i in range(20)if G_DT[i][2]>=2])+32*random.randint(1,4))
-  m=['An egg was inside! You','keep it. The stranger','runs off.']
- elif r<0.6:
-  n=random.randint(30,100)
-  g.coins+=n
-  m=[str(n)+' coins inside!','You pocket them. The','stranger runs off.']
- else:
-  m=['Just rocks!','The stranger laughs','and runs off.']
- message(m,'Package')
+  e=n=0
+  if r<0.15:
+   r=random.random()
+   e=30+32*random.randint(1,4)if r<0.08 else 30 if r<0.4 else random.choice([i for i in range(20)if G_DT[i][2]>=2])+32*random.randint(1,4)
+   m=["An egg! It's a"+(' small'if e%32==30 else ''),('shiny 'if e>31 else '')+'egg, wow.']
+  elif r<0.6:
+   n=random.randint(30,100)
+   m=[str(n)+' coins!']
+  else:
+   m=None
+  if m:
+   message(['You peek inside...']+m,'Package')
+   if e and(len(g.bag)>=5 or G_kids(g)+4>40):
+    message(['No room for an egg.','You close the package.'],'Package')
+   elif choose('Take it?',['Take it','Leave it'])==0:
+    g.book|=1<<32
+    g.coins+=n
+    if e:
+     g.bag.append(e)
+    message(['You take it. The','stranger snatches the','package and runs off.'],'Package')
+    return
+  else:
+   message(['You peek inside...','Just rocks!','You close it up again.'],'Package')
+ n=random.randint(60,120)
+ g.coins+=n
+ message(['He nods and pays you',str(n)+' coins. Shen keeps','his word. This time.'],'Village')
 def G_talk(g,x):
  n,*L=G_VILLAGER[x//5%3]
  message(list(random.choice(L)),n)
