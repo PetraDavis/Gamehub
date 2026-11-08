@@ -29,7 +29,7 @@ def G_load(g):
  g.spawn=100
  g.pick=g.ride=g.quest=g.pol=g.shen=None
  g.deck={}
- g.coins=g.own=g.book=g.seen=g.face=g.dread=g.glim=g.luck=g.curse=g.buys=g.done=g.cd=g.sad=0
+ g.coins=g.own=g.book=g.seen=g.face=g.dread=g.glim=g.luck=g.curse=g.buys=g.done=g.cd=g.sad=g.ar=0
  g.shn=random.randint(120,180)
  try:
   from ti_system import recall_list
@@ -60,6 +60,8 @@ def G_load(g):
   g.pen.append([nm,t,lv,mh,mh,s[i+2],G_PAINT[p-1]if p else G_DT[t][3],x//20%10,x%20,s[i+3]//4000])
  try:
   b=[int(v)for v in recall_list('DRB')]
+  if b[0]>2:
+   g.ar=b.pop(2)
   if b[0]>1:
    pk=b[1]//500000%12
    g.cd=b[1]//6000000%16

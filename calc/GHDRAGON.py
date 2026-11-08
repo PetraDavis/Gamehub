@@ -755,7 +755,7 @@ def rest(g):
 # DRB: [2, things from the merchant (Glimmer Stones + 100 * Lucky Charm + 200 * Golden Coin
 #  + 400 * things bought from him, up to 10, + 4400 * quests finished, up to 99,
 #  + 500000 * which grown dragon is your partner + 6000000 * Golden Coin wins used, up to 15),
-#  then 2 numbers a baby: name, kind + 32 * shiny]  (version 1 had no second number)
+#  then (version 3) times you entered the arena, then 2 numbers a baby: name, kind + 32 * shiny]  (version 1 had no second number)
 def pack(nm):
     n = 0
     for ch in nm.upper():
@@ -779,7 +779,7 @@ def save(g):
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
     big = [d for d in g.pen if not d[9] & 8]
     pk = ([i for i in range(len(big)) if big[i] is g.pick] + [0])[0]
-    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk + 6000000 * min(15, g.cd) + 96000000 * g.sad + 192000000 * (g.book >> 31 & 1) * min(100, max(0, g.shn) // 100)]
+    b = [3, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk + 6000000 * min(15, g.cd) + 96000000 * g.sad + 192000000 * (g.book >> 31 & 1) * min(100, max(0, g.shn) // 100), g.ar]
     for d in g.pen:
         if d[9] & 8:
             b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
@@ -813,7 +813,7 @@ def load(g):
     g.spawn = 100
     g.pick = g.ride = g.quest = g.pol = g.shen = None
     g.deck = {}
-    g.coins = g.own = g.book = g.seen = g.face = g.dread = g.glim = g.luck = g.curse = g.buys = g.done = g.cd = g.sad = 0
+    g.coins = g.own = g.book = g.seen = g.face = g.dread = g.glim = g.luck = g.curse = g.buys = g.done = g.cd = g.sad = g.ar = 0
     g.shn = random.randint(120, 180)
     try:
         from ti_system import recall_list
@@ -845,6 +845,9 @@ def load(g):
         g.pen.append([nm, t, lv, mh, mh, s[i + 2], PAINT[p - 1] if p else DT[t][3], x // 20 % 10, x % 20, s[i + 3] // 4000])
     try:
         b = [int(v) for v in recall_list("DRB")]
+        if b[0] > 2:
+            # version 3 adds how many times you've entered the arena
+            g.ar = b.pop(2)
         if b[0] > 1:
             pk = b[1] // 500000 % 12
             g.cd = b[1] // 6000000 % 16
@@ -1273,8 +1276,15 @@ def arena(g):
     if d is None:
         message(["Come back when you", "have a grown dragon!"], "Arena")
         return
-    if choose("THE ARENA", ["Enter tournament", "Leave"]) != 0:
+    # the entry fee goes up by 25 every time you enter (up to 500)
+    fee = min(500, 25 + 25 * g.ar)
+    if choose("THE ARENA", ["Enter: " + str(fee) + "c", "Leave"]) != 0:
         return
+    if g.coins < fee:
+        message(["The entry fee is", str(fee) + " coins. Come", "back with more!"], "Arena")
+        return
+    g.coins -= fee
+    g.ar += 1
     w = 0
     for n, k, lv, say in TAMERS:
         cls(NIGHT)
