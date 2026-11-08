@@ -79,9 +79,10 @@ def load(s, show=None):
     return data, frames, fps
 
 
-def wipe():
+def wipe(what=3):
+    # what: 1 = animations, 2 = Dragon Tamer, 3 = both
     n = 0
-    for s in range(1, SLOTS + 1):
+    for s in range(1, SLOTS + 1 if what & 1 else 1):
         try:
             h = recall_list(hname(s))
             nl = int(h[3])
@@ -96,7 +97,7 @@ def wipe():
         store_list(hname(s), [0])
         n += 1
     # Dragon Tamer keeps its dragons in one list too
-    for nm in ("DRG", "DRB"):
+    for nm in (("DRG", "DRB") if what & 2 else ()):
         try:
             recall_list(nm)
             store_list(nm, [0])
