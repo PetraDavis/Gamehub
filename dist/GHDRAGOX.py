@@ -116,7 +116,13 @@ def G_pen(g):
    t=G_DT[d[1]]
    G_portrait(d)
    q=d[9]&7
-   message([(G_SCH[q][0]+' 'if q else '')+t[0]+' ('+G_RARE[t[2]]+')','Element: '+G_ENAME[t[1]],'A baby'if b else 'Level '+str(d[2])+'  HP '+str(d[4])],d[0])
+   ctext(122,d[0],GOLD)
+   ctext(142,(G_SCH[q][0]+' 'if q else '')+t[0])
+   ctext(160,G_RARE[t[2]]+'  '+G_ENAME[t[1]]+' element')
+   ctext(178,'A baby'if b else 'Level '+str(d[2])+'  HP '+str(d[4]))
+   ctext(200,'ENTER: back',GREY)
+   while wkey()not in(OK,CLR):
+    pass
   elif a==2 and choose('Free '+d[0]+' forever?',['No, keep '+d[0],'Yes, let it go'])==1:
    g.pen.remove(d)
    if g.pick is d:

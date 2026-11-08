@@ -869,8 +869,14 @@ def pen(g):
             t = DT[d[1]]
             portrait(d)
             q = d[9] & 7
-            message([(SCH[q][0] + " " if q else "") + t[0] + " (" + RARE[t[2]] + ")", "Element: " + ENAME[t[1]],
-                     "A baby" if b else "Level " + str(d[2]) + "  HP " + str(d[4])], d[0])
+            # the facts go under the picture, so nothing covers the dragon
+            ctext(122, d[0], GOLD)
+            ctext(142, (SCH[q][0] + " " if q else "") + t[0])
+            ctext(160, RARE[t[2]] + "  " + ENAME[t[1]] + " element")
+            ctext(178, "A baby" if b else "Level " + str(d[2]) + "  HP " + str(d[4]))
+            ctext(200, "ENTER: back", GREY)
+            while wkey() not in (OK, CLR):
+                pass
         elif a == 2 and choose("Free " + d[0] + " forever?", ["No, keep " + d[0], "Yes, let it go"]) == 1:
             g.pen.remove(d)
             if g.pick is d:
