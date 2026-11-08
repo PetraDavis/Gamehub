@@ -50,9 +50,9 @@ MAPS = (
      '.."""...........',
      '..""".....^C....',
      "^^^^^^^^^^^^^^^^"],
-    # the village, left of Green Valley: Q quest hall, S shop, N Old Nettle's hut, W well, = path, V villagers
+    # the village, left of Green Valley: Q quest hall, S shop, A arena, N Old Nettle's hut, W well, = path, V villagers
     ["TTTTTTTTTTTTTTTT",
-     "T............N.T",
+     "T.....A......N.T",
      "T..Q.......S...T",
      "T..=.......=...T",
      "T..=============",
@@ -87,7 +87,7 @@ RCOL = cl(b'\xff\xff\xffx\xdcxZ\xa0\xff\xc8n\xf0\xe6\xb4(<\xe6\xe6\xf5\xa0<\x8c\
 # 22 is the Dread Drake's picture (never hatched); 23 Dustmite is Junk, rarity -1 (below Common):
 # it only comes from Shen's fake Shiny Egg
 DT = list(zip(('Pyrrak', 'Smoldedrake', 'Aquawyrm', 'Gillwing', 'Fernling', 'Lichenwing', 'Stonewyrm', 'Volcanox', 'Ashveil', 'Glacius', 'Tempestra', 'Thornwyrm', 'Dawnwing', 'Pearlhorn', 'Jadewyrm', 'Petalwyrm', 'Blazequill', 'Abyssar', 'Rootwyrm', 'Lumora', 'Quantum', 'Petralith'),
-         b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03\x03', b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05\x06', cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP}vn'))) + [("", 0, 0, BLACK), ("Dustmite", 2, -1, (150, 145, 135))]
+         b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03\x03', b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05\x06', cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP}vn'))) + [("", 0, 0, BLACK), ("Dustmite", 2, -1, (150, 145, 135)), ("Crestwyrm", 0, 3, (160, 25, 35))]
 ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NAMES = ("Blaze", "Splash", "Fern", "Spark", "Misty", "Clover", "Ziggy", "Nova",
          "Pebble", "Rocket", "Biscuit", "Luna", "Comet", "Pip", "Maple", "Echo",
@@ -131,8 +131,9 @@ ARTF = (b'\x02\x036\x1e<\x10@\x1e\x02\x029\x1e<\x15>\x1e',
         b'\x00\x00"\x19\x07\n\x00\x00\x01\x00)\x1e\x05\x00\x00\x00\x02\x00)\x1a9\x1f)#\x02\x12*\x1b-\x14/\x1c\x02\x120\x1d3\x175\x1e\x02\x16+\x1b-\x14.\x1b\x02\x161\x1d3\x174\x1d\x02\x16\x12\x10\x19\n\x15\x12\x00\x16\x11\x18\x02\x06\x00\x00\x00\x16\x19\x1d\x08\x01\x00\x00\x00\x16 \x1d\x01\x03\x00\x00\x00\x16 \x1f\t\x01\x00\x00\x00\x16)\x1c\x01\x04\x00\x00\x00\x16.\x1d\x07\x01\x00\x00',
         b"\x00\x10\x1b\x1a\x05\x03\x00\x00\x00\x10#\x1e\x05\x03\x00\x00\x00\x10,\x1c\x04\x02\x00\x00\x02\x10\x12\x16\x16\x15\x14\x1a\x02\x13\x13\x15\x15\r\x18\x15\x02\x13\x17\x17\x1a\x10\x1c\x18\x02\x13*\x1b-\x120\x1c\x02\x130\x1d3\x156\x1e\x02\x135\x1e7\x199\x1e\x02\x01\x14\x15\x15\r\x15\x15\x02\x01+\x1a-\x12-\x1a\x02\x011\x1c3\x153\x1c\x00\x03\x19\x1d\x07\x01\x00\x00\x00\x03\x1f\x1d\x01\x04\x00\x00\x00\x03\x1f \x08\x01\x00\x00\x00\x03'\x1c\x01\x05\x00\x00\x00\x03'\x1c\x07\x01\x00\x00\x00\x03.\x1d\x01\x02\x00\x00\x00\x03\x11\x17\x01\x05\x00\x00\x00\x03\x11\x17\x03\x01\x00\x00\x00\x02\x1a\x1d\x05\x01\x00\x00\x00\x02  \x06\x01\x00\x00\x00\x02(\x1c\x05\x01\x00\x00",
         b'\x02\x17\x1c\x19\x1e\x13 \x19\x02\x17+\x1b-\x150\x1c\x02\x171\x1d3\x186\x1e\x02\x17\x13\x14\x15\x0f\x18\x14\x00\x19\x18 \x13\x03\x00\x00\x00\x17\x11\x18\x02\x06\x00\x00',
-        b'\x00\x19\x1d\x1c\x02\x01\x00\x00\x00\x19#\x1e\x02\x01\x00\x00\x00\x19*\x1c\x01\x01\x00\x00')
-ARTW = b'\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x05\x1c\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x03\x02\x0f\x10\x0f\x10\x15\x00\x15\x16\x10\r\x00\x17\x0f\x10'
+        b'\x00\x19\x1d\x1c\x02\x01\x00\x00\x00\x19#\x1e\x02\x01\x00\x00\x00\x19*\x1c\x01\x01\x00\x00',
+        b'\x00\x1b\x1a \x10\x01\x00\x00')
+ARTW = b'\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x05\x1c\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x03\x02\x0f\x10\x0f\x10\x15\x00\x15\x16\x10\r\x00\x17\x0f\x10\x0f\x10'
 ARTO = (b'',
         b'\x01\x06\x06\x12\x02\x00\x00\x00\x01\x06\x04\x0e\x02\x00\x00\x00\x01\x05\x03\n\x01\x00\x00\x00',
         b'\x02\x0f\x11\x13\x16\x10\x14\x16',
@@ -156,7 +157,8 @@ ARTO = (b'',
         b'\x00\x01 \x13\x01\x01\x00\x00\x00!#\x0f\x01\x01\x00\x00\x00\x01\x1d\x17\x01\x01\x00\x00\x00!$\x16\x01\x01\x00\x00\x00!!\x18\x01\x01\x00\x00\x00\x01%\x0c\x01\x03\x00\x00\x00\x01$\r\x03\x01\x00\x00\x02\x16\x13\x1c\x16\x18\x19\x1c\x02\x16\x13\x1c\x16 \x19\x1c\x00!\x15\x1b\x03\x02\x00\x00\x00\x01\x16\x1b\x01\x02\x00\x00\x02\x12\x0e\x11\x12\x05\x12\x11\x02\x16\x11\x11\x1b\x01\x16\x12\x02!\x13\x10\x1b\x01\x15\x10\x02\x166\x1b<\x1f6#\x01\x16=\x1f\x03\x00\x00\x00\x01!=\x1f\x02\x00\x00\x00\x00\x01=\x1e\x01\x01\x00\x00\x00\x16\n\x15\x06\x01\x00\x00\x00\x16\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00',
         b'\x01\x10=\x1f\x04\x00\x00\x00\x01\x05<\x1e\x03\x00\x00\x00\x01\x06;\x1d\x01\x00\x00\x00\x00\x03<\x1e\x03\x01\x00\x00\x00\x02>\x1f\x01\x02\x00\x00\x02\x10\r\x11\x10\x07\x12\x11\x02\x13\x10\x11\x15\x00\x18\x11\x02\x01\x13\x0f\x15\x00\x15\x0f\x02\x02\x14\x03\x15\x00\x16\x03\x02\x02\x0f\n\x10\x07\x11\n\x00\x02\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00\x00\x03\n\x15\x06\x01\x00\x00\x02\x03\x12\x1c\x15\x17\x18\x1c\x02\x03\x12\x1c\x15!\x18\x1c\x02\x02\x13\x1c\x15\x19\x17\x1c\x02\x02\x13\x1c\x15\x1f\x17\x1c\x00\x01\x14\x1a\x01\x02\x00\x00\x01\x05\x04\x0b\x02\x00\x00\x00\x00\x06\x03\n\x01\x01\x00\x00\x01\x05\x1f\x04\x02\x00\x00\x00\x00\x06\x1e\x03\x01\x01\x00\x00\x01\x05;\x11\x02\x00\x00\x00\x00\x06:\x10\x01\x01\x00\x00\x00\x02#\x06\x01\x01\x00\x00\x00\x02?\x12\x01\x01\x00\x00',
         b'\x02\x00\x11\x11\x1c\x02\x16\x12\x02\x00\x0e\x10\x14\x04\x12\x11\x00\x17\x08\x17\x0b\x01\x00\x00\x00\x01\n\x17\x01\x02\x00\x00\x00\x01\r\x17\x01\x02\x00\x00\x00\x01\x10\x17\x01\x02\x00\x00\x00\x12\x0b\x11\x05\x04\x00\x00\x00\x16\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00\x02\x00\x0b\x10\x11\x10\x11\x12',
-        b'\x01\x06\x05\x15\x02\x00\x00\x00\x01\x06\x02\x12\x03\x00\x00\x00\x01\x05\x02\x11\x01\x00\x00\x00\x01\x06\x04\r\x01\x00\x00\x00\x00\x05\x07\x17\x01\x01\x00\x00')
+        b'\x01\x06\x05\x15\x02\x00\x00\x00\x01\x06\x02\x12\x03\x00\x00\x00\x01\x05\x02\x11\x01\x00\x00\x00\x01\x06\x04\r\x01\x00\x00\x00\x00\x05\x07\x17\x01\x01\x00\x00',
+        b'\x02\x02\x0b\x10\x0e\x04\x11\x10\x02\x1b\r\x10\x0e\x04\x11\x10\x02\x02\x11\x14\x14\n\x16\x14\x02\x02\x17\x19\x1a\x10\x1d\x19\x02\x02\x1d\x19 \x11#\x19\x02\x02#\x19&\x12)\x19\x02\x1b*\x1b-\x150\x1c\x02\x1b1\x1d3\x186\x1e\x00\x02\x0c\x12\x03\x02\x00\x00\x00\x00\r\x12\x01\x01\x00\x00')
 ARTU = (b'', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'', b'')
 ARTT = (b'', b'', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x02\x17\x0c\x19\n\x18\r\x02\x02\x12\x0c\x14\n\x13\r\x02\x1b+\x1b-\x17/\x1c\x02\x1b0\x1c2\x194\x1d\x02\x1b4\x1d6\x1b7\x1e\x02\x02,\x1a-\x17.\x1a\x02\x021\x1b2\x193\x1b\x00\x02\x16)\x01\x01\x00\x00\x00\x02#)\x01\x01\x00\x00\x02\x1b\x13\x1c\x15\x19\x17\x1c\x02\x1b\x13\x1c\x15\x1f\x17\x1c\x00\x01\x15\x1b\x01\x02\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x02\x17\x0c\x19\n\x18\r\x02\x02\x12\x0c\x14\n\x13\r\x02\x1b+\x1b-\x17/\x1c\x02\x1b0\x1c2\x194\x1d\x02\x1b4\x1d6\x1b7\x1e\x02\x02,\x1a-\x17.\x1a\x02\x021\x1b2\x193\x1b\x00\x02\x16)\x01\x01\x00\x00\x00\x02#)\x01\x01\x00\x00\x02\x1b\x13\x1c\x15\x19\x17\x1c\x02\x1b\x13\x1c\x15\x1f\x17\x1c\x00\x01\x15\x1b\x01\x02\x00\x00\x02\x0f\x11\x14\n\x0b\x15\x11\x02\x10\x11\x14\r\x0e\x14\x12\x00\x02\x05\x0b\x01\x05\x00\x00\x00\x02\x03\r\x05\x01\x00\x00\x00\x02\x1d\x06\x01\x05\x00\x00\x00\x02\x1b\x08\x05\x01\x00\x00\x00\x02:\x14\x01\x05\x00\x00\x00\x028\x16\x05\x01\x00\x00\x00\x01\x05\r\x01\x01\x00\x00\x00\x01\x1d\x08\x01\x01\x00\x00\x00\x01:\x16\x01\x01\x00\x00\x00\x02\x0c\t\x01\x01\x00\x00\x00\x022\x0c\x01\x01\x00\x00\x00\x02>$\x01\x01\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x0f\x11\x14\n\x0b\x15\x11\x02\x10\x11\x14\r\x0e\x14\x12\x00!\x05\x0b\x01\x05\x00\x00\x00!\x03\r\x05\x01\x00\x00\x00!\x1d\x06\x01\x05\x00\x00\x00!\x1b\x08\x05\x01\x00\x00\x00!:\x14\x01\x05\x00\x00\x00!8\x16\x05\x01\x00\x00\x00\x01\x05\r\x01\x01\x00\x00\x00\x01\x1d\x08\x01\x01\x00\x00\x00\x01:\x16\x01\x01\x00\x00\x00!\x0c\t\x01\x01\x00\x00\x00!2\x0c\x01\x01\x00\x00\x00!>$\x01\x01\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x0f\x11\x14\n\x0b\x15\x11\x02\x10\x11\x14\r\x0e\x14\x12')
 ARTG = (b'',
@@ -392,6 +394,11 @@ def shapes(m, x, y, ch, out):
         out.append((1, (240, 200, 160), 1, (px + 10, py + 6, 3)))
         out.append((2, (20, 30, 80), 0, (px + 6, py + 1, 8, 3)))
         out.append((2, YELLOW, 0, (px + 7, py + 11, 2, 2)))
+    elif ch == "A":
+        # the arena: a round stone building with dark arches
+        out.append((0, ROCK, 1, (px + 10, py + 11, 9)))
+        out.append((1, (60, 55, 70), 0, (px + 5, py + 12, 11, 6)))
+        out.append((2, RED, 0, (px + 9, py, 2, 5)))
     elif ch == "V":
         # a villager; the shirt colour tells them apart
         out.append((0, ((200, 60, 60), (60, 120, 200), (220, 180, 60))[x % 3], 0, (px + 5, py + 9, 10, 10)))
@@ -583,7 +590,9 @@ def bar(x, y, w, v, mx, c):
 
 def foe_art(f):
     n = f[0]
-    if f is BOSS or f is DREAD:
+    if len(f) > 6:
+        drag(162, 42, 2, f[6], f[4])
+    elif f is BOSS or f is DREAD:
         drag(162, 42, 2, 22 if f is DREAD else 8, f[4])
     else:
         k = ([m[0] for l in FOES for m in l] + [TITAN[0]]).index(n)
@@ -597,11 +606,11 @@ def foe_screen(f, title):
     ctext(24, title, GOLD)
 
 
-def battle(g, f, lv=0):
+def battle(g, f, lv=0, ar=0):
     # returns True when the monster is beaten, 2 when you got away, False
     # when you died. lv: the monster's level (each level past its land's lowest adds
     # 4 HP, 1 attack and 3 XP); bosses have no level.
-    name, fhp, fat, xp, fc, fe = f
+    name, fhp, fat, xp, fc, fe = f[:6]
     up = lv - LVL[g.m][0] if lv else 0
     fhp, fat, xp = fhp + 4 * up, fat + up, xp + 3 * up
     who = ("Lv " + str(lv) + " " if lv else "") + name
@@ -651,6 +660,8 @@ def battle(g, f, lv=0):
             if f is BOSS:
                 log = "The Wyrm blocks your way!"
                 continue
+            if ar:
+                return 0
             if random.random() < 0.6:
                 return 2
             log = "Couldn't get away."
@@ -661,7 +672,7 @@ def battle(g, f, lv=0):
         else:
             # the secret dragons hit harder: Quantum claw 18-21, breath 21-25 at level 1;
             # Petralith claw 21-25, breath 25-30
-            q = (d[1] == 20) + 2 * (d[1] == 21)
+            q = (d[1] == 20) + 2 * (d[1] == 21) + (d[1] == 24)
             at = 5 + 2 * d[2] + 2 * DT[d[1]][2] + q
             if o == "Claw":
                 dm = at + random.randint(0, 2 + q)
@@ -706,6 +717,10 @@ def battle(g, f, lv=0):
         if d is not None:
             d[3] = max(0, d[3] - dm)
             if d[3] == 0:
+                # in the arena a knocked-out dragon just loses the match
+                if ar:
+                    message([d[0] + " is knocked out!"], "Arena")
+                    return 0
                 g.ride = None
                 message([d[0] + " is too tired to fly.", "You fight on foot!"], "Oh no")
                 foe_screen(f, who)
@@ -817,7 +832,7 @@ def load(g):
         else:
             nm, t = NAMES[s[i] // 32], s[i] % 32
         lv = s[i + 1]
-        mh = 20 + 6 * min(4, DT[t][2]) + 6 * (lv - 1) + 6 * (t == 20) + 16 * (t == 21)
+        mh = 20 + 6 * min(4, DT[t][2]) + 6 * (lv - 1) + 6 * (t == 20) + 16 * (t == 21) + 3 * (t == 24)
         x = s[i + 3] % 4000
         p = x // 200
         g.pen.append([nm, t, lv, mh, mh, s[i + 2], PAINT[p - 1] if p else DT[t][3], x // 20 % 10, x % 20, s[i + 3] // 4000])
@@ -926,7 +941,7 @@ def pen(g):
             # the facts go under the picture, so nothing covers the dragon
             ctext(122, d[0], GOLD)
             ctext(142, (SCH[q][0] + " " if q else "") + t[0])
-            ctext(160, RARE[t[2]] + "  " + ENAME[t[1]] + " element")
+            ctext(160, ("Champion" if d[1] == 24 else RARE[t[2]]) + "  " + ENAME[t[1]] + " element")
             ctext(178, "A baby" if b else "Level " + str(d[2]) + "  HP " + str(d[4]))
             ctext(200, "ENTER: back", GREY)
             while wkey() not in (OK, CLR):
@@ -1231,6 +1246,59 @@ def deal(g, k, n):
     return d.pop()
 
 
+# the arena's 10 tamers: name, dragon kind, its level, what they say ("/" = new line, "#" = next box)
+TAMERS = (("Timmy", 0, 2, "Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak is gonna/toast you!/...Probably."),
+          ("Lulu", 4, 4, "I'm Lulu. Aww, is/that your dragon?/It's so tiny!"),
+          ("Rocco", 6, 5, "Name's Rocco.#Rocks beat everything./That's science."),
+          ("Mira", 9, 7, "I'm Mira. I've never/lost. Not once. Ever./Don't ruin it."),
+          ("Dex", 7, 8, "Dex. Remember it,/because you'll be/crying it later."),
+          ("Sheen", 13, 10, "A hooded tamer with/yellow eyes steps up.#Name's Sheen. NOT/Shen. Never heard of/him. Wanna lose? Heh."),
+          ("Captain Vex", 14, 11, "Captain Vex! I've/beaten 100 tamers./You're number 101."),
+          ("Duchess Ivy", 18, 13, "I am Duchess Ivy.#Kneel before my/Rootwyrm, peasant!"),
+          ("Grim", 16, 14, "...I'm Grim.#...Your dragon looks/tired already."),
+          ("Aurora", 19, 16, "I'm Aurora, the/champion. So you/made it this far.#Impressive. Now watch/me end it."))
+
+
+def arena(g):
+    # 10 tamers in a row; your partner is healed before every match. Lose (or run) and the
+    # prize is what you've earned so far. The first full win gives the Crestwyrm egg (book bit 35).
+    d = g.pick
+    if d is None:
+        message(["Come back when you", "have a grown dragon!"], "Arena")
+        return
+    if choose("THE ARENA", ["Enter tournament", "Leave"]) != 0:
+        return
+    w = 0
+    for n, k, lv, say in TAMERS:
+        cls(NIGHT)
+        ctext(24, "ROUND " + str(w + 1) + " OF 10", GOLD)
+        for p in say.split("#"):
+            message(p.split("/"), n)
+        d[3] = d[4]
+        g.ride = d
+        t = DT[k]
+        if not battle(g, (t[0], 20 + 6 * t[2] + 6 * lv, 4 + lv + 2 * t[2], 3 * lv, t[3], t[1], k), 0, 1):
+            break
+        w += 1
+    d[3] = d[4]
+    c = (0, 15, 30, 50, 75, 100, 130, 165, 200, 250, 300)[w]
+    m = ["You won " + str(w) + " of 10 matches.", "+" + str(c) + " coins!"]
+    if w > 6:
+        g.glim += 1
+        m.append("And a Glimmer Stone!")
+    if w == 10:
+        if not g.book >> 35 & 1 and len(g.bag) < 5 and kids(g) + 4 <= 40:
+            g.book |= 1 << 35
+            g.bag.append(24)
+            m = ["YOU ARE THE CHAMPION!", "+300 coins and a", "Champion egg!"]
+        else:
+            c = 400
+            g.glim += 1
+            m = ["CHAMPION AGAIN!", "+400 coins and two", "Glimmer Stones!"]
+    g.coins += c
+    message(m, "Arena")
+
+
 def deliver(g):
     # Shen's package: hand it over for coins, or peek. Take what's inside and Shen finds out
     # (book bit 32); put it back and it's delivered like nothing happened.
@@ -1272,14 +1340,21 @@ def deliver(g):
                            "\"Took you long enough.\"/He pays " + n + " coins/and vanishes."]).split("/"), "Village")
 
 
-def found(g, ch, nx, ny=0, ox=0, oy=0):
+def found(g, ch, nx, ny=0):
     # V: a villager, N: Old Nettle, D: Shen's package reaches the village, E: an egg, X: a treasure chest
     if ch == "V":
         return talk(g, nx)
     if ch == "N":
         return nettle(g)
+    if ch == "A":
+        return arena(g)
     if ch == "D":
         return deliver(g)
+    if ch == "E" and (len(g.bag) >= 5 or kids(g) + (1 if EGGS.get((g.m, nx, ny), 0) % 32 == SMALL else 4) > 40):
+        message(["Your backpack is full."] if len(g.bag) >= 5 else ["No room in your pen.", "Let a dragon go first."], "Egg")
+        return
+    ox, oy = g.x, g.y
+    g.x, g.y = nx, ny
     mp = g.maps[g.m]
     mp[ny][nx] = "."
     cells(g, [(ox, oy), (nx, ny)], True)
@@ -1532,18 +1607,18 @@ def backpack(g):
 def book(g):
     # one page a species; a page fills in once you have hatched that kind.
     # The secret page only exists after you have hatched the secret dragon.
-    P = list(range(20)) + [k for k in (20, 21, 23) if g.book >> k & 1]
+    P = list(range(20)) + [k for k in (20, 21, 23, 24) if g.book >> k + 12 * (k == 24) & 1]
     n = len(P)
     i = 0
     while True:
         cls(NIGHT)
         t = DT[P[i]]
-        got = g.book >> P[i] & 1
+        got = g.book >> P[i] + 12 * (P[i] == 24) & 1
         ctext(22, "DRAGON BOOK  " + str(i + 1) + "/" + str(n), GOLD)
         if got:
             drag(102, 30, 2, P[i], t[3])
             ctext(150, t[0], WHITE)
-            ctext(172, RARE[t[2]] + " " + ENAME[t[1]], RCOL[t[2]])
+            ctext(172, ("Champion" if P[i] == 24 else RARE[t[2]]) + " " + ENAME[t[1]], RCOL[t[2]])
         else:
             oval(160, 90, 4, (30, 32, 55))
             ctext(98, "?", GREY)
@@ -1642,16 +1717,17 @@ def hatch(g):
     else:
         drag(73, 30, 3, e, t[3], 0, 0, None, 0, q)
     rect(0, 182, 320, 28, NIGHT)
-    ctext(200, "A baby " + (SCH[q][0] + " " if q else "") + t[0] + "!" if b else (SCH[q][0] + " " if q else "" if t[2] > 4 else RARE[t[2]] + " ") + t[0] + " dragon!",
+    ctext(200, "A baby " + (SCH[q][0] + " " if q else "") + t[0] + "!" if b else (SCH[q][0] + " " if q else "" if t[2] > 4 else ("Champion" if e == 24 else RARE[t[2]]) + " ") + t[0] + " dragon!",
           SCH[q][2] if q else RCOL[t[2]])
     pause(1.2)
     names = sample(NAMES, 4)
     i = choose("Name your " + t[0] + ":", names + ["Type a name"])
     nm = names[max(0, i)] if i < 4 else typed(t[0]) or names[0]
-    mh = 20 + 6 * min(4, t[2]) + 6 * (e == 20) + 16 * (e == 21)
+    mh = 20 + 6 * min(4, t[2]) + 6 * (e == 20) + 16 * (e == 21) + 3 * (e == 24)
     d = [nm, e, 1, mh, mh, 0, t[3], 0, 0, q + 8 * b]
     g.pen.append(d)
     msg = [nm + " joins your pen!"]
+    e += 12 * (e == 24)
     if not g.book >> e & 1:
         g.book |= 1 << e
         msg.append("New page in your book!")
@@ -1877,24 +1953,19 @@ def play():
                 return
             draw_map(g)
             continue
-        if ch == "E" and (len(g.bag) >= 5 or kids(g) + (1 if EGGS.get((g.m, nx, ny), 0) % 32 == SMALL else 4) > 40):
-            draw_map(g)
-            message(["Your backpack is full."] if len(g.bag) >= 5 else ["No room in your pen.", "Let a dragon go first."], "Egg")
+        if ch in "EX":
+            found(g, ch, nx, ny)
             draw_map(g, True)
             continue
-        if ch in "MOVN":
-            # talk to the merchant (or the officer, a villager or Old Nettle) without stepping on them
-            (found if ch in "VN" else shen)(g, ch, nx)
+        if ch in "MOVNA":
+            # talk to the merchant (or the officer, a villager, Old Nettle, the arena) without stepping on them
+            (found if ch in "VNA" else shen)(g, ch, nx)
             # what you bought is saved right away
             save(g)
             draw_map(g)
             continue
         ox, oy = g.x, g.y
         g.x, g.y = nx, ny
-        if ch in "EX":
-            found(g, ch, nx, ny, ox, oy)
-            draw_map(g, True)
-            continue
         if ch == "Q":
             board(g)
             draw_map(g)
