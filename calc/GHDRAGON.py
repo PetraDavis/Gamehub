@@ -1269,7 +1269,9 @@ TAMERS = (("Timmy", 0, 2, "Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak
           ("Aurora", 19, 16, "I'm Aurora, the/champion. So you/made it this far.#Impressive. Now watch/me end it."))
 
 
-def arena(g):
+def arena(g, *a):
+    # lives in the fight file (W) so a match never needs a second file loaded beside it
+    import gc
     # 10 tamers in a row; your partner is healed before every match. Lose (or run) and the
     # prize is what you've earned so far. The first full win gives the Crestwyrm egg (book bit 35).
     d = g.pick
@@ -1299,6 +1301,7 @@ def arena(g):
         if k == 23:
             # Sheen's "Golden Dragon" is a polished Dustmite; the shine flakes off at half health
             f = ("Gold Dragon",) + f[1:4] + (GOLD,) + f[5:] + (2,)
+        gc.collect()
         if not battle(g, f, 0, 1):
             break
         w += 1
@@ -1368,8 +1371,6 @@ def found(g, ch, nx, ny=0):
         return talk(g, nx)
     if ch == "N":
         return nettle(g)
-    if ch == "A":
-        return arena(g)
     if ch == "D":
         return deliver(g)
     if ch == "E" and (len(g.bag) >= 5 or kids(g) + (1 if EGGS.get((g.m, nx, ny), 0) % 32 == SMALL else 4) > 40):
@@ -1870,7 +1871,10 @@ def evil(g):
     return True
 
 
-def titan(g):
+def titan(g, a=0):
+    # (titan(g, 1) opens the arena instead: it shares this fight file, so a match never loads a second file)
+    if a:
+        return arena(g)
     # the hidden cave: a giant of living rock guards a stone egg. Running away is fine,
     # it waits in its cave; beat it once (book bit 26) and it leaves the egg
     draw_map(g)
@@ -1981,7 +1985,7 @@ def play():
             continue
         if ch in "MOVNA":
             # talk to the merchant (or the officer, a villager, Old Nettle, the arena) without stepping on them
-            (found if ch in "VNA" else shen)(g, ch, nx)
+            (found if ch in "VN" else shen)(g, ch, nx) if ch != "A" else titan(g, 1)
             # what you bought is saved right away
             save(g)
             draw_map(g)

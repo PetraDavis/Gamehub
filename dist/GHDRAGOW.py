@@ -1,5 +1,54 @@
 # GHDRAGOW: part of GHDRAGON, loaded only while it is needed.
 from GHDRAGOP import*
+G_TAMERS=(('Timmy',0,2,"Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak is gonna/toast you!/...Probably."),('Lulu',4,4,"I'm Lulu. Aww, is/that your dragon?/It's so tiny!"),('Rocco',6,5,"Name's Rocco.#Rocks beat everything./That's science."),('Mira',9,7,"I'm Mira. I've never/lost. Not once. Ever./Don't ruin it."),('Dex',7,8,"Dex. Remember it,/because you'll be/crying it later."),('Captain Vex',14,11,"Captain Vex! I've/beaten 100 tamers./You're number 101."),('Duchess Ivy',18,13,'I am Duchess Ivy.#Kneel before my/Rootwyrm, peasant!'),('Grim',16,14,"...I'm Grim.#...Your dragon looks/tired already."),('Sheen',23,15,"A hooded tamer with/yellow eyes steps up.#Name's Sheen. NOT/Shen. Never heard of/him. Heh.#Behold my super rare/GOLDEN DRAGON!/Shiny, huh? Heh heh."),('Aurora',19,16,"I'm Aurora, the/champion. So you/made it this far.#Impressive. Now watch/me end it."))
+def G_arena(g,*a):
+ import gc
+ d=g.pick
+ if d is None:
+  message(['Come back when you','have a grown dragon!'],'Arena')
+  return
+ fee=min(500,25+25*g.ar)
+ if choose('THE ARENA',['Enter: '+str(fee)+'c','Leave'])!=0:
+  return
+ if g.coins<fee:
+  message(['The entry fee is',str(fee)+' coins. Come','back with more!'],'Arena')
+  return
+ g.coins-=fee
+ g.ar+=1
+ w=0
+ for n,k,lv,say in G_TAMERS:
+  cls(G_NIGHT)
+  ctext(24,'ROUND '+str(w+1)+' OF 10',GOLD)
+  for p in say.split('#'):
+   message(p.split('/'),n)
+  d[3]=d[4]
+  g.ride=d
+  t=G_DT[k]
+  r=4 if k==23 else t[2]
+  f=(t[0],20+6*r+6*lv,4+lv+2*r,3*lv,t[3],t[1],k)
+  if k==23:
+   f=('Gold Dragon',)+f[1:4]+(GOLD,)+f[5:]+(2,)
+  gc.collect()
+  if not G_battle(g,f,0,1):
+   break
+  w+=1
+ d[3]=d[4]
+ c=(0,15,30,50,75,100,130,165,200,250,300)[w]
+ m=['You won '+str(w)+' of 10 matches.','+'+str(c)+' coins!']
+ if w>6:
+  g.glim+=1
+  m.append('And a Glimmer Stone!')
+ if w==10:
+  if not g.book>>35&1 and len(g.bag)<5 and(G_kids(g)+4<=40):
+   g.book|=1<<35
+   g.bag.append(24)
+   m=['YOU ARE THE CHAMPION!','+300 coins and a','Champion egg!']
+  else:
+   c=400
+   g.glim+=1
+   m=['CHAMPION AGAIN!','+400 coins and two','Glimmer Stones!']
+ g.coins+=c
+ message(m,'Arena')
 def G_el(d):
  return G_DT[d[1]][1]
 def G_beats(a,b):
@@ -175,7 +224,9 @@ def G_evil(g):
  message(['The Dread Drake flies','away... and leaves a','strange egg behind!'],'Whoa!')
  G_draw_map(g,True)
  return True
-def G_titan(g):
+def G_titan(g,a=0):
+ if a:
+  return G_arena(g)
  G_draw_map(g)
  message(['A cave! Letters are','carved over the door:','P E T R A'],'Hidden cave')
  cls()
