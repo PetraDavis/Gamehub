@@ -84,7 +84,7 @@
         <button class="btn big" id="sendAll">Send GAMEHUB to my calculator</button>
       </div>
       <div class="actions">
-        <a class="btn small" href="gamehub.zip" download>Download all (.zip)</a>
+        <a class="btn small" href="gamehub.zip" onclick="this.href='gamehub.zip?t='+Date.now()" download>Download all (.zip)</a>
         <a class="btn small" href="#install">How to install</a>
       </div>
       <p class="note" id="support"></p>
@@ -143,7 +143,8 @@
 </div>
 
 <script src="site/evo-send.js"></script>
-<script src="dist/parts.js"></script>
+<!-- loaded with a fresh stamp so a new game file (like GHDRAGOV) is never missed from an old cached list -->
+<script>document.write('<script src="dist/parts.js?t=' + Date.now() + '"><\/script>')</script>
 <script>
 (function () {
   const GAMES = [
@@ -168,7 +169,9 @@
     { mod: 'GHSUPER', name: 'Super Tic-Tac-Toe', cat: 'Puzzle', shot: 'supertictactoe', text: 'Nine tic-tac-toe boards in one. Where you play sends your friend to that board. Win boards to take big boxes, and get 3 in a row. For 2 players.' },
     { mod: 'GHHANG', name: 'Hangman', cat: 'Classics', shot: 'hangman', text: 'Guess the word one letter at a time before the drawing is finished.' },
   ];
-  const url = n => 'dist/' + n + '.py';
+  // the stamp makes the browser fetch the newest file, never an old cached copy
+  const STAMP = Date.now();
+  const url = n => 'dist/' + n + '.py?t=' + STAMP;
   // big programs come in parts (GHANIM needs GHANIMB next to it)
   const files = n => (window.PARTS && PARTS[n]) || [n];
   function download(names) {
@@ -192,7 +195,7 @@
       '<p>' + g.text + '</p>' +
       '<img class="shot" loading="lazy" alt="' + g.name + ' on the calculator" src="site/shots/' + g.shot + '.png?v=2">' +
       '<div class="row"><button class="btn small" type="button">Send this game</button>' +
-      '<a class="btn small" href="' + url(g.mod) + '" download>' + (files(g.mod).length > 1 ? 'Download ' + files(g.mod).length + ' files' : 'Download .py') + '</a></div>';
+      '<a class="btn small" href="' + url(g.mod) + '" download="' + g.mod + '.py">' + (files(g.mod).length > 1 ? 'Download ' + files(g.mod).length + ' files' : 'Download .py') + '</a></div>';
     el.querySelector('button').addEventListener('click', () => send(files(g.mod), g.name, g.mod));
     el.querySelector('a.btn').addEventListener('click', e => { if (files(g.mod).length > 1) { e.preventDefault(); download(files(g.mod)); } });
     grid.appendChild(el);
