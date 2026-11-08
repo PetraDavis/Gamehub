@@ -1152,35 +1152,29 @@ def cop(g):
         g.shn = 5000
 
 
-VILLAGER = (("Farmer Bo", ("Eggs turn up every", "hundred steps or so.", "Keep walking!"), ("Monsters hide in the", "tall grass. Ride over", "it if you can."),
-             ("The farther lands have", "rarer eggs. And meaner", "monsters."), ("My cow got stepped on", "by a dragon. Again."), ("Stay away from Old", "Nettle. She talks", "to rocks.")),
-            ("Baker Rose", ("Walk into your nest", "to heal your dragons."), ("I once saw a shiny egg.", "It sparkled like sugar!"),
-             ("Small eggs hatch babies.", "So cute. Can't ride", "them, though."), ("Fresh bread! Oh, you", "only have dragon food?"), ("Old Nettle says a black", "dragon ate her dragons.", "Crazy old bat!")),
-            ("Little Pip", ("When I grow up I'll", "tame a Legendary!"), ("The quest hall pays", "lots of coins!"),
-             ("Did you know dragons", "can fly over lava?"), ("Wanna see my rock?", "It's a good rock."), ("Old Nettle tells the", "BEST stories! Grown-ups", "say she's cuckoo."), ("Nettle gave me a cookie.", "It was a rock. I kept", "it anyway!")))
+VILLAGER = (("Farmer Bo", "Eggs turn up every/hundred steps or so./Keep walking!|Monsters hide in the/tall grass. Ride over/it if you can.|"
+             "The farther lands have/rarer eggs. And meaner/monsters.|My cow got stepped on/by a dragon. Again.|Stay away from Old/Nettle. She talks/to rocks.|"
+             "Dragons ate my carrots./All of them.|Fire Mountain is hot./Bring a dragon that/likes heat.|Frost Peaks? Brr. Big/monsters up there.|"
+             "I saw a hooded fella/hanging around. Shifty."),
+            ("Baker Rose", "Walk into your nest/to heal your dragons.|I once saw a shiny egg./It sparkled like sugar!|Small eggs hatch babies./So cute. Can't ride/them, though.|"
+             "Fresh bread! Oh, you/only have dragon food?|Old Nettle says a black/dragon ate her dragons./Crazy old bat!|Ride your dragon and/you can cross water.|"
+             "My pies win prizes./Dragons steal them.|Level up and your dragon/heals right up!|I sold a cake to a/hooded man. He paid/with a button."),
+            ("Little Pip", "When I grow up I'll/tame a Legendary!|The quest hall pays/lots of coins!|Did you know dragons/can fly over lava?|Wanna see my rock?/It's a good rock.|"
+             "Old Nettle tells the/BEST stories! Grown-ups/say she's cuckoo.|Nettle gave me a cookie./It was a rock. I kept/it anyway!|"
+             "I'm gonna name my dragon/Sir Fluffington.|Bet I can run faster/than your dragon!|I found a feather!/...It's a leaf.|Old Nettle says rocks/can sleep. COOL!"))
 
 # Old Nettle: everyone says she's crazy, but her stories are about the secret dragons.
-# Each entry is one or two pages; any of them can come up any time.
-NETTLE = ((("Black as night, it was!", "Came when I was young", "and ate my good dragons."), ("I'd have run, but it", "had an EGG. Hee hee!")),
-          (("Purple eyes in the dark!", "It only hunts tamers", "with big strong dragons."),),
-          (("I beat the purple-eyed", "beast once. It left me", "something not in books!"),),
-          (("The cold peaks remember", "a name carved in stone.", "My name? No... not mine."),),
-          (("A giant of rock with a", "heart of gold. I heard", "it snore once! Hee!"),),
-          (("Only the darkest dragon", "can wake the stone one.", "Remember that, dearie."),),
-          (("Five letters on a door,", "up where the snow is.", "Or was it four? Hee!"),),
-          (("The moon owes me three", "coins. I'll get 'em."),),
-          (("My cat is a dragon.", "Don't tell him."),),
-          (("Who are you? Go away!", "...No, come back. Sit."),),
-          (("I ate a rock once.", "Good rock. Crunchy."),),
-          (("I'm 300 years old.", "Or 30. One of those."),),
-          (("Don't step on the grass.", "It's sleeping."),),
-          (("I had a husband once.", "Or was it a goat?", "Lovely beard, anyway."),),
-          (("Shh! The kettle is", "listening."),),
-          (("I named all the clouds.", "That one's Gerald."),),
-          (("Soup is just wet food.", "Think about it, dearie."),),
-          (("My left shoe is lucky.", "My right shoe is a liar."),),
-          (("Hee hee hee hee hee!", "...What were we saying?"),),
-          (("Little Pip visits me.", "Good child. Brings me", "rocks. Tasty rocks."),))
+# Packed: "|" between things she says, "#" between pages, "/" between lines; any of them can come up any time.
+NETTLE = ("Black as night, it was!/Came when I was young/and ate my good dragons.#I'd have run, but it/had an EGG. Hee hee!|"
+          "Purple eyes in the dark!/It only hunts tamers/with big strong dragons.|I beat the purple-eyed/beast once. It left me/something not in books!|"
+          "Never run from the/purple eyes, dearie./It just comes back.|The cold peaks remember/a name carved in stone./My name? No... not mine.|"
+          "A giant of rock with a/heart of gold. I heard/it snore once! Hee!|Only the darkest dragon/can wake the stone one./Remember that, dearie.|"
+          "Five letters on a door,/up where the snow is./Or was it four? Hee!|Stone eggs don't crack./They CRUMBLE. Hee!|"
+          "The moon owes me three/coins. I'll get 'em.|My cat is a dragon./Don't tell him.|Who are you? Go away!/...No, come back. Sit.|"
+          "I ate a rock once./Good rock. Crunchy.|I'm 300 years old./Or 30. One of those.|Don't step on the grass./It's sleeping.|"
+          "I had a husband once./Or was it a goat?/Lovely beard, anyway.|Shh! The kettle is/listening.|I named all the clouds./That one's Gerald.|"
+          "Soup is just wet food./Think about it, dearie.|My left shoe is lucky./My right shoe is a liar.|Hee hee hee hee hee!/...What were we saying?|"
+          "Little Pip visits me./Good child. Brings me/rocks. Tasty rocks.|Is it Tuesday? It/smells like Tuesday.|I talk to my plants./They never talk back./Rude.")
 
 
 def nettle(g):
@@ -1203,24 +1197,24 @@ def nettle(g):
     k = [d[1] for d in g.pen]
     if 20 in k and not g.book >> 33 & 1:
         g.book |= 1 << 33
-        P = (("THE BLACK DRAGON!", "I TOLD them! Nobody", "believed old Nettle!"), ("Take my old crown,", "dearie. I kept it", "for this day."))
+        P = "THE BLACK DRAGON!/I TOLD them! Nobody/believed old Nettle!#Take my old crown,/dearie. I kept it/for this day."
         if g.own >> 4 & 1:
             g.coins += 150
         g.own |= 1 << 4
     elif 21 in k and not g.book >> 34 & 1:
         g.book |= 1 << 34
-        P = (("The stone one... AWAKE!", "Hee hee hee! I KNEW it!"), ("Take these shiny", "stones. Five of 'em.", "No use to me."))
+        P = "The stone one... AWAKE!/Hee hee hee! I KNEW it!#Take these shiny/stones. Five of 'em./No use to me."
         g.glim += 5
     else:
-        P = random.choice(NETTLE)
-    for p in P:
-        message(list(p), "Old Nettle")
+        P = random.choice(NETTLE.split("|"))
+    for p in P.split("#"):
+        message(p.split("/"), "Old Nettle")
 
 
 def talk(g, x):
     # the village people: tips and chatter
-    n, *L = VILLAGER[(x // 5) % 3]
-    message(list(random.choice(L)), n)
+    n, L = VILLAGER[(x // 5) % 3]
+    message(random.choice(L.split("|")).split("/"), n)
 
 
 def deliver(g):
@@ -1258,7 +1252,10 @@ def deliver(g):
             message(["You peek inside...", "Just rocks!", "You close it up again."], "Package")
     n = random.randint(60, 120)
     g.coins += n
-    message(["He nods and pays you", str(n) + " coins. Shen keeps", "his word. This time."], "Village")
+    n = str(n)
+    message(random.choice(["He nods and pays you/" + n + " coins. Shen keeps/his word. This time.",
+                           "The stranger grunts and/tosses you " + n + " coins./Then he's gone.",
+                           "\"Took you long enough.\"/He pays " + n + " coins/and vanishes."]).split("/"), "Village")
 
 
 def found(g, ch, nx, ny=0, ox=0, oy=0):
@@ -1310,9 +1307,12 @@ def shen(g, ch="M", x=0):
     rect(214, 150, 16, 4, (110, 75, 40))
     ctext(24, "SHADY SHEN", GOLD)
     mad = g.book >> 31 & 1
-    ctext(196, random.choice(("You! You told on me!", "Prices went up. Wonder why.", "I remember you, snitch.")) if mad else random.choice(("Psst... over here.", "Rare goods. Very real.", "Don't ask where I got these.",
-                              "Best prices in all the lands.", "You look like a smart tamer.",
-                              "Nice dragon. Shame if it got sparkly.")))
+    ctext(196, random.choice(("You! You told on me!|Prices went up. Wonder why.|I remember you, snitch.|Snitches pay double.|"
+                              "Jail food was awful.|Oh. It's YOU." if mad else "Psst... over here.|Rare goods. Very real.|"
+                              "Don't ask where I got these.|Best prices in all the lands.|You look like a smart tamer.|"
+                              "Nice dragon. Shame if it got sparkly.|Fresh stock. Mostly legal.|Shh! Not so loud.|"
+                              "Got coins? I got stuff.|Everything's real. Probably.|My prices are a steal. Heh.|"
+                              "Back again? Smart choice.").split("|")))
     while wkey() not in (OK, CLR):
         pass
     # you didn't tell Officer Brick about him (book bit 22): one thing for free
@@ -1348,7 +1348,8 @@ def shen(g, ch="M", x=0):
             glim(g)
             continue
         if c < 0 or c >= z:
-            message([random.choice(("No refunds. Ever.", "You didn't see me.", "Come back soon, friend."))], "Shady Shen")
+            message([random.choice("No refunds. Ever.|You didn't see me.|Come back soon, friend.|Tell no one.|"
+                                    "Pleasure doing business.|Watch your pockets. Heh.".split("|"))], "Shady Shen")
             return
         n, p = S[c]
         p *= 1 - free

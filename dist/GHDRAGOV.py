@@ -1,7 +1,7 @@
 # GHDRAGOV: part of GHDRAGON, loaded only while it is needed.
 from GHDRAGOP import*
-G_NETTLE=((('Black as night, it was!','Came when I was young','and ate my good dragons.'),("I'd have run, but it",'had an EGG. Hee hee!')),(('Purple eyes in the dark!','It only hunts tamers','with big strong dragons.'),),(('I beat the purple-eyed','beast once. It left me','something not in books!'),),(('The cold peaks remember','a name carved in stone.','My name? No... not mine.'),),(('A giant of rock with a','heart of gold. I heard','it snore once! Hee!'),),(('Only the darkest dragon','can wake the stone one.','Remember that, dearie.'),),(('Five letters on a door,','up where the snow is.','Or was it four? Hee!'),),(('The moon owes me three',"coins. I'll get 'em."),),(('My cat is a dragon.',"Don't tell him."),),(('Who are you? Go away!','...No, come back. Sit.'),),(('I ate a rock once.','Good rock. Crunchy.'),),(("I'm 300 years old.",'Or 30. One of those.'),),(("Don't step on the grass.","It's sleeping."),),(('I had a husband once.','Or was it a goat?','Lovely beard, anyway.'),),(('Shh! The kettle is','listening.'),),(('I named all the clouds.',"That one's Gerald."),),(('Soup is just wet food.','Think about it, dearie.'),),(('My left shoe is lucky.','My right shoe is a liar.'),),(('Hee hee hee hee hee!','...What were we saying?'),),(('Little Pip visits me.','Good child. Brings me','rocks. Tasty rocks.'),))
-G_VILLAGER=(('Farmer Bo',('Eggs turn up every','hundred steps or so.','Keep walking!'),('Monsters hide in the','tall grass. Ride over','it if you can.'),('The farther lands have','rarer eggs. And meaner','monsters.'),('My cow got stepped on','by a dragon. Again.'),('Stay away from Old','Nettle. She talks','to rocks.')),('Baker Rose',('Walk into your nest','to heal your dragons.'),('I once saw a shiny egg.','It sparkled like sugar!'),('Small eggs hatch babies.',"So cute. Can't ride",'them, though.'),('Fresh bread! Oh, you','only have dragon food?'),('Old Nettle says a black','dragon ate her dragons.','Crazy old bat!')),('Little Pip',("When I grow up I'll",'tame a Legendary!'),('The quest hall pays','lots of coins!'),('Did you know dragons','can fly over lava?'),('Wanna see my rock?',"It's a good rock."),('Old Nettle tells the','BEST stories! Grown-ups',"say she's cuckoo."),('Nettle gave me a cookie.','It was a rock. I kept','it anyway!')))
+G_NETTLE="Black as night, it was!/Came when I was young/and ate my good dragons.#I'd have run, but it/had an EGG. Hee hee!|Purple eyes in the dark!/It only hunts tamers/with big strong dragons.|I beat the purple-eyed/beast once. It left me/something not in books!|Never run from the/purple eyes, dearie./It just comes back.|The cold peaks remember/a name carved in stone./My name? No... not mine.|A giant of rock with a/heart of gold. I heard/it snore once! Hee!|Only the darkest dragon/can wake the stone one./Remember that, dearie.|Five letters on a door,/up where the snow is./Or was it four? Hee!|Stone eggs don't crack./They CRUMBLE. Hee!|The moon owes me three/coins. I'll get 'em.|My cat is a dragon./Don't tell him.|Who are you? Go away!/...No, come back. Sit.|I ate a rock once./Good rock. Crunchy.|I'm 300 years old./Or 30. One of those.|Don't step on the grass./It's sleeping.|I had a husband once./Or was it a goat?/Lovely beard, anyway.|Shh! The kettle is/listening.|I named all the clouds./That one's Gerald.|Soup is just wet food./Think about it, dearie.|My left shoe is lucky./My right shoe is a liar.|Hee hee hee hee hee!/...What were we saying?|Little Pip visits me./Good child. Brings me/rocks. Tasty rocks.|Is it Tuesday? It/smells like Tuesday.|I talk to my plants./They never talk back./Rude."
+G_VILLAGER=(('Farmer Bo','Eggs turn up every/hundred steps or so./Keep walking!|Monsters hide in the/tall grass. Ride over/it if you can.|The farther lands have/rarer eggs. And meaner/monsters.|My cow got stepped on/by a dragon. Again.|Stay away from Old/Nettle. She talks/to rocks.|Dragons ate my carrots./All of them.|Fire Mountain is hot./Bring a dragon that/likes heat.|Frost Peaks? Brr. Big/monsters up there.|I saw a hooded fella/hanging around. Shifty.'),('Baker Rose',"Walk into your nest/to heal your dragons.|I once saw a shiny egg./It sparkled like sugar!|Small eggs hatch babies./So cute. Can't ride/them, though.|Fresh bread! Oh, you/only have dragon food?|Old Nettle says a black/dragon ate her dragons./Crazy old bat!|Ride your dragon and/you can cross water.|My pies win prizes./Dragons steal them.|Level up and your dragon/heals right up!|I sold a cake to a/hooded man. He paid/with a button."),('Little Pip',"When I grow up I'll/tame a Legendary!|The quest hall pays/lots of coins!|Did you know dragons/can fly over lava?|Wanna see my rock?/It's a good rock.|Old Nettle tells the/BEST stories! Grown-ups/say she's cuckoo.|Nettle gave me a cookie./It was a rock. I kept/it anyway!|I'm gonna name my dragon/Sir Fluffington.|Bet I can run faster/than your dragon!|I found a feather!/...It's a leaf.|Old Nettle says rocks/can sleep. COOL!"))
 def G_deliver(g):
  message(['A hooded stranger is',"waiting for Shen's",'package.'],'Village')
  c=choose('The package',['Hand it over','Peek inside'])
@@ -33,10 +33,11 @@ def G_deliver(g):
    message(['You peek inside...','Just rocks!','You close it up again.'],'Package')
  n=random.randint(60,120)
  g.coins+=n
- message(['He nods and pays you',str(n)+' coins. Shen keeps','his word. This time.'],'Village')
+ n=str(n)
+ message(random.choice(['He nods and pays you/'+n+' coins. Shen keeps/his word. This time.','The stranger grunts and/tosses you '+n+" coins./Then he's gone.",'"Took you long enough."/He pays '+n+' coins/and vanishes.']).split('/'),'Village')
 def G_talk(g,x):
- n,*L=G_VILLAGER[x//5%3]
- message(list(random.choice(L)),n)
+ n,L=G_VILLAGER[x//5%3]
+ message(random.choice(L.split('|')).split('/'),n)
 def G_nettle(g):
  cls(G_NIGHT)
  col((110,50,140))
@@ -56,18 +57,18 @@ def G_nettle(g):
  k=[d[1]for d in g.pen]
  if 20 in k and(not g.book>>33&1):
   g.book|=1<<33
-  P=(('THE BLACK DRAGON!','I TOLD them! Nobody','believed old Nettle!'),('Take my old crown,','dearie. I kept it','for this day.'))
+  P='THE BLACK DRAGON!/I TOLD them! Nobody/believed old Nettle!#Take my old crown,/dearie. I kept it/for this day.'
   if g.own>>4&1:
    g.coins+=150
   g.own|=1<<4
  elif 21 in k and(not g.book>>34&1):
   g.book|=1<<34
-  P=(('The stone one... AWAKE!','Hee hee hee! I KNEW it!'),('Take these shiny',"stones. Five of 'em.",'No use to me.'))
+  P="The stone one... AWAKE!/Hee hee hee! I KNEW it!#Take these shiny/stones. Five of 'em./No use to me."
   g.glim+=5
  else:
-  P=random.choice(G_NETTLE)
- for p in P:
-  message(list(p),'Old Nettle')
+  P=random.choice(G_NETTLE.split('|'))
+ for p in P.split('#'):
+  message(p.split('/'),'Old Nettle')
 def G_found(g,ch,nx,ny=0,ox=0,oy=0):
  if ch=='V':
   return G_talk(g,nx)
