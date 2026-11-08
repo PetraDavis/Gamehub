@@ -1270,7 +1270,8 @@ TAMERS = (("Timmy", 0, 2, "Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak
 
 
 # what some tamers say when your dragon is shiny, one line for each kind (Silver, Gold, Neon, Purple-blue: rarest last)
-SHINE = {"Lulu": "Ooh, a silver one!/Okay, that's kind/of cute.|Is that GOLD? Fine,/it's not tiny./It's adorable.|It GLOWS?! I want/one so bad! This/isn't fair!|Purple AND blue?!/Only in books! Can/I pet it? PLEASE?",
+SHINE = {"Timmy": "WHOA! It's SILVER!/Is that normal?!/That's so cool!|It's GOLD! Like a/treasure! Can my/Pyrrak be gold too?|It GLOWS! Mom has/to see this! Wait,/do I still fight it?|PURPLE AND BLUE?!/Best. Day. EVER!/I'm telling everyone!",
+         "Lulu": "Ooh, a silver one!/Okay, that's kind/of cute.|Is that GOLD? Fine,/it's not tiny./It's adorable.|It GLOWS?! I want/one so bad! This/isn't fair!|Purple AND blue?!/Only in books! Can/I pet it? PLEASE?",
          "Mira": "Silver. Nice./Still losing, though.|Gold scales... okay,/that's pretty cool./Don't tell anyone.|Neon?! How did you/even FIND that?|Purple and blue...?/The rarest one./Now I'm nervous.",
          "Captain Vex": "A silver beast!/Fine polish, matey.|GOLD! I'd trade my/whole ship for/that dragon!|Neon! It'd light up/the sea at night!/Ahoy, beauty!|Purple and blue! In/100 battles I've/never seen one!",
          "Duchess Ivy": "Silver. Almost/worthy of royalty.|Gold! Finally, a/dragon fit for/a duchess.|Neon? So flashy.../but I admit, I'm/jealous.|Purple and blue! I/demand it for my/royal collection!",
