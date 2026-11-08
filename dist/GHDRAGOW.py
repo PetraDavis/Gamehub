@@ -1,16 +1,22 @@
 # GHDRAGOW: part of GHDRAGON, loaded only while it is needed.
 from GHDRAGOP import*
-G_SHINE={'Timmy':"WHOA! It's SILVER!/Is that normal?!/That's so cool!|It's GOLD! Like a/treasure! Can my/Pyrrak be gold too?|It GLOWS! Mom has/to see this! Wait,/do I still fight it?|PURPLE AND BLUE?!/Best. Day. EVER!/I'm telling everyone!",'Lulu':"Ooh, a silver one!/Okay, that's kind/of cute.|Is that GOLD? Fine,/it's not tiny./It's adorable.|It GLOWS?! I want/one so bad! This/isn't fair!|Purple AND blue?!/Only in books! Can/I pet it? PLEASE?",'Mira':"Silver. Nice./Still losing, though.|Gold scales... okay,/that's pretty cool./Don't tell anyone.|Neon?! How did you/even FIND that?|Purple and blue...?/The rarest one./Now I'm nervous.",'Captain Vex':"A silver beast!/Fine polish, matey.|GOLD! I'd trade my/whole ship for/that dragon!|Neon! It'd light up/the sea at night!/Ahoy, beauty!|Purple and blue! In/100 battles I've/never seen one!",'Duchess Ivy':"Silver. Almost/worthy of royalty.|Gold! Finally, a/dragon fit for/a duchess.|Neon? So flashy.../but I admit, I'm/jealous.|Purple and blue! I/demand it for my/royal collection!",'Aurora':"A silver shiny./Not bad at all.|Gold. You must be/very lucky.|Neon... in all my/years I've seen only/one. Until now.|Purple and blue./The rarest shiny./You have my respect."}
-G_SPECIAL={19:{'Timmy':"Is that a LUMORA?!/Those are, like,/super legendary!~A SILVER Lumora?!/It's like moonlight/with wings!|GOLD Lumora?! My/Pyrrak looks like a/potato next to it!|A GLOWING Lumora?!/I'm gonna cry./Happy tears!|PURPLE AND BLUE/LUMORA?! Best day/of my LIFE!",'Lulu':"A Lumora?! Okay,/that is NOT tiny./That's amazing.~Silver stars?! Fine,/your dragon is/prettier than mine.|A golden Lumora?!/That's the cutest/thing EVER!|It glows AND has/stars?! I want it/SO bad!|Purple-blue Lumora?!/I'm not even mad./Just amazed.",'Mira':"A Lumora... I've/only seen Aurora's./Where'd you get it?~A silver Lumora./Okay. Now I'm/a little worried.|Gold on a Lumora?/Even Aurora's isn't/that shiny.|A neon Lumora?!/My perfect record/is in danger!|Purple and blue...?/I think I might/actually lose.",'Captain Vex':"A Lumora! Stars on/its wings, like a/sailor's night sky!~A silver Lumora!/Like the moon on/calm waters!|A golden Lumora!/Worth more than all/my ships combined!|A glowing Lumora!/I could sail by/its light!|Purple-blue Lumora!/Sailors will sing/about this day!",'Duchess Ivy':"A Lumora! Even I/don't own one./How dare you.~A silver Lumora./I suppose that's/acceptable. Barely.|A GOLDEN Lumora?!/That belongs in MY/palace, not yours!|Neon AND a Lumora?/This is outrageous!/Guards!|Purple-blue Lumora!/I'll give you my/whole castle for it!",'Aurora':"A Lumora, like/mine. Finally, a/real match.~A silver Lumora./Brighter than mine./Interesting.|A golden Lumora./Even I've only/dreamed of that.|A neon Lumora.../Mine looks dull/next to yours.|Purple-blue Lumora./You may be the/real champion."},20:{'Timmy':"WHAT is THAT?!/It looks like space!/Is it even real?!~A SILVER space/dragon?! Is it/an alien?!|A GOLD space dragon?!/I'm telling my/whole class!|It GLOWS in the/dark?! Can it be/my night light?|PURPLE AND BLUE?!/I think I just/saw the future!",'Lulu':"What... IS that?/I'm scared. And/also jealous.~Silver and spooky?!/I'm hiding behind/my Fernling.|A gold mystery/dragon?! That's not/tiny OR normal!|It's glowing!/It's looking at me!/Make it stop!|Purple and blue?!/I give up! You/win at dragons!",'Rocco':"That thing isn't/rock. I don't trust/it. At all.~Silver?! Still not/rock. Still don't/trust it.|Gold?! Okay, gold/is basically a/rock. I'm scared.|Glowing?! Rocks/don't glow! Well,/some do. AHH!|Purple and blue?!/Science can't/explain this!",'Mira':"I've never seen a/dragon like that./What IS it?~Silver... I have no/idea what that/dragon even is.|A GOLD one? I bet/nobody has ever/seen this before.|Neon?! I don't even/know what it IS,/and it GLOWS?!|Purple and blue.../I... need a/minute.",'Captain Vex':"Blimey! What beast/is THAT? It's like/the night itself!~A silver shadow!/Like a ghost ship/at midnight!|A golden shadow!/No map in the/world shows THAT!|It glows like a/storm at sea!/Batten the hatches!|Purple and blue!/In 100 battles,/NOTHING like this!",'Duchess Ivy':"That dragon... it's/darker than my/castle dungeon!~Silver darkness?/How... elegant./I hate it.|Gold on black?!/That's MY royal/color scheme!|It glows?! I will/pay ANYTHING./Name your price!|Purple and blue?!/I'm speechless. And/duchesses never are.",'Grim':'......!#...Finally. A dragon/as dark as me.','Sheen':"Ooh, nice dragon./Wanna sell it? I'll/give you 20 coins.",'Aurora':"I've never seen/that dragon. Not/even in books.~A silver one./I've never seen/anything like it.|Gold... on a dragon/I didn't know/existed. Wow.|It glows. I'm the/champion, and I've/never seen this.|Purple and blue./Whatever it is,/it's an honor."},21:{'Timmy':"A ROCK DRAGON?!/With GOLD cracks?!/Best rock EVER!~A SILVER rock/dragon?! Like a/shiny pebble!|A GOLD rock?!/I'm rich! Wait,/it's not mine.|Glowing ROCKS?!/Best. Rocks./EVER!|PURPLE AND BLUE/ROCKS?! Can I keep/a pebble?!",'Lulu':"Is it... a statue?/Wait, it MOVED!/Ahh!~Silver stone? It's/like a pretty/statue. Cute!|A gold statue that/MOVES?! Okay, that's/actually so cool.|The crystals are/glowing! It's like/a nightlight!|Purple-blue stone?!/That's the prettiest/rock in the world!",'Rocco':"A dragon made of/ROCK! I TOLD you/rocks are the best!~A SILVER rock/dragon?! This is/the best day ever!|GOLD rock?! Gold/IS a rock! Rocks/win AGAIN!|GLOWING ROCKS?!/I knew it! Rocks/are MAGIC!|Purple-blue rock?!/I'm... I'm crying./Rock tears.",'Mira':"Gold cracks and/crystals? Is that/even a dragon?~Silver stone... I/can't even tell/if it's alive.|Golden stone? This/is like fighting/a mountain.|Glowing crystals?!/How do I even/beat a mountain?!|Purple and blue/stone... I think/I'm done for.",'Captain Vex':"That's no dragon,/it's a walking/treasure chest! Arr!~Silver stone! Like/a statue from a/treasure island!|A golden stone/dragon! The best/treasure of all!|Glowing gems!/My crew would/mutiny for that!|Purple-blue gems!/I'd sink my own/ship for it!",'Duchess Ivy':'Gold AND crystals!/The fanciest dragon/in all the land!~Silver stone. It/would look lovely/in my garden.|Gold AND stone? I/must have it for/my throne room!|Glowing crystals!/My crown looks/like junk now!|Purple-blue gems!/Every jewel I own/is worthless now!','Grim':'...A stone dragon.#...It looks older/than the mountains.','Sheen':'Those crystals look/valuable. Wanna/trade? Heh heh.','Aurora':"A dragon of stone?/I didn't know they/existed. Amazing.~A silver stone/dragon. I didn't/think that was real.|Gold and stone./I've never seen a/dragon like it.|Glowing crystals.../This might be my/hardest match.|Purple-blue stone./Whatever happens,/I'll remember this."}}
-G_TAMERS=(('Timmy',0,2,"Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak is gonna/toast you!/...Probably."),('Lulu',4,4,"I'm Lulu. Aww, is/that your dragon?/It's so tiny!"),('Rocco',6,5,"Name's Rocco.#Rocks beat everything./That's science."),('Mira',9,7,"I'm Mira. I've never/lost. Not once. Ever./Don't ruin it."),('Dex',7,8,"Dex. Remember it,/because you'll be/crying it later."),('Captain Vex',14,11,"Captain Vex! I've/beaten 100 tamers./You're number 101."),('Duchess Ivy',18,13,'I am Duchess Ivy.#Kneel before my/Rootwyrm, peasant!'),('Grim',16,14,"...I'm Grim.#...Your dragon looks/tired already."),('Sheen',23,15,"A hooded tamer with/yellow eyes steps up.#Name's Sheen. NOT/Shen. Never heard of/him. Heh.#Behold my super rare/GOLDEN DRAGON!/Shiny, huh? Heh heh."),('Aurora',19,16,"I'm Aurora, the/champion. So you/made it this far.#Impressive. Now watch/me end it."))
+G_SHINE={'Timmy':"WHOA! It's SILVER!/Is that normal?!/That's so cool!|It's GOLD! Like a/treasure! Can my/Pyrrak be gold too?|It GLOWS! Mom has/to see this! Wait,/do I still fight it?|PURPLE AND BLUE?!/Best. Day. EVER!/I'm telling everyone!"}
+G_SPECIAL={19:{'Timmy':'Is that a LUMORA?!/Those are, like,/super legendary!','Lulu':"A Lumora?! Okay,/that is NOT tiny./That's amazing.",'Mira':"A Lumora... I've/only seen one in/a painting.",'Captain Vex':"A Lumora! Stars on/its wings, like a/sailor's night sky!",'Duchess Ivy':"A Lumora! Even I/don't own one./How dare you.",'Aurora':"A Lumora! I've/always wanted one./Lucky you."},20:{'Timmy':'WHAT is THAT?!/It looks like space!/Is it even real?!','Lulu':"What... IS that?/I'm scared. And/also jealous.",'Rocco':"That thing isn't/rock. I don't trust/it. At all.",'Mira':"I've never seen a/dragon like that./What IS it?",'Captain Vex':"Blimey! What beast/is THAT? It's like/the night itself!",'Duchess Ivy':"That dragon... it's/darker than my/castle dungeon!",'Grim':'......!#...Finally. A dragon/as dark as me.','Sheen':"Ooh, nice dragon./Wanna sell it? I'll/give you 20 coins.",'Aurora':"I've never seen/that dragon. Not/even in books."},21:{'Timmy':'A ROCK DRAGON?!/With GOLD cracks?!/Best rock EVER!','Lulu':'Is it... a statue?/Wait, it MOVED!/Ahh!','Rocco':'A dragon made of/ROCK! I TOLD you/rocks are the best!','Mira':'Gold cracks and/crystals? Is that/even a dragon?','Captain Vex':"That's no dragon,/it's a walking/treasure chest! Arr!",'Duchess Ivy':'Gold AND crystals!/The fanciest dragon/in all the land!','Grim':'...A stone dragon.#...It looks older/than the mountains.','Sheen':'Those crystals look/valuable. Wanna/trade? Heh heh.','Aurora':"A dragon of stone?/I didn't know they/existed. Amazing."}}
 def G_arena(g,*a):
  import gc
  d=g.pick
  if d is None:
   message(['Come back when you','have a grown dragon!'],'Arena')
   return
+ op=(1,g.book>>37&1 or g.book>>35&1,g.book>>38&1)
+ s=choose('THE ARENA',['Section '+str(i+1)+(': '+str(10*i+10)+' tamers'if op[i]else ': locked')for i in range(3)]+['Leave'])
+ if not 0<=s<3:
+  return
+ if not op[s]:
+  message(['Win Section '+str(s),'first!'],'Arena')
+  return
  fee=min(500,25+25*g.ar)
- if choose('THE ARENA',['Enter: '+str(fee)+'c','Leave'])!=0:
+ if choose('SECTION '+str(s+1),['Enter: '+str(fee)+'c','Leave'])!=0:
   return
  if g.coins<fee:
   message(['The entry fee is',str(fee)+' coins. Come','back with more!'],'Arena')
@@ -18,23 +24,24 @@ def G_arena(g,*a):
  g.coins-=fee
  g.ar+=1
  w=0
- for n,k,lv,say in G_TAMERS:
+ N=10*s+10
+ for i in range(N):
+  T=G_tamer(s,i)
+  n,k,lv,say=T[:4]
+  n='???'if n[0]=='*'else n
   cls(G_NIGHT)
-  ctext(24,'ROUND '+str(w+1)+' OF 10',GOLD)
+  ctext(24,'ROUND '+str(w+1)+' OF '+str(N),GOLD)
   for p in say.split('#'):
    message(p.split('/'),n)
   q=d[9]&7
-  s,o=(G_SPECIAL.get(d[1],{}).get(n,'')+'~').split('~')[:2]
-  for p in s.split('#')if s else():
+  e=T[4].split('|')[d[1]-19]if s and 18<d[1]<22 else G_SPECIAL.get(d[1],{}).get(n,'')
+  for p in e.split('#')if e else():
    message(p.split('/'),n)
-  p=G_SHINE.get(n)if q and(not s)else 0
+  p=G_SHINE.get(n)if q else 0
   if p:
    message(p.split('|')[q-1].split('/'),n)
-  if s and q:
-   if o:
-    message(o.split('|')[q-1].split('/'),n)
-   if not w:
-    message((['People in the crowd','point at your dragon.'],['The crowd starts','whispering...'],['The whole crowd','goes silent...'],['The crowd ROARS!','Everyone jumps up','to see your dragon!'])[q-1],'Arena')
+  if e and q and(not w):
+   message((['People in the crowd','point at your dragon.'],['The crowd starts','whispering...'],['The whole crowd','goes silent...'],['The crowd ROARS!','Everyone jumps up','to see your dragon!'])[q-1],'Arena')
   d[3]=d[4]
   g.ride=d
   t=G_DT[k]
@@ -42,25 +49,35 @@ def G_arena(g,*a):
   f=(t[0],20+6*r+6*lv,4+lv+2*r,3*lv,t[3],t[1],k)
   if k==23:
    f=('Gold Dragon',)+f[1:4]+(GOLD,)+f[5:]+(2,)
+  elif random.random()<0.17:
+   f+=(random.randint(1,s+2),)
   gc.collect()
   if not G_battle(g,f,0,1):
    break
   w+=1
  d[3]=d[4]
- c=(0,15,30,50,75,100,130,165,200,250,300)[w]
- m=['You won '+str(w)+' of 10 matches.','+'+str(c)+' coins!']
- if w>6:
-  g.glim+=1
-  m.append('And a Glimmer Stone!')
- if w==10:
-  if not g.book>>35&1 and len(g.bag)<5 and(G_kids(g)+4<=40):
+ c=(0,15,30,50,75,100,130,165,200,250,300)[w]if not s else(25,30)[s-1]*w
+ m=['You won '+str(w)+' of '+str(N)+' matches.','+'+str(c)+' coins!']
+ if w>N*2//3:
+  g.glim+=s+1
+  m.append('And '+str(s+1)+' Glimmer Stone'+'s!'[s<1:])
+ if w==N:
+  if s<2:
+   m=['SECTION '+str(s+1)+' WON!','+'+str(c)+' coins!','Section '+str(s+2)+' is open!'if not op[s+1]else 'Glimmer Stones too!']
+   g.book|=1<<37+s
+   if not g.book>>39+s&1:
+    if len(g.bag)<5:
+     g.book|=1<<39+s
+     g.bag.append(random.choice([i for i in range(20)if G_DT[i][2]==s+2]))
+     m.append(('And a Rare egg!','And an Epic egg!')[s])
+    else:
+     m.append('(No room for the egg!)')
+  elif not g.book>>35&1 and len(g.bag)<5 and(G_kids(g)+4<=40):
    g.book|=1<<35
    g.bag.append(24)
-   m=['YOU ARE THE CHAMPION!','+300 coins and a','Champion egg!']
+   m=['GRAND CHAMPION!','+'+str(c)+' coins and a','Champion egg!']
   else:
-   c=400
-   g.glim+=1
-   m=['CHAMPION AGAIN!','+400 coins and two','Glimmer Stones!']
+   m=['GRAND CHAMPION!','+'+str(c)+' coins and','3 Glimmer Stones!'if g.book>>35&1 else '(no room for the egg!)']
  g.coins+=c
  message(m,'Arena')
 def G_el(d):
@@ -170,7 +187,7 @@ def G_battle(g,f,lv=0,ar=0):
     else:
      log='Breath hits for '+str(dm)+'.'
    fhp-=dm
-  if len(f)>7 and 0<fhp<=mx//2:
+  if len(f)>7 and f[6]==23 and(0<fhp<=mx//2):
    f=(G_DT[23][0],)+f[1:4]+(G_DT[23][3],)+f[5:7]
    name=who=f[0]
    message(['The shine is flaking',"off... It's just a",'DUSTMITE!'],'Huh?')
@@ -180,7 +197,7 @@ def G_battle(g,f,lv=0,ar=0):
   if fhp<=0:
    msg=[]
    for dd in g.pen:
-    if dd[3]>0 and(dd is d or dd is g.pick):
+    if dd[3]>0 and(dd is d or dd is g.pick)and(not ar):
      dd[5]+=xp
      while dd[5]>=dd[2]*10:
       dd[5]-=dd[2]*10
@@ -195,7 +212,7 @@ def G_battle(g,f,lv=0,ar=0):
     g.coins+=c
     msg=['+'+str(c)+' coins!']+msg
    message(msg[:3]or['You won!'],who+' beaten')
-   if f is not G_BOSS:
+   if f is not G_BOSS and(not ar):
     G_quest_step(g,0,name)
     G_quest_step(g,2,g.m)
    return True

@@ -38,7 +38,6 @@ G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient','Junk')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
-G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
 G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
 def G_kids(g):
@@ -217,12 +216,8 @@ def G_play():
    continue
   if ch=='S':
    G_draw_map(g)
-   if g.pick is None:
-    message(['Hatch a dragon first!'],'Shop')
-    G_draw_map(g,True)
-   else:
-    G_shop(g)
-    G_draw_map(g)
+   G_shop(g)
+   G_draw_map(g)
    continue
   if ch=='H':
    while True:
@@ -273,5 +268,11 @@ def G_play():
    if not G_battle(g,random.choice(G_FOES[g.m]),lo+min(hi-lo,int(random.random()**1.6*(hi-lo+1)))):
     return
    G_draw_map(g)
+def G_tamer(*a):
+ import GHDRAGOA
+ r=GHDRAGOA.G_tamer(*a)
+ GHDRAGOA=None
+ G__drop('GHDRAGOA')
+ return r
 def G_back():
  G_play()
