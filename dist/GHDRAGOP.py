@@ -158,7 +158,7 @@ def G_play():
  g.dread=0
  g.glim=g.luck=g.curse=g.buys=g.done=0
  g.shen=None
- g.shn=random.randint(250,350)
+ g.shn=random.randint(120,180)
  G_load(g)
  steps=0
  G_draw_map(g)

@@ -826,7 +826,7 @@ def board(g):
             g.quest = None
         return
     qs = [new_quest(g) for i in range(3)]
-    c = choose("Quests (level " + str(min(10, g.done) + 1) + ")", [q[5][:15] + " " + str(q[4]) + "c" for q in qs] + ["Not now"])
+    c = lst("Quests (level " + str(min(10, g.done) + 1) + ")", [q[5] + "  " + str(q[4]) + "c" for q in qs] + ["Not now"])
     if 0 <= c < 3:
         g.quest = qs[c]
 
@@ -1321,10 +1321,10 @@ def hatch(g):
 def menu(g):
     # ENTER on the map: ride or get off your partner, look in your things, or save
     d = g.pick
-    opts = ["Backpack", "Dragon book", "Save game", "Keep exploring"]
+    opts = ["Backpack", "Dragon book", "My quest", "Save game", "Keep exploring"]
     if d is None:
         c = choose("Dragon Tamer", opts)
-        c = c + 1 if c >= 0 else 4
+        c = c + 1 if c >= 0 else 5
     else:
         if g.ride is not None:
             first = "Get off " + d[0]
@@ -1332,6 +1332,15 @@ def menu(g):
             first = "Ride " + d[0] + ("" if d[3] > 0 else " (tired)")
         c = choose(d[0] + " the " + DT[d[1]][0], [first] + opts)
     if c == 3:
+        q = g.quest
+        draw_map(g)
+        if q is None:
+            message(["You have no quest.", "Visit the quest hall", "in the village."], "My quest")
+        else:
+            message([q[5], "Done: " + str(q[3]) + " of " + str(q[2]), "Reward: " + str(q[4]) + " coins"], "My quest")
+        draw_map(g, True)
+        return 0
+    if c == 4:
         save(g)
         draw_map(g)
         message(["Your dragons, coins and", "eggs are saved."], "Saved!")
@@ -1367,7 +1376,7 @@ def shen_off(g):
             if m == g.m:
                 cells(g, [(x, y)], False)
         g.shen = None
-        g.shn = random.randint(250, 350)
+        g.shn = random.randint(120, 180)
 
 
 def put_egg(g, t, near, ch="E"):
@@ -1477,7 +1486,7 @@ def play():
     g.dread = 0
     g.glim = g.luck = g.curse = g.buys = g.done = 0
     g.shen = None
-    g.shn = random.randint(250, 350)
+    g.shn = random.randint(120, 180)
     load(g)
     steps = 0
     draw_map(g)

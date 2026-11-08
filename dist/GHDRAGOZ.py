@@ -165,4 +165,4 @@ def G_shen_off(g):
    if m==g.m:
     G_cells(g,[(x,y)],False)
   g.shen=None
-  g.shn=random.randint(250,350)
+  g.shn=random.randint(120,180)
