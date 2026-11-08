@@ -19,6 +19,8 @@ SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
         # the merchant has a file of his own, with its own copy of the list, so the
         # pen and fights don't have to carry his code
         "Z": ("shen", "cop", "who", "glim", "zl", "shen_off", "pol_off"),
+        # things you step on or talk to (eggs, chests, villagers, Shen's package): small, loaded on use
+        "V": ("found",),
         "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed", "menu")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
@@ -48,15 +50,15 @@ MAPS = (
      '.."""...........',
      '..""".....^C....',
      "^^^^^^^^^^^^^^^^"],
-    # the village, left of Green Valley: Q quest hall, S shop, W well, = path
+    # the village, left of Green Valley: Q quest hall, S shop, W well, = path, V villagers
     ["TTTTTTTTTTTTTTTT",
      "T..............T",
      "T..Q.......S...T",
      "T..=.......=...T",
      "T..=============",
      "T.......W......T",
-     "T..............T",
-     "T..............T",
+     "T.....V......V.T",
+     "T.V............T",
      "TTTTTTTTTTTTTTTT"],
 )
 LANDS = ("Green Valley", "Fire Mountain", "Frost Peaks", "Village")
@@ -294,7 +296,7 @@ def oval(x, y, s, c, k=0):
 def egg(x, y, s, t):
     # a shaded egg; its pattern shows how rare it is. Small eggs are smaller, shiny ones shine.
     q, t = t // 32, t % 32
-    if t == SMALL:
+    if t >= 30:
         s = max(2, s * 2 // 3)
         y += 2 * s
         t = 0
@@ -390,6 +392,11 @@ def shapes(m, x, y, ch, out):
         out.append((1, (240, 200, 160), 1, (px + 10, py + 6, 3)))
         out.append((2, (20, 30, 80), 0, (px + 6, py + 1, 8, 3)))
         out.append((2, YELLOW, 0, (px + 7, py + 11, 2, 2)))
+    elif ch == "V":
+        # a villager; the shirt colour tells them apart
+        out.append((0, ((200, 60, 60), (60, 120, 200), (220, 180, 60))[x % 3], 0, (px + 5, py + 9, 10, 10)))
+        out.append((1, (240, 200, 160), 1, (px + 10, py + 6, 3)))
+        out.append((2, BARK, 0, (px + 7, py + 2, 6, 2)))
     elif ch == "X":
         # a treasure chest from Shen's map
         out.append((0, BARK, 0, (px + 3, py + 8, 14, 10)))
@@ -444,7 +451,7 @@ def egg_roll(g, t):
 
 def kids(g):
     # how full the pen is, in quarters: a dragon or a big egg takes 4, a baby or a small egg 1
-    return sum(1 if d[9] & 8 else 4 for d in g.pen) + sum(1 if e % 32 == SMALL else 4 for e in g.bag)
+    return sum(1 if d[9] & 8 else 4 for d in g.pen) + sum(1 if e % 32 >= 30 else 4 for e in g.bag)
 
 
 def grown(g):
@@ -1145,7 +1152,74 @@ def cop(g):
         g.shn = 5000
 
 
-def shen(g):
+VILLAGER = (("Farmer Bo", ("Eggs turn up every", "hundred steps or so.", "Keep walking!"), ("Monsters hide in the", "tall grass. Ride over", "it if you can."),
+             ("The farther lands have", "rarer eggs. And meaner", "monsters."), ("My cow got stepped on", "by a dragon. Again.")),
+            ("Baker Rose", ("Walk into your nest", "to heal your dragons."), ("I once saw a shiny egg.", "It sparkled like sugar!"),
+             ("Small eggs hatch babies.", "So cute. Can't ride", "them, though."), ("Fresh bread! Oh, you", "only have dragon food?")),
+            ("Little Pip", ("When I grow up I'll", "tame a Legendary!"), ("The quest hall pays", "lots of coins!"),
+             ("Did you know dragons", "can fly over lava?"), ("Wanna see my rock?", "It's a good rock.")))
+
+
+def talk(g, x):
+    # the village people: tips and chatter
+    n, *L = VILLAGER[(x // 5) % 3]
+    message(list(random.choice(L)), n)
+
+
+def deliver(g):
+    # Shen's package: hand it over for coins, or peek (and Shen finds out: book bit 32)
+    message(["A hooded stranger is", "waiting for Shen's", "package."], "Village")
+    c = choose("The package", ["Hand it over", "Peek inside"])
+    g.book &= ~(1 << 24)
+    if c != 1:
+        n = random.randint(60, 120)
+        g.coins += n
+        message(["He nods and pays you", str(n) + " coins. Shen keeps", "his word. This time."], "Village")
+        return
+    g.book |= 1 << 32
+    r = random.random()
+    # rarely an egg: a shiny Rare (or rarer) egg, a small Rare+ egg, or now and then a small shiny
+    if r < 0.15 and len(g.bag) < 5 and kids(g) + 4 <= 40:
+        r = random.random()
+        g.bag.append(30 + 32 * random.randint(1, 4) if r < 0.08 else 30 if r < 0.4 else
+                     random.choice([i for i in range(20) if DT[i][2] >= 2]) + 32 * random.randint(1, 4))
+        m = ["An egg was inside! You", "keep it. The stranger", "runs off."]
+    elif r < 0.6:
+        n = random.randint(30, 100)
+        g.coins += n
+        m = [str(n) + " coins inside!", "You pocket them. The", "stranger runs off."]
+    else:
+        m = ["Just rocks!", "The stranger laughs", "and runs off."]
+    message(m, "Package")
+
+
+def found(g, ch, nx, ny=0, ox=0, oy=0):
+    # V: a villager, D: Shen's package reaches the village, E: an egg, X: a treasure chest
+    if ch == "V":
+        return talk(g, nx)
+    if ch == "D":
+        return deliver(g)
+    mp = g.maps[g.m]
+    mp[ny][nx] = "."
+    cells(g, [(ox, oy), (nx, ny)], True)
+    if ch == "E":
+        e = EGGS.pop((g.m, nx, ny), 0)
+        if not g.bag:
+            g.warm = 12
+        g.bag.append(e)
+        hud(g)
+        message(["You found a" + (" shiny" if e > 31 else "") + " small egg!", "It's in your backpack."] if e % 32 == SMALL else
+                ["You found a" + (" shiny" if e > 31 else "n") + " egg with", RARE[DT[e % 32][2]] + " spots! It's in", "your backpack."], "An egg!")
+    elif random.random() < 0.33:
+        message(["You dig it open...", "It's empty! Just dirt."], "Treasure")
+    else:
+        n = random.randint(30, 80) + 20 * g.m
+        g.coins += n
+        hud(g)
+        message(["You dig it open...", str(n) + " coins inside!"], "Treasure")
+
+
+def shen(g, ch="M", x=0):
     # Shady Shen. The game never tells you, but: after your first visit he sometimes
     # picks your pocket, after your first buy 1 thing in 10 is a fake, and the
     # Golden Coin makes coins go missing more often (book bit 27 = met, 28 = bought)
@@ -1172,6 +1246,16 @@ def shen(g):
     while wkey() not in (OK, CLR):
         pass
     # you didn't tell Officer Brick about him (book bit 22): one thing for free
+    if g.book >> 32 & 1:
+        g.book &= ~(1 << 32)
+        g.coins -= min(g.coins, random.randint(20, 40))
+        message(["You opened my package!", "Shen always knows. Heh.", "That'll cost you."], "Shady Shen")
+    # now and then a job: take a package to the village (book bit 24)
+    elif met and not g.book >> 24 & 1 and random.random() < 0.15:
+        message(["Psst... got a job. Take", "this package to the", "village. And DON'T peek."], "Shady Shen")
+        if choose("Take the job?", ["Sure", "No thanks"]) == 0:
+            g.book |= 1 << 24
+            message(["Someone will be waiting", "there for it. Heh."], "Shady Shen")
     free = g.book >> 22 & 1
     if free:
         message(["Psst... you didn't tell", "the officer about me.", "Pick one thing. Free."], "Shady Shen")
@@ -1341,9 +1425,9 @@ def backpack(g):
     for i in range(len(g.bag)):
         v = g.bag[i]
         egg(40 + i * 60, 90, 3, v)
-        r = DT[v % 32 % SMALL][2]
-        text(16 + i * 60, 150, "Small" if v % 32 == SMALL else "Shiny" if v > 31 else "???" if r > 4 else RARE[r][:5],
-             SCH[v // 32][2] if v > 31 else WHITE if v % 32 == SMALL else RCOL[r])
+        r = DT[v % 32 % 30][2]
+        text(16 + i * 60, 150, "Small" if v % 32 >= 30 else "Shiny" if v > 31 else "???" if r > 4 else RARE[r][:5],
+             SCH[v // 32][2] if v > 31 else WHITE if v % 32 >= 30 else RCOL[r])
     if g.glim:
         text(6, 170, "Glimmer Stones: " + str(g.glim) + " (ENTER: use)", GOLD)
     if g.bag:
@@ -1450,10 +1534,10 @@ def hatch(g):
     q, e = v // 32, v % 32
     # the "shiny" Dustmite egg was only dusty: the dragon inside is never shiny
     q *= e != 23
-    b = e == SMALL
+    b = e >= 30
     if b:
-        # a baby of a kind you have discovered
-        e = random.choice([i for i in range(22) if g.book >> i & 1] or [0])
+        # a baby of a kind you have discovered (30: of a Rare or rarer kind, from Shen's package)
+        e = random.choice([i for i in range(20) if DT[i][2] >= 2] if e == 30 else [i for i in range(22) if g.book >> i & 1] or [0])
     t = DT[e]
     cls(NIGHT)
     ctext(24, "The egg is cracking!", GOLD)
@@ -1679,6 +1763,11 @@ def play():
                     if g.shen:
                         shen_off(g)
                     g.m = m
+                    # bringing Shen's package to the village (book bit 24)
+                    if m == 3 and g.book >> 24 & 1:
+                        draw_map(g)
+                        found(g, "D", 0)
+                        save(g)
                     if m < 3:
                         g.seen = max(g.seen, m)
                     g.x = 15 - g.x
@@ -1707,37 +1796,17 @@ def play():
             message(["Your backpack is full."] if len(g.bag) >= 5 else ["No room in your pen.", "Let a dragon go first."], "Egg")
             draw_map(g, True)
             continue
-        if ch in "MO":
-            # talk to the merchant (or the officer) without stepping on him
-            shen(g)
+        if ch in "MOV":
+            # talk to the merchant (or the officer, or a villager) without stepping on them
+            (found if ch == "V" else shen)(g, ch, nx)
             # what you bought is saved right away
             save(g)
             draw_map(g)
             continue
         ox, oy = g.x, g.y
         g.x, g.y = nx, ny
-        if ch == "E":
-            mp[ny][nx] = "."
-            cells(g, [(ox, oy), (nx, ny)], True)
-            e = EGGS.pop((g.m, nx, ny), 0)
-            if not g.bag:
-                g.warm = 12
-            g.bag.append(e)
-            hud(g)
-            message(["You found a" + (" shiny" if e > 31 else "") + " small egg!", "It's in your backpack."] if e % 32 == SMALL else
-                    ["You found a" + (" shiny" if e > 31 else "n") + " egg with", RARE[DT[e % 32][2]] + " spots! It's in", "your backpack."], "An egg!")
-            draw_map(g, True)
-            continue
-        if ch == "X":
-            mp[ny][nx] = "."
-            cells(g, [(ox, oy), (nx, ny)], True)
-            if random.random() < 0.33:
-                message(["You dig it open...", "It's empty! Just dirt."], "Treasure")
-            else:
-                n = random.randint(30, 80) + 20 * g.m
-                g.coins += n
-                hud(g)
-                message(["You dig it open...", str(n) + " coins inside!"], "Treasure")
+        if ch in "EX":
+            found(g, ch, nx, ny, ox, oy)
             draw_map(g, True)
             continue
         if ch == "Q":

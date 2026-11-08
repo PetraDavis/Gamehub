@@ -111,7 +111,7 @@ def G_cop(g):
  G_shen_off(g)
  if g.book>>31&1:
   g.shn=5000
-def G_shen(g):
+def G_shen(g,ch='M',x=0):
  m,x,y=g.shen
  if g.maps[m][y][x]=='O':
   return G_cop(g)
@@ -132,6 +132,15 @@ def G_shen(g):
  ctext(196,random.choice(('You! You told on me!','Prices went up. Wonder why.','I remember you, snitch.'))if mad else random.choice(('Psst... over here.','Rare goods. Very real.',"Don't ask where I got these.",'Best prices in all the lands.','You look like a smart tamer.','Nice dragon. Shame if it got sparkly.')))
  while wkey()not in(OK,CLR):
   pass
+ if g.book>>32&1:
+  g.book&=~(1<<32)
+  g.coins-=min(g.coins,random.randint(20,40))
+  message(['You opened my package!','Shen always knows. Heh.',"That'll cost you."],'Shady Shen')
+ elif met and(not g.book>>24&1)and(random.random()<0.15):
+  message(['Psst... got a job. Take','this package to the',"village. And DON'T peek."],'Shady Shen')
+  if choose('Take the job?',['Sure','No thanks'])==0:
+   g.book|=1<<24
+   message(['Someone will be waiting','there for it. Heh.'],'Shady Shen')
  free=g.book>>22&1
  if free:
   message(["Psst... you didn't tell",'the officer about me.','Pick one thing. Free.'],'Shady Shen')

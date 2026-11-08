@@ -15,7 +15,7 @@ def G_oval(x,y,s,c,k=0):
  circ(x,y-5*s,4*s-k,c)
 def G_egg(x,y,s,t):
  q,t=(t//32,t%32)
- if t==G_SMALL:
+ if t>=30:
   s=max(2,s*2//3)
   y+=2*s
   t=0
@@ -60,8 +60,8 @@ def G_backpack(g):
  for i in range(len(g.bag)):
   v=g.bag[i]
   G_egg(40+i*60,90,3,v)
-  r=G_DT[v%32%G_SMALL][2]
-  text(16+i*60,150,'Small'if v%32==G_SMALL else 'Shiny'if v>31 else '???'if r>4 else G_RARE[r][:5],G_SCH[v//32][2]if v>31 else WHITE if v%32==G_SMALL else G_RCOL[r])
+  r=G_DT[v%32%30][2]
+  text(16+i*60,150,'Small'if v%32>=30 else 'Shiny'if v>31 else '???'if r>4 else G_RARE[r][:5],G_SCH[v//32][2]if v>31 else WHITE if v%32>=30 else G_RCOL[r])
  if g.glim:
   text(6,170,'Glimmer Stones: '+str(g.glim)+' (ENTER: use)',GOLD)
  if g.bag:
@@ -152,9 +152,9 @@ def G_hatch(g):
  g.warm=12
  q,e=(v//32,v%32)
  q*=e!=23
- b=e==G_SMALL
+ b=e>=30
  if b:
-  e=random.choice([i for i in range(22)if g.book>>i&1]or[0])
+  e=random.choice([i for i in range(20)if G_DT[i][2]>=2]if e==30 else[i for i in range(22)if g.book>>i&1]or[0])
  t=G_DT[e]
  cls(G_NIGHT)
  ctext(24,'The egg is cracking!',GOLD)
