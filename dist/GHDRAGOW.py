@@ -116,7 +116,9 @@ def G_battle(g,f,lv=0):
       dd[3]=dd[4]
       msg.append(dd[0]+' is now level '+str(dd[2])+'!')
    if lv>=5:
-    c=lv*(1+g.curse)
+    k=g.curse and g.cd<15
+    g.cd+=k
+    c=lv*(1+k)
     g.coins+=c
     msg=['+'+str(c)+' coins!']+msg
    message(msg[:3]or['You won!'],who+' beaten')

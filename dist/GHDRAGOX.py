@@ -44,7 +44,8 @@ def G_load(g):
  try:
   b=[int(v)for v in recall_list('DRB')]
   if b[0]>1:
-   pk=b[1]//500000
+   pk=b[1]//500000%12
+   g.cd=b[1]//6000000
    b[1]%=500000
    g.glim,g.luck,g.curse,g.buys,g.done=(b[1]%100,b[1]//100%2,b[1]//200%2,b[1]//400%11,b[1]//4400)
    b=b[1:]
