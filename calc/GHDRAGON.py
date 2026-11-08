@@ -1269,6 +1269,12 @@ TAMERS = (("Timmy", 0, 2, "Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak
           ("Aurora", 19, 16, "I'm Aurora, the/champion. So you/made it this far.#Impressive. Now watch/me end it."))
 
 
+# what tamers say about a Legendary (19), Quantum (20) or Petralith (21) partner, and (WOW) how they
+# react when it's shiny too, more the rarer the shine
+SPECIAL = {19: {"Timmy": "Is that a LUMORA?!/Those are, like,/super legendary!", "Lulu": "A Lumora?! Okay,/that is NOT tiny./That's amazing.", "Mira": "A Lumora... I've/only seen Aurora's./Where'd you get it?", "Captain Vex": "A Lumora! Stars on/its wings, like a/sailor's night sky!", "Duchess Ivy": "A Lumora! Even I/don't own one./How dare you.", "Aurora": "A Lumora, like/mine. Finally, a/real match."},
+           20: {"Timmy": "WHAT is THAT?!/It looks like space!/Is it even real?!", "Lulu": "What... IS that?/I'm scared. And/also jealous.", "Rocco": "That thing isn't/rock. I don't trust/it. At all.", "Mira": "I've read about that/dragon. I thought it/was just a story.", "Captain Vex": "Blimey! A dragon/made of night sky!/I've heard tales!", "Duchess Ivy": "That dragon... it's/darker than my/castle dungeon!", "Grim": "......!#...Finally. A dragon/as dark as me.", "Sheen": "Ooh, nice dragon./Wanna sell it? I'll/give you 20 coins.", "Aurora": "A Quantum. I didn't/think anyone could/find one. Respect."},
+           21: {"Timmy": "A ROCK DRAGON?!/With GOLD cracks?!/Best rock EVER!", "Lulu": "Is it... a statue?/Wait, it MOVED!/Ahh!", "Rocco": "A dragon made of/ROCK! I TOLD you/rocks are the best!", "Mira": "Gold cracks and/crystals... is that/from the Stone Titan?", "Captain Vex": "That's no dragon,/it's a walking/treasure chest! Arr!", "Duchess Ivy": "Gold AND crystals!/The fanciest dragon/in all the land!", "Grim": "...A stone dragon.#...It looks older/than the mountains.", "Sheen": "Those crystals look/valuable. Wanna/trade? Heh heh.", "Aurora": "Petralith. So the/old legends were/true. This is hard."}}
+WOW = ("And it's shiny?!/No way!|Shiny too?! Some/people get ALL/the luck.|A shiny one?!/Ugh, show-off.", "And GOLDEN?!/I can't believe/my eyes!|Gold?! That's like/a double rare!|A golden one?!/That's not fair!", "And it GLOWS?!/I think I need to/sit down...|Neon?! My knees/are shaking!|It's glowing?!/How is that even/possible?!", "Purple and blue AND/THAT dragon?! Nobody/will believe me!|The rarest shine/on the rarest/dragon?! WHAT?!|I... I can't even/talk right now./Wow.")
 # what some tamers say when your dragon is shiny, one line for each kind (Silver, Gold, Neon, Purple-blue: rarest last)
 SHINE = {"Timmy": "WHOA! It's SILVER!/Is that normal?!/That's so cool!|It's GOLD! Like a/treasure! Can my/Pyrrak be gold too?|It GLOWS! Mom has/to see this! Wait,/do I still fight it?|PURPLE AND BLUE?!/Best. Day. EVER!/I'm telling everyone!",
          "Lulu": "Ooh, a silver one!/Okay, that's kind/of cute.|Is that GOLD? Fine,/it's not tiny./It's adorable.|It GLOWS?! I want/one so bad! This/isn't fair!|Purple AND blue?!/Only in books! Can/I pet it? PLEASE?",
@@ -1302,10 +1308,22 @@ def arena(g, *a):
         ctext(24, "ROUND " + str(w + 1) + " OF 10", GOLD)
         for p in say.split("#"):
             message(p.split("/"), n)
-        # a shiny partner gets a compliment from some tamers, a bigger one the rarer the shine
-        p = SHINE.get(n) if d[9] & 7 else 0
+        # a Legendary, Quantum or Petralith partner gets a reaction; a shiny one gets a compliment
+        # from some tamers (a bigger one the rarer the shine); both at once and they lose it
+        q = d[9] & 7
+        s = SPECIAL.get(d[1], {}).get(n)
+        for p in (s.split("#") if s else ()):
+            message(p.split("/"), n)
+        p = SHINE.get(n) if q else 0
         if p:
-            message(p.split("|")[(d[9] & 7) - 1].split("/"), n)
+            message(p.split("|")[q - 1].split("/"), n)
+        if s and q:
+            if n not in ("Grim", "Sheen"):
+                message(WOW[q - 1].split("|")[w % 3].split("/"), n)
+            if not w:
+                # the crowd notices once, more loudly the rarer the shine
+                message((["People in the crowd", "point at your dragon."], ["The crowd starts", "whispering..."], ["The whole crowd", "goes silent..."],
+                         ["The crowd ROARS!", "Everyone jumps up", "to see your dragon!"])[q - 1], "Arena")
         d[3] = d[4]
         g.ride = d
         t = DT[k]
