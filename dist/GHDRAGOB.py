@@ -1,25 +1,11 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-def message(lines,title=None):
- n=len(lines)+(1 if title else 0)
- h=n*18+30
- y=(H-h)//2
- rbox(20,y,280,h,8,WHITE)
- MSG[0],MSG[1]=(y,h)
- COVER[0]+=1
- yy=y+24
- if title:
-  ctext(yy,title,GOLD)
-  yy+=18
- for s in lines:
-  ctext(yy,s)
-  yy+=18
- while True:
-  k=wkey()
-  if k in(OK,CLR):
-   return k
-G_LANDS=('Green Valley','Fire Mountain','Frost Peaks','Village')
-G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
+UP=25
+def G_egg_type(m,up=0):
+ r=random.randint(0,999)
+ rar=4 if r<4+2*m else 3 if r<30+10*m else 2 if r<110+25*m else 1 if r<330+40*m else 0
+ rar=min(4,rar+up)
+ return random.choice([i for i in range(20)if G_DT[i][2]==rar])
 def G_drag(x,y,s,t,c,head=0,body=0,out=None,f=0,sp=0):
  P=G_PAL+[lt(c,0.45),dk(c,0.6),c]+G_PAL2+[lt(c,0.2),dk(c,0.4)]+G_PAL3
  if sp:
@@ -37,16 +23,6 @@ def G_drag(x,y,s,t,c,head=0,body=0,out=None,f=0,sp=0):
  r=G_DT[t][2]if t<len(G_DT)else 0
  for a in(G_ARTB,G_ARTF[t],G_ARTU[r],bytes((2,w,24,26,40,10,37,28,2,b,40,10,28,27,30,27,2,b,40,10,33,28,35,28,2,17,23,26,40,9,26,26,1,17,26,27,3,0,0,0,2,1,40,9,42,7,41,11)),G_ARTL,G_ARTT[r],G_ARTO[t],G_ARTG[body]if body else b'',G_ARTG[head]if head else b'',bytes((0,1,17,31,5,1,0,0,0,1,19,29,1,5,0,0,0,1,34,14,5,1,0,0,0,1,36,12,1,5,0,0,0,1,41,32,5,1,0,0,0,1,43,30,1,5,0,0))if sp else b''):
   G_art(a,x,y,s,P,out,f)
-def G_base(m,ch):
- if ch=='~':
-  return G_WATER
- if ch=='L':
-  return G_LAVA
- if ch=='"':
-  return G_TALL[m]
- if ch=='=':
-  return(190,160,110)
- return G_GROUND[m]
 def G_shapes(m,x,y,ch,out):
  px=x*G_T
  py=20+y*G_T
@@ -144,3 +120,20 @@ def G_paint(ops):
    fill_poly(a[0],a[1])
  if last:
   rect(last[1],last[2],last[3],last[4],last[0][1])
+def G_hud(g):
+ d=g.ride
+ if d is not None:
+  who=d[0]+' '+str(d[3])+'/'+str(d[4])
+ else:
+  who='You '+str(g.hp)+'/'+str(g.mhp)
+ t=(G_LANDS[g.m],who,'Egg '+str(g.warm)if g.bag else str(g.coins)+'c')
+ if t==G_HUD[0]:
+  return
+ old=G_HUD[0]or('','','')
+ if G_HUD[0]is None:
+  rect(0,0,320,20,BLACK)
+ for i,x,c in((0,4,GOLD),(1,140,WHITE),(2,262,YELLOW)):
+  if t[i]!=old[i]:
+   text(x,15,old[i],BLACK)
+   text(x,15,t[i],c)
+ G_HUD[0]=t

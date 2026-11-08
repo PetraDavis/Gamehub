@@ -30,9 +30,11 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
+G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^C....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
+G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
 def G_grown(g):
  for d in g.pen:
   if not d[9]&8:
@@ -70,23 +72,8 @@ def G_draw_map(g,after_msg=False):
  G_CAVE[0]=not g.book>>26&1 and any((d[1]==20 and(not d[9]&8)for d in g.pen))
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
-def G_hud(g):
- d=g.ride
- if d is not None:
-  who=d[0]+' '+str(d[3])+'/'+str(d[4])
- else:
-  who='You '+str(g.hp)+'/'+str(g.mhp)
- t=(G_LANDS[g.m],who,'Egg '+str(g.warm)if g.bag else str(g.coins)+'c')
- if t==G_HUD[0]:
-  return
- old=G_HUD[0]or('','','')
- if G_HUD[0]is None:
-  rect(0,0,320,20,BLACK)
- for i,x,c in((0,4,GOLD),(1,140,WHITE),(2,262,YELLOW)):
-  if t[i]!=old[i]:
-   text(x,15,old[i],BLACK)
-   text(x,15,t[i],c)
- G_HUD[0]=t
+class G_Game:
+ pass
 def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
  big=[d for d in g.pen if not d[9]&8]
@@ -273,7 +260,7 @@ def G_play():
   g.spawn-=1
   if g.spawn<=0:
    g.spawn=random.randint(100,200)
-   if g.m<3 and(not any((q[0]==g.m for q in G_EGGS))):
+   if g.m<3 and sum((1 for q in G_EGGS if q[0]==g.m))<2:
     G_put_egg(g,G_egg_roll(g,G_egg_type(g.m,g.luck)),False)
     g.luck=0
   g.shn-=1
