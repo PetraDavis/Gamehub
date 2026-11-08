@@ -14,6 +14,7 @@ BLACK=(0,0,0)
 WHITE=(255,255,255)
 GOLD=(230,180,40)
 GREY=(110,110,110)
+H=210
 def wkey():
  return wait_key()
 _C=[None]
@@ -68,6 +69,52 @@ def edge(x,y,w,h,r,c,t=2,inner=BLACK):
  for bx,by,bw,bh in _corners(x,y,w,h,r,t):
   if bw>0 and bh>0:
    fr(bx,by,bw,bh)
+MSG=[0,0]
+def message(lines,title=None):
+ n=len(lines)+(1 if title else 0)
+ h=n*18+30
+ y=(H-h)//2
+ rbox(20,y,280,h,8,WHITE)
+ MSG[0],MSG[1]=(y,h)
+ COVER[0]+=1
+ yy=y+24
+ if title:
+  ctext(yy,title,GOLD)
+  yy+=18
+ for s in lines:
+  ctext(yy,s)
+  yy+=18
+ while True:
+  k=wkey()
+  if k in(OK,CLR):
+   return k
+def choose(title,opts,sel=0):
+ cls()
+ ctext(24,title,GOLD)
+ n=len(opts)
+ for i in range(n):
+  y=40+i*30
+  c=GOLD if i==sel else WHITE
+  rbox(60,y,200,24,8,c,2,BLACK,False)
+  ctext(y+18,opts[i],c)
+ while True:
+  k=wkey()
+  old=sel
+  if k==UP:
+   sel=(sel-1)%n
+  elif k==DOWN:
+   sel=(sel+1)%n
+  elif k==OK:
+   return sel
+  elif k==CLR:
+   return-1
+  if sel==old:
+   continue
+  for i in(old,sel):
+   y=40+i*30
+   c=GOLD if i==sel else WHITE
+   edge(60,y,200,24,8,c)
+   ctext(y+18,opts[i],c)
 def _wrap(s,n=30):
  out=[]
  line=''
@@ -97,7 +144,7 @@ def how_to(title,rules,buttons):
  text(8,206,'ENTER: back',GREY)
  while wkey()not in(OK,CLR,UP,DOWN):
   pass
-def home(mod,title,rules,buttons,opts=('Play','Back'),sel=0):
+def home(mod,title,rules,buttons,opts=('Play','Back'),sel=0,wipe=None):
  n=len(opts)
  while True:
   cls()
@@ -138,6 +185,9 @@ def home(mod,title,rules,buttons,opts=('Play','Back'),sel=0):
    elif k==OK:
     if opts[sel]=='Back':
      return-1
+    if opts[sel]=='Delete':
+     wipe()
+     break
     return sel
 I_BLACK=(0,0,0)
 I_BG={'GHDRAGON':(50,130,60)}
@@ -166,5 +216,11 @@ def I_draw(mod,x,y,c):
   f(x,y,c)
 G_RULES='Find eggs (new ones keep turning up), walk to hatch them and name your dragons. 20 kinds, Common to Legendary. Ride over water, lava and mountains. Save any time from the ENTER menu. The nest has your dragon pen. Walk left from Green Valley to the village for quests and the shop. If you lose all your HP, you die!'
 G_KEYS=['Arrows: walk or fly','ENTER: ride, backpack, save','Fights: Left/Right + ENTER','CLEAR: save and quit']
+def G_forget():
+ if choose('Delete your save?',['No, keep it','Yes, delete it'])==1:
+  from ti_system import store_list
+  for nm in('DRG','DRB'):
+   store_list(nm,[0])
+  message(['Your dragons, coins','and eggs are gone.','A new game starts','next time.'],'Save deleted')
 def G_front():
- return home('GHDRAGON','DRAGON TAMER',G_RULES,G_KEYS,('Play','Back'))
+ return home('GHDRAGON','DRAGON TAMER',G_RULES,G_KEYS,('Play','Delete','Back'),0,G_forget)

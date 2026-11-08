@@ -366,7 +366,7 @@ while True:
   st[3]=str(e)[:26]
   st[4]=mod
  m=None
- drop([mod]+[mod[:7]+c for c in "ABCDEFHPVWXYZ"])
+ drop([mod]+[mod[:7]+c for c in "ABCDEFHPQSTVWXYZ"])
 """
 
 
@@ -450,7 +450,7 @@ STAGE_OVER = 9000
 # the game part loads while nothing else is in memory, but each of its files
 # is turned into code while the earlier ones are already held, so smaller
 # files keep that peak down
-STAGE_LIMIT = 3000
+STAGE_LIMIT = 3040
 LITE_BOXES = """
 def _corners(x, y, w, h, r, t):
     return ((x, y, w, t), (x, y + h - t, w, t), (x, y + t, t, h - 2 * t), (x + w - t, y + t, t, h - 2 * t))

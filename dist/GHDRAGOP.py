@@ -1,9 +1,6 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
 UP=25
-DOWN=34
-LEFT=24
-RIGHT=26
 GREY=(110,110,110)
 def shuffle(a):
  for i in range(len(a)-1,0,-1):
@@ -44,12 +41,13 @@ G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient','Junk'
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
-def G_egg_type(m,up=0):
- r=random.randint(0,999)
- c=((4,30,110,330),(10,50,180,450),(15,80,260,570))[min(m,2)]
- rar=4 if r<c[0]else 3 if r<c[1]else 2 if r<c[2]else 1 if r<c[3]else 0
- rar=min(4,rar+up)
- return random.choice([i for i in range(20)if G_DT[i][2]==rar])
+def G_egg_roll(g,t):
+ if g.book&2097151 and random.random()<0.05:
+  t=G_SMALL
+ if random.random()<0.02:
+  r=random.random()
+  return t+32*(1 if r<0.4 else 2 if r<0.7 else 3 if r<0.9 else 4)
+ return t
 def G_kids(g):
  return sum((1 if d[9]&8 else 4 for d in g.pen))+sum((1 if e%32>=30 else 4 for e in g.bag))
 def G_grown(g):
@@ -91,6 +89,11 @@ def G_draw_map(g,after_msg=False):
  G_hud(g)
 class G_Game:
  pass
+def G_rest(g):
+ g.hp=g.mhp
+ g.ride=None
+ for d in g.pen:
+  d[3]=d[4]
 def G_save(g):
  q=g.pol
  if q:
@@ -280,5 +283,23 @@ def G_play():
    if not G_battle(g,random.choice(G_FOES[g.m]),lo+min(hi-lo,int(random.random()**1.6*(hi-lo+1)))):
     return
    G_draw_map(g)
+def G_who(*a):
+ import GHDRAGOT
+ r=GHDRAGOT.G_who(*a)
+ GHDRAGOT=None
+ G__drop('GHDRAGOT')
+ return r
+def G_zl(*a):
+ import GHDRAGOT
+ r=GHDRAGOT.G_zl(*a)
+ GHDRAGOT=None
+ G__drop('GHDRAGOT')
+ return r
+def G_egg(*a):
+ import GHDRAGOY
+ r=GHDRAGOY.G_egg(*a)
+ GHDRAGOY=None
+ G__drop('GHDRAGOY')
+ return r
 def G_back():
  G_play()

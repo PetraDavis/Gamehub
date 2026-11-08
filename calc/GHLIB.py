@@ -337,8 +337,9 @@ def how_to(title, rules, buttons):
         pass
 
 
-def home(mod, title, rules, buttons, opts=("Play", "Back"), sel=0):
+def home(mod, title, rules, buttons, opts=("Play", "Back"), sel=0, wipe=None):
     # Game start screen. Returns the chosen option, or -1 for Back/CLEAR.
+    # A "Delete" option calls wipe() (which asks first) and stays on this screen.
     n = len(opts)
     while True:
         cls()
@@ -380,4 +381,7 @@ def home(mod, title, rules, buttons, opts=("Play", "Back"), sel=0):
             elif k == OK:
                 if opts[sel] == "Back":
                     return -1
+                if opts[sel] == "Delete":
+                    wipe()
+                    break
                 return sel

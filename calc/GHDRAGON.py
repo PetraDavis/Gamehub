@@ -13,16 +13,19 @@ T = 20
 # these functions in their own files. Each file is loaded when one of its
 # functions is called and dropped from memory again when it returns.
 SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
-        "X": ("load", "new_quest", "board", "portrait", "pen", "lst", "dress", "shop", "nest",
-              "win"),
-        # the merchant has a file of his own, with its own copy of the list, so the
-        # pen and fights don't have to carry his code
-        "Z": ("shen", "cop", "who", "glim", "zl", "shen_off", "pol_off"),
+        # each file is kept near 2,000 words: the calculator needs room to read a file in,
+        # and about 3,000 was right at the edge (the nest wouldn't open)
+        "X": ("load", "win"),
+        "Q": ("nest", "pen", "portrait", "lst", "dress", "shop", "new_quest", "board"),
+        # the merchant has files of his own, so the pen and fights don't carry his code
+        "Z": ("shen", "shen_off", "cop"),
+        "T": ("glim", "pol_off", "who", "zl"),
         # things you step on or talk to (eggs, chests, villagers, Shen's package): small, loaded on use
         "V": ("found",),
-        # the arena tamers and their lines (loaded for a moment before each match)
+        # the arena and its tamers
         "A": ("arena",),
-        "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed", "menu")}
+        "Y": ("backpack", "egg", "oval", "book"),
+        "S": ("hatch", "typed", "kbox", "frame", "menu")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
      'T.....""".....~~',
@@ -2176,9 +2179,18 @@ RULES = "Find eggs (new ones keep turning up), walk to hatch them and name your 
 KEYS = ["Arrows: walk or fly", "ENTER: ride, backpack, save", "Fights: Left/Right + ENTER", "CLEAR: save and quit"]
 
 
+def forget():
+    # "Delete" on the home screen: wipe the saved game (lists DRG and DRB), after asking
+    if choose("Delete your save?", ["No, keep it", "Yes, delete it"]) == 1:
+        from ti_system import store_list
+        for nm in ("DRG", "DRB"):
+            store_list(nm, [0])
+        message(["Your dragons, coins", "and eggs are gone.", "A new game starts", "next time."], "Save deleted")
+
+
 def main():
     while True:
-        c = home("GHDRAGON", "DRAGON TAMER", RULES, KEYS, ("Play", "Back"))
+        c = home("GHDRAGON", "DRAGON TAMER", RULES, KEYS, ("Play", "Delete", "Back"), 0, forget)
         if c < 0:
             return
         play()

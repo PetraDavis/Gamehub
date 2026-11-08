@@ -48,9 +48,6 @@ def text(x,y,s,c=WHITE):
 def ctext(y,s,c=WHITE,cx=160):
  col(c)
  draw_text(cx-len(s)*5,y+TY,s)
-def circ(x,y,r,c):
- col(c)
- fill_circle(x,y,r)
 def ring(x,y,r,c,t=2,inner=BLACK):
  col(c)
  fill_circle(x,y,r)
@@ -84,6 +81,51 @@ def edge(x,y,w,h,r,c,t=2,inner=BLACK):
 def pause(s):
  time.sleep(s)
 MSG=[0,0]
+def message(lines,title=None):
+ n=len(lines)+(1 if title else 0)
+ h=n*18+30
+ y=(H-h)//2
+ rbox(20,y,280,h,8,WHITE)
+ MSG[0],MSG[1]=(y,h)
+ COVER[0]+=1
+ yy=y+24
+ if title:
+  ctext(yy,title,GOLD)
+  yy+=18
+ for s in lines:
+  ctext(yy,s)
+  yy+=18
+ while True:
+  k=wkey()
+  if k in(OK,CLR):
+   return k
+def choose(title,opts,sel=0):
+ cls()
+ ctext(24,title,GOLD)
+ n=len(opts)
+ for i in range(n):
+  y=40+i*30
+  c=GOLD if i==sel else WHITE
+  rbox(60,y,200,24,8,c,2,BLACK,False)
+  ctext(y+18,opts[i],c)
+ while True:
+  k=wkey()
+  old=sel
+  if k==UP:
+   sel=(sel-1)%n
+  elif k==DOWN:
+   sel=(sel+1)%n
+  elif k==OK:
+   return sel
+  elif k==CLR:
+   return-1
+  if sel==old:
+   continue
+  for i in(old,sel):
+   y=40+i*30
+   c=GOLD if i==sel else WHITE
+   edge(60,y,200,24,8,c)
+   ctext(y+18,opts[i],c)
 I_BLACK=(0,0,0)
 I_WHITE=(255,255,255)
 I_RED=(215,40,40)
@@ -122,6 +164,30 @@ def S_hname(s):
 def S_dname(s,i):
  n=str(i)
  return 'A'+str(s)+'0'*(3-len(n))+n
+def S_wipe(what=3):
+ n=0
+ for s in range(1,S_SLOTS+1 if what&1 else 1):
+  try:
+   h=recall_list(S_hname(s))
+   nl=int(h[3])
+  except Exception:
+   continue
+  for k in range(nl):
+   try:
+    store_list(S_dname(s,k),[0])
+    n+=1
+   except Exception:
+    pass
+  store_list(S_hname(s),[0])
+  n+=1
+ for nm in('DRG','DRB')if what&2 else():
+  try:
+   recall_list(nm)
+   store_list(nm,[0])
+   n+=1
+  except Exception:
+   pass
+ return n
 G_CWD=32
 G_CHG=24
 G_N=G_CWD*G_CHG
@@ -134,53 +200,8 @@ G_INK=(20,20,20)
 G_HI=(200,120,0)
 G_MAXB=60000
 G_KEYGAP=15
-def G_enc_key(fr):
- out=bytearray([1])
- i=0
- while i<G_N:
-  c=fr[i]
-  n=1
-  while i+n<G_N and fr[i+n]==c and(n<255):
-   n+=1
-  out.append(n)
-  out.append(c)
-  i+=n
- return bytes(out)
-def G_enc_delta(prev,fr):
- out=bytearray([0])
- pos=0
- i=0
- while i<G_N:
-  if fr[i]==prev[i]:
-   i+=1
-   continue
-  j=i
-  last=i
-  while j<G_N and j-i<254:
-   if fr[j]!=prev[j]:
-    j+=1
-    last=j
-   elif j+1<G_N and fr[j+1]!=prev[j+1]:
-    j+=1
-   else:
-    break
-  j=last
-  skip=i-pos
-  while skip>255:
-   out.append(255)
-   out.append(0)
-   skip-=255
-  out.append(skip)
-  out.append(j-i)
-  t=i
-  while t<j:
-   hi=fr[t]
-   lo=fr[t+1]if t+1<j else 0
-   out.append(hi*16+lo)
-   t+=2
-  pos=j
-  i=j
- return bytes(out)
+class G_Studio:
+ pass
 def G_chain(s,i):
  n=0
  k=i
@@ -188,13 +209,6 @@ def G_chain(s,i):
   k-=1
   n+=1
  return n
-def G_encode_at(s,i,fr,prev):
- if prev is None:
-  return G_enc_key(fr)
- d=G_enc_delta(prev,fr)
- if i>0 and G_chain(s,i-1)+1>=G_KEYGAP:
-  return G_enc_key(fr)
- return d
 def G_used(s):
  t=0
  for f in s.F:
@@ -322,6 +336,12 @@ def G_botbar(s,a=None,b=None):
   ca=G_HI
  G_label(s,'b1',6,190,a,ca)
  G_label(s,'b2',6,206,b or 'ENTER pen DEL eraser 2nd menu',GREY)
+def G_side(s):
+ rect(G_MX,22,320-G_MX,154,WHITE)
+ s.lab.pop('on',None)
+ s.lab.pop('sv',None)
+ G_palette(s)
+ G_sidetext(s)
 def G_sidetext(s):
  G_label(s,'on',210,150,'Onion '+('on'if s.onion else 'off'),GREY)
  G_label(s,'sv',210,168,'Saved '+(str(s.slot)if s.slot else '-'),GREY)
@@ -352,3 +372,7 @@ def G_thumb_y(top):
  return G_MY+(G_SBH-G_THH)*top//(16-G_MV)
 G_RULES='Draw a picture, add frames, and play them back. Saves stay on the calculator.'
 G_KEYS=['Arrows: move  ENTER: pen','DEL: eraser  2nd: menu','Menu: colors, frames, play,','speed, save and load']
+def G_forget():
+ if choose('Delete all saves?',['No, keep them','Yes, delete them'])==1:
+  S_wipe(1)
+  message(['All your saved','animations are gone.'],'Saves deleted')
