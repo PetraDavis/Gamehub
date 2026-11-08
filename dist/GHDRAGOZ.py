@@ -141,16 +141,28 @@ def G_shen(g,ch='M',x=0):
   if choose('Take the job?',['Sure','No thanks'])==0:
    g.book|=1<<24
    message(['Someone will be waiting','there for it. Heh.'],'Shady Shen')
+ thr=g.book>>30&1 and(not mad)
+ h=2
  free=g.book>>22&1
  if free:
   message(["Psst... you didn't tell",'the officer about me.','Pick one thing. Free.'],'Shady Shen')
  while True:
   S=(('Glimmer Stone',60),('Power Fruit',40),('Mystery Egg',50),('Healing Tonic',20),('Lucky Charm',35),('Mystery Box',30),('Egg Swap',25),('Golden Coin',45),('Accessory Crate',40),('Treasure Map',35),('Dragon Insurance',20),('Speed Saddle',50),('Shiny Polish',25),('Moldy Egg',15),('Shiny Egg',70))+((('Glimmer Pack x5',250),)if g.buys>=10 else())
-  S=[(n,p*(1+mad))for n,p in S]
+  S=[(n,p*(1+mad)*h//2)for n,p in S]
   z=len(S)
-  c=G_zl('Pick 1 thing for FREE!'if free else 'Shady Shen   '+str(g.coins)+' coins',[n+(' - sold out'if n=='Moldy Egg'and g.book>>29&1 else ' '+str(p)+'c')for n,p in S]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
+  c=G_zl('Pick 1 thing for FREE!'if free else 'Shady Shen   '+str(g.coins)+' coins',[n+(' - sold out'if n=='Moldy Egg'and g.book>>29&1 else ' '+str(p)+'c')for n,p in S]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+(['Threaten Shen']if thr else[])+['Leave'])
   if c==z and g.glim:
    G_glim(g)
+   continue
+  if thr and c==z+(g.glim>0):
+   thr=0
+   message(['"Don\'t charge me unless','you want to be','arrested!"'],'You')
+   if random.random()<0.5:
+    free=1
+    message(['...Fine! Pick one thing.','Free. Then you never','saw me. Got it?'],'Shady Shen')
+   else:
+    h=3
+    message(["Who'd believe YOU?",'Prices just went up.','Heh heh.'],'Shady Shen')
    continue
   if c<0 or c>=z:
    message([random.choice(('No refunds. Ever.',"You didn't see me.",'Come back soon, friend.'))],'Shady Shen')

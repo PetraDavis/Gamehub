@@ -1,7 +1,8 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-G_ROCK=(110,105,115)
-G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
+G_RCOL=G_cl(b'\xff\xff\xffx\xdcxZ\xa0\xff\xc8n\xf0\xe6\xb4(<\xe6\xe6\xf5\xa0<\x8c\x87}')
+G_DT=list(zip(('Pyrrak','Smoldedrake','Aquawyrm','Gillwing','Fernling','Lichenwing','Stonewyrm','Volcanox','Ashveil','Glacius','Tempestra','Thornwyrm','Dawnwing','Pearlhorn','Jadewyrm','Petalwyrm','Blazequill','Abyssar','Rootwyrm','Lumora','Quantum','Petralith'),b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03\x03',b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05\x06',G_cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP}vn')))+[('',0,0,BLACK),('Dustmite',2,-1,(150,145,135))]
+G_LVL=((1,3),(3,6),(6,10),(1,1))
 def G_drag(x,y,s,t,c,head=0,body=0,out=None,f=0,sp=0):
  P=G_PAL+[lt(c,0.45),dk(c,0.6),c]+G_PAL2+[lt(c,0.2),dk(c,0.4)]+G_PAL3
  if sp:
@@ -39,14 +40,14 @@ def G_shapes(m,x,y,ch,out):
   if ch=='C'and G_CAVE[0]:
    out.append((2,(20,18,25),1,(px+10,py+17,5)))
    out.append((3,YELLOW,0,(px+8,py+9,5,1)))
- elif ch in 'QS':
+ elif ch in 'QSN':
   out.append((0,(235,215,170),0,(px+3,py+9,14,11)))
-  out.append((1,(200,50,40)if ch=='Q'else(50,90,200),2,([px,px+10,px+20],[py+10,py,py+10])))
+  out.append((1,(200,50,40)if ch=='Q'else(50,90,200)if ch=='S'else(120,50,150),2,([px,px+10,px+20],[py+10,py,py+10])))
   out.append((2,G_BARK,0,(px+8,py+13,4,7)))
   if ch=='Q':
    out.append((3,YELLOW,0,(px+9,py+3,2,4)))
    out.append((3,YELLOW,0,(px+9,py+8,2,1)))
-  else:
+  elif ch=='S':
    out.append((3,YELLOW,1,(px+10,py+5,2)))
  elif ch=='M':
   out.append((0,(70,45,95),2,([px+3,px+10,px+17],[py+19,py+2,py+19])))

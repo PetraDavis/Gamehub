@@ -50,9 +50,9 @@ MAPS = (
      '.."""...........',
      '..""".....^C....',
      "^^^^^^^^^^^^^^^^"],
-    # the village, left of Green Valley: Q quest hall, S shop, W well, = path, V villagers
+    # the village, left of Green Valley: Q quest hall, S shop, N Old Nettle's hut, W well, = path, V villagers
     ["TTTTTTTTTTTTTTTT",
-     "T..............T",
+     "T............N.T",
      "T..Q.......S...T",
      "T..=.......=...T",
      "T..=============",
@@ -370,15 +370,15 @@ def shapes(m, x, y, ch, out):
         if ch == "C" and CAVE[0]:
             out.append((2, (20, 18, 25), 1, (px + 10, py + 17, 5)))
             out.append((3, YELLOW, 0, (px + 8, py + 9, 5, 1)))
-    elif ch in "QS":
-        # a little house: walls, roof, door and a sign (! for quests, a coin for the shop)
+    elif ch in "QSN":
+        # a little house: walls, roof, door and a sign (! for quests, a coin for the shop; Nettle's has none)
         out.append((0, (235, 215, 170), 0, (px + 3, py + 9, 14, 11)))
-        out.append((1, (200, 50, 40) if ch == "Q" else (50, 90, 200), 2, ([px, px + 10, px + 20], [py + 10, py, py + 10])))
+        out.append((1, (200, 50, 40) if ch == "Q" else (50, 90, 200) if ch == "S" else (120, 50, 150), 2, ([px, px + 10, px + 20], [py + 10, py, py + 10])))
         out.append((2, BARK, 0, (px + 8, py + 13, 4, 7)))
         if ch == "Q":
             out.append((3, YELLOW, 0, (px + 9, py + 3, 2, 4)))
             out.append((3, YELLOW, 0, (px + 9, py + 8, 2, 1)))
-        else:
+        elif ch == "S":
             out.append((3, YELLOW, 1, (px + 10, py + 5, 2)))
     elif ch == "M":
         out.append((0, (70, 45, 95), 2, ([px + 3, px + 10, px + 17], [py + 19, py + 2, py + 19])))
@@ -1153,11 +1153,59 @@ def cop(g):
 
 
 VILLAGER = (("Farmer Bo", ("Eggs turn up every", "hundred steps or so.", "Keep walking!"), ("Monsters hide in the", "tall grass. Ride over", "it if you can."),
-             ("The farther lands have", "rarer eggs. And meaner", "monsters."), ("My cow got stepped on", "by a dragon. Again.")),
+             ("The farther lands have", "rarer eggs. And meaner", "monsters."), ("My cow got stepped on", "by a dragon. Again."), ("Stay away from Old", "Nettle. She talks", "to rocks.")),
             ("Baker Rose", ("Walk into your nest", "to heal your dragons."), ("I once saw a shiny egg.", "It sparkled like sugar!"),
-             ("Small eggs hatch babies.", "So cute. Can't ride", "them, though."), ("Fresh bread! Oh, you", "only have dragon food?")),
+             ("Small eggs hatch babies.", "So cute. Can't ride", "them, though."), ("Fresh bread! Oh, you", "only have dragon food?"), ("Old Nettle says a black", "dragon ate her dragons.", "Crazy old bat!")),
             ("Little Pip", ("When I grow up I'll", "tame a Legendary!"), ("The quest hall pays", "lots of coins!"),
-             ("Did you know dragons", "can fly over lava?"), ("Wanna see my rock?", "It's a good rock.")))
+             ("Did you know dragons", "can fly over lava?"), ("Wanna see my rock?", "It's a good rock."), ("Mom says Old Nettle is", "cuckoo. Her hut is the", "purple one.")))
+
+# Old Nettle: everyone says she's crazy, but her stories are about the secret dragons.
+# Each entry is one or two pages; any of them can come up any time.
+NETTLE = ((("Black as night, it was!", "Came when I was young", "and ate my good dragons."), ("I'd have run, but it", "had an EGG. Hee hee!")),
+          (("Purple eyes in the dark!", "It only hunts tamers", "with big strong dragons."),),
+          (("I beat the purple-eyed", "beast once. It left me", "something not in books!"),),
+          (("The cold peaks remember", "a name carved in stone.", "My name? No... not mine."),),
+          (("A giant of rock with a", "heart of gold. I heard", "it snore once! Hee!"),),
+          (("Only the darkest dragon", "can wake the stone one.", "Remember that, dearie."),),
+          (("Five letters on a door,", "up where the snow is.", "Or was it four? Hee!"),),
+          (("The moon owes me three", "coins. I'll get 'em."),),
+          (("My cat is a dragon.", "Don't tell him."),),
+          (("Who are you? Go away!", "...No, come back. Sit."),),
+          (("I ate a rock once.", "Good rock. Crunchy."),))
+
+
+def nettle(g):
+    cls(NIGHT)
+    col((110, 50, 140))
+    fill_poly([125, 160, 200], [200, 80, 200])
+    circ(150, 70, 20, WHITE)
+    circ(132, 60, 10, WHITE)
+    circ(168, 58, 10, WHITE)
+    circ(150, 78, 15, (225, 190, 160))
+    rect(143, 76, 4, 3, BLACK)
+    rect(155, 76, 4, 3, BLACK)
+    rect(205, 110, 4, 90, BARK)
+    rect(196, 106, 13, 4, BARK)
+    ctext(24, "OLD NETTLE", GOLD)
+    ctext(196, "Eh? Who's there?")
+    while wkey() not in (OK, CLR):
+        pass
+    # she knows when you've got one of the secret dragons (book bits 33, 34: she's seen it)
+    k = [d[1] for d in g.pen]
+    if 20 in k and not g.book >> 33 & 1:
+        g.book |= 1 << 33
+        P = (("THE BLACK DRAGON!", "I TOLD them! Nobody", "believed old Nettle!"), ("Take my old crown,", "dearie. I kept it", "for this day."))
+        if g.own >> 4 & 1:
+            g.coins += 150
+        g.own |= 1 << 4
+    elif 21 in k and not g.book >> 34 & 1:
+        g.book |= 1 << 34
+        P = (("The stone one... AWAKE!", "Hee hee hee! I KNEW it!"), ("Take these shiny", "stones. Five of 'em.", "No use to me."))
+        g.glim += 5
+    else:
+        P = random.choice(NETTLE)
+    for p in P:
+        message(list(p), "Old Nettle")
 
 
 def talk(g, x):
@@ -1194,9 +1242,11 @@ def deliver(g):
 
 
 def found(g, ch, nx, ny=0, ox=0, oy=0):
-    # V: a villager, D: Shen's package reaches the village, E: an egg, X: a treasure chest
+    # V: a villager, N: Old Nettle, D: Shen's package reaches the village, E: an egg, X: a treasure chest
     if ch == "V":
         return talk(g, nx)
+    if ch == "N":
+        return nettle(g)
     if ch == "D":
         return deliver(g)
     mp = g.maps[g.m]
@@ -1256,6 +1306,9 @@ def shen(g, ch="M", x=0):
         if choose("Take the job?", ["Sure", "No thanks"]) == 0:
             g.book |= 1 << 24
             message(["Someone will be waiting", "there for it. Heh."], "Shady Shen")
+    # told the officer you'd never seen him? Then you can threaten him (once a visit)
+    thr = g.book >> 30 & 1 and not mad
+    h = 2
     free = g.book >> 22 & 1
     if free:
         message(["Psst... you didn't tell", "the officer about me.", "Pick one thing. Free."], "Shady Shen")
@@ -1265,12 +1318,22 @@ def shen(g, ch="M", x=0):
              ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45), ("Accessory Crate", 40), ("Treasure Map", 35),
              ("Dragon Insurance", 20), ("Speed Saddle", 50), ("Shiny Polish", 25), ("Moldy Egg", 15), ("Shiny Egg", 70)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
         # since you told on him, everything costs double
-        S = [(n, p * (1 + mad)) for n, p in S]
+        S = [(n, p * (1 + mad) * h // 2) for n, p in S]
         z = len(S)
         c = zl("Pick 1 thing for FREE!" if free else "Shady Shen   " + str(g.coins) + " coins", [n + (" - sold out" if n == "Moldy Egg" and g.book >> 29 & 1 else " " + str(p) + "c") for n, p in S] +
-                (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
+                (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + (["Threaten Shen"] if thr else []) + ["Leave"])
         if c == z and g.glim:
             glim(g)
+            continue
+        if thr and c == z + (g.glim > 0):
+            thr = 0
+            message(["\"Don't charge me unless", "you want to be", "arrested!\""], "You")
+            if random.random() < 0.5:
+                free = 1
+                message(["...Fine! Pick one thing.", "Free. Then you never", "saw me. Got it?"], "Shady Shen")
+            else:
+                h = 3
+                message(["Who'd believe YOU?", "Prices just went up.", "Heh heh."], "Shady Shen")
             continue
         if c < 0 or c >= z:
             message([random.choice(("No refunds. Ever.", "You didn't see me.", "Come back soon, friend."))], "Shady Shen")
@@ -1796,9 +1859,9 @@ def play():
             message(["Your backpack is full."] if len(g.bag) >= 5 else ["No room in your pen.", "Let a dragon go first."], "Egg")
             draw_map(g, True)
             continue
-        if ch in "MOV":
-            # talk to the merchant (or the officer, or a villager) without stepping on them
-            (found if ch == "V" else shen)(g, ch, nx)
+        if ch in "MOVN":
+            # talk to the merchant (or the officer, a villager or Old Nettle) without stepping on them
+            (found if ch in "VN" else shen)(g, ch, nx)
             # what you bought is saved right away
             save(g)
             draw_map(g)

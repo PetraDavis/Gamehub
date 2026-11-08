@@ -207,8 +207,8 @@ def G_play():
    message(['Your backpack is full.']if len(g.bag)>=5 else['No room in your pen.','Let a dragon go first.'],'Egg')
    G_draw_map(g,True)
    continue
-  if ch in 'MOV':
-   (G_found if ch=='V'else G_shen)(g,ch,nx)
+  if ch in 'MOVN':
+   (G_found if ch in 'VN'else G_shen)(g,ch,nx)
    G_save(g)
    G_draw_map(g)
    continue
