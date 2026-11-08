@@ -1,7 +1,7 @@
 # GHDRAGOW: part of GHDRAGON, loaded only while it is needed.
 from GHDRAGOP import*
 G_SHINE={'Timmy':"WHOA! It's SILVER!/Is that normal?!/That's so cool!|It's GOLD! Like a/treasure! Can my/Pyrrak be gold too?|It GLOWS! Mom has/to see this! Wait,/do I still fight it?|PURPLE AND BLUE?!/Best. Day. EVER!/I'm telling everyone!"}
-G_SPECIAL={19:{'Timmy':"Is that a LUMORA?!/Those are, like,/super legendary!~A SILVER Lumora?!/It's like moonlight/with wings!|GOLD Lumora?! My/Pyrrak looks like a/potato next to it!|A GLOWING Lumora?!/I'm gonna cry./Happy tears!|PURPLE AND BLUE/LUMORA?! Best day/of my LIFE!",'Lulu':"A Lumora?! Okay,/that is NOT tiny./That's amazing.",'Mira':"A Lumora... I've/only seen one in/a painting.",'Captain Vex':"A Lumora! Stars on/its wings, like a/sailor's night sky!",'Duchess Ivy':"A Lumora! Even I/don't own one./How dare you.",'Aurora':"A Lumora! I've/always wanted one./Lucky you."},20:{'Timmy':"WHAT is THAT?!/It looks like space!/Is it even real?!~A SILVER space/dragon?! Is it/an alien?!|A GOLD space dragon?!/I'm telling my/whole class!|It GLOWS in the/dark?! Can it be/my night light?|PURPLE AND BLUE?!/I think I just/saw the future!",'Lulu':"What... IS that?/I'm scared. And/also jealous.",'Rocco':"That thing isn't/rock. I don't trust/it. At all.",'Mira':"I've never seen a/dragon like that./What IS it?",'Captain Vex':"Blimey! What beast/is THAT? It's like/the night itself!",'Duchess Ivy':"That dragon... it's/darker than my/castle dungeon!",'Grim':'......!#...Finally. A dragon/as dark as me.','Sheen':"Ooh, nice dragon./Wanna sell it? I'll/give you 20 coins.",'Aurora':"I've never seen/that dragon. Not/even in books."},21:{'Timmy':"A ROCK DRAGON?!/With GOLD cracks?!/Best rock EVER!~A SILVER rock/dragon?! Like a/shiny pebble!|A GOLD rock?!/I'm rich! Wait,/it's not mine.|Glowing ROCKS?!/Best. Rocks./EVER!|PURPLE AND BLUE/ROCKS?! Can I keep/a pebble?!",'Lulu':'Is it... a statue?/Wait, it MOVED!/Ahh!','Rocco':'A dragon made of/ROCK! I TOLD you/rocks are the best!','Mira':'Gold cracks and/crystals? Is that/even a dragon?','Captain Vex':"That's no dragon,/it's a walking/treasure chest! Arr!",'Duchess Ivy':'Gold AND crystals!/The fanciest dragon/in all the land!','Grim':'...A stone dragon.#...It looks older/than the mountains.','Sheen':'Those crystals look/valuable. Wanna/trade? Heh heh.','Aurora':"A dragon of stone?/I didn't know they/existed. Amazing."}}
+G_SPECIAL={19:{'Timmy':'Is that a LUMORA?!/Those are, like,/super legendary!','Lulu':"A Lumora?! Okay,/that is NOT tiny./That's amazing.",'Mira':"A Lumora... I've/only seen one in/a painting.",'Captain Vex':"A Lumora! Stars on/its wings, like a/sailor's night sky!",'Duchess Ivy':"A Lumora! Even I/don't own one./How dare you.",'Aurora':"A Lumora! I've/always wanted one./Lucky you."},20:{'Timmy':'WHAT is THAT?!/It looks like space!/Is it even real?!','Lulu':"What... IS that?/I'm scared. And/also jealous.",'Rocco':"That thing isn't/rock. I don't trust/it. At all.",'Mira':"I've never seen a/dragon like that./What IS it?",'Captain Vex':"Blimey! What beast/is THAT? It's like/the night itself!",'Duchess Ivy':"That dragon... it's/darker than my/castle dungeon!",'Grim':'......!#...Finally. A dragon/as dark as me.','Sheen':"Ooh, nice dragon./Wanna sell it? I'll/give you 20 coins.",'Aurora':"I've never seen/that dragon. Not/even in books."},21:{'Timmy':'A ROCK DRAGON?!/With GOLD cracks?!/Best rock EVER!','Lulu':'Is it... a statue?/Wait, it MOVED!/Ahh!','Rocco':'A dragon made of/ROCK! I TOLD you/rocks are the best!','Mira':'Gold cracks and/crystals? Is that/even a dragon?','Captain Vex':"That's no dragon,/it's a walking/treasure chest! Arr!",'Duchess Ivy':'Gold AND crystals!/The fanciest dragon/in all the land!','Grim':'...A stone dragon.#...It looks older/than the mountains.','Sheen':'Those crystals look/valuable. Wanna/trade? Heh heh.','Aurora':"A dragon of stone?/I didn't know they/existed. Amazing."}}
 def G_arena(g,*a):
  import gc
  d=g.pick
@@ -34,17 +34,14 @@ def G_arena(g,*a):
   for p in say.split('#'):
    message(p.split('/'),n)
   q=d[9]&7
-  e,o=((T[4].split('|')[d[1]-19]if s and 18<d[1]<22 else G_SPECIAL.get(d[1],{}).get(n,''))+'~').split('~')[:2]
+  e=T[4].split('|')[d[1]-19]if s and 18<d[1]<22 else G_SPECIAL.get(d[1],{}).get(n,'')
   for p in e.split('#')if e else():
    message(p.split('/'),n)
-  p=G_SHINE.get(n)if q and(not e)else 0
+  p=G_SHINE.get(n)if q else 0
   if p:
    message(p.split('|')[q-1].split('/'),n)
-  if e and q:
-   if o:
-    message(o.split('|')[q-1].split('/'),n)
-   if not w:
-    message((['People in the crowd','point at your dragon.'],['The crowd starts','whispering...'],['The whole crowd','goes silent...'],['The crowd ROARS!','Everyone jumps up','to see your dragon!'])[q-1],'Arena')
+  if e and q and(not w):
+   message((['People in the crowd','point at your dragon.'],['The crowd starts','whispering...'],['The whole crowd','goes silent...'],['The crowd ROARS!','Everyone jumps up','to see your dragon!'])[q-1],'Arena')
   d[3]=d[4]
   g.ride=d
   t=G_DT[k]
