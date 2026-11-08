@@ -1,6 +1,10 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
 GREY=(110,110,110)
+def cls(c=BLACK):
+ COVER[0]+=1
+ col(c)
+ fill_rect(-1,-1,321,211)
 def pause(s):
  time.sleep(s)
 def choose(title,opts,sel=0):
@@ -30,7 +34,6 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
-G_EVIL=0.12 if G_TEST else 0.004
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
@@ -77,18 +80,11 @@ def G_draw_map(g,after_msg=False):
  G_CAVE[0]=not g.book>>26&1 and any((d[1]==20 and(not d[9]&8)for d in g.pen))
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
-class G_Game:
- pass
-def G_pack(nm):
- n=0
- for ch in nm.upper():
-  n=n*27+G_ABC.index(ch)+1
- return n
 def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
  big=[d for d in g.pen if not d[9]&8]
  pk=([i for i in range(len(big))if big[i]is g.pick]+[0])[0]
- b=[2,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)+4400*min(99,g.done)+500000*pk]
+ b=[2,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)+4400*min(99,g.done)+500000*pk+6000000*min(15,g.cd)]
  for d in g.pen:
   if d[9]&8:
    b+=[G_pack(d[0]),d[1]+32*(d[9]&7)]
@@ -153,7 +149,7 @@ def G_play():
  g.face=0
  g.spawn=100
  g.dread=0
- g.glim=g.luck=g.curse=g.buys=g.done=0
+ g.glim=g.luck=g.curse=g.buys=g.done=g.cd=0
  g.shen=None
  g.shn=random.randint(120,180)
  G_load(g)
