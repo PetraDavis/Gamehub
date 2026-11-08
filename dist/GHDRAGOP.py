@@ -1,5 +1,9 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
+UP=25
+DOWN=34
+LEFT=24
+RIGHT=26
 GREY=(110,110,110)
 def shuffle(a):
  for i in range(len(a)-1,0,-1):
@@ -38,8 +42,14 @@ G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient','Junk')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
+G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
-G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
+def G_egg_type(m,up=0):
+ r=random.randint(0,999)
+ c=((4,30,110,330),(10,50,180,450),(15,80,260,570))[min(m,2)]
+ rar=4 if r<c[0]else 3 if r<c[1]else 2 if r<c[2]else 1 if r<c[3]else 0
+ rar=min(4,rar+up)
+ return random.choice([i for i in range(20)if G_DT[i][2]==rar])
 def G_kids(g):
  return sum((1 if d[9]&8 else 4 for d in g.pen))+sum((1 if e%32>=30 else 4 for e in g.bag))
 def G_grown(g):
@@ -79,6 +89,8 @@ def G_draw_map(g,after_msg=False):
  G_CAVE[0]=not g.book>>26&1 and any((d[1]==20 and(not d[9]&8)for d in g.pen))
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
+class G_Game:
+ pass
 def G_save(g):
  q=g.pol
  if q:
@@ -204,7 +216,7 @@ def G_play():
    G_draw_map(g,True)
    continue
   if ch in 'MOVNA':
-   (G_found if ch in 'VN'else G_shen)(g,ch,nx)if ch!='A'else G_titan(g,1)
+   (G_found if ch in 'VN'else G_shen)(g,ch,nx)if ch!='A'else G_arena(g)
    G_save(g)
    G_draw_map(g)
    continue
@@ -268,11 +280,5 @@ def G_play():
    if not G_battle(g,random.choice(G_FOES[g.m]),lo+min(hi-lo,int(random.random()**1.6*(hi-lo+1)))):
     return
    G_draw_map(g)
-def G_tamer(*a):
- import GHDRAGOA
- r=GHDRAGOA.G_tamer(*a)
- GHDRAGOA=None
- G__drop('GHDRAGOA')
- return r
 def G_back():
  G_play()
