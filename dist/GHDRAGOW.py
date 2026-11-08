@@ -65,6 +65,13 @@ def G_arena(g,*a):
   if s<2:
    m=['SECTION '+str(s+1)+' WON!','+'+str(c)+' coins!','Section '+str(s+2)+' is open!'if not op[s+1]else 'Glimmer Stones too!']
    g.book|=1<<37+s
+   if not g.book>>39+s&1:
+    if len(g.bag)<5:
+     g.book|=1<<39+s
+     g.bag.append(random.choice([i for i in range(20)if G_DT[i][2]==s+2]))
+     m.append(('And a Rare egg!','And an Epic egg!')[s])
+    else:
+     m.append('(No room for the egg!)')
   elif not g.book>>35&1 and len(g.bag)<5 and(G_kids(g)+4<=40):
    g.book|=1<<35
    g.bag.append(24)
