@@ -380,6 +380,11 @@ def shapes(m, x, y, ch, out):
         out.append((1, (150, 105, 55), 1, (px + 16, py + 15, 3)))
         out.append((2, YELLOW, 0, (px + 8, py + 7, 1, 1)))
         out.append((2, YELLOW, 0, (px + 11, py + 7, 1, 1)))
+    elif ch == "X":
+        # a treasure chest from Shen's map
+        out.append((0, BARK, 0, (px + 3, py + 8, 14, 10)))
+        out.append((1, YELLOW, 0, (px + 3, py + 11, 14, 2)))
+        out.append((1, YELLOW, 0, (px + 9, py + 10, 2, 4)))
     elif ch == "W":
         out.append((0, ROCK, 1, (px + 10, py + 11, 8)))
         out.append((1, WATER, 1, (px + 10, py + 11, 5)))
@@ -1018,20 +1023,29 @@ def glim(g):
 
 
 def zl(title, opts):
-    # the same list as lst(), kept in the merchant's own file
+    # a list like lst(), kept in the merchant's own file. Long lists show
+    # 10 rows a page and turn the page when you move past the end.
     cls()
     ctext(24, title, GOLD)
     n = len(opts)
     h = 15 if n > 9 else 17
     sel = old = 0
-    for i in range(n):
-        text(30, 50 + i * h, opts[i], GOLD if i == 0 else WHITE)
+    top = -1
     while True:
-        if sel != old:
+        t = sel // 10 * 10
+        if t != top:
+            top = t
+            rect(0, 32, 320, 178, BLACK)
+            for i in range(top, min(n, top + 10)):
+                text(30, 50 + (i - top) * h, opts[i], GOLD if i == sel else WHITE)
+            if n > 10:
+                text(6, 206, "More: keep going (" + str(top // 10 + 1) + "/" + str((n + 9) // 10) + ")", GREY)
+        elif sel != old:
             for i in (old, sel):
-                rect(0, 50 + i * h - 16, 320, h, BLACK)
-                text(30, 50 + i * h, opts[i], GOLD if i == sel else WHITE)
-        rect(14, 50 + sel * h - 10, 8, 6, GOLD)
+                y = 50 + (i - top) * h
+                rect(0, y - 16, 320, h, BLACK)
+                text(30, y, opts[i], GOLD if i == sel else WHITE)
+        rect(14, 50 + (sel - top) * h - 10, 8, 6, GOLD)
         k = wkey()
         old = sel
         if k == UP:
@@ -1069,7 +1083,8 @@ def shen(g):
     while True:
         # his best customers (10 things bought) see one more item
         S = (("Glimmer Stone", 60), ("Power Fruit", 40), ("Mystery Egg", 50), ("Healing Tonic", 20), ("Lucky Charm", 35),
-             ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
+             ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45), ("Accessory Crate", 40), ("Treasure Map", 35),
+             ("Dragon Insurance", 20)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
         z = len(S)
         c = zl("Shady Shen   " + str(g.coins) + " coins", [n + " " + str(p) + "c" for n, p in S] +
                 (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
@@ -1110,15 +1125,16 @@ def shen(g):
         g.buys += 1
         if g.buys == 10:
             message(["Psst... you're my best", "customer. Next time I'll", "have something special."], "Shady Shen")
-        if c == 8:
+        if c == 11:
             c = 0
             g.glim += 4
-        if c == 5:
+        box = c == 5
+        if box:
             # the Mystery Box: something from his bag, or nothing at all
-            c = random.choice((0, 1, 3, 4, 9, 9, 10))
+            c = random.choice((0, 1, 3, 4, 8, 20, 20, 21))
             d = grown(g) if c == 1 else None
             if c == 1 and d is None:
-                c = 9
+                c = 20
         if c == 0:
             g.glim += 1
             m = ["Glimmer Stones: " + str(g.glim), "Use 1 for a random shiny,", "or 5 to pick the colour."]
@@ -1145,13 +1161,30 @@ def shen(g):
         elif c == 7:
             g.curse = 1
             m = ["A Golden Coin! Double", "coins from fights.", "Lucky you. Heh heh."]
+        elif c == 8:
+            # the Accessory Crate: any of the 16, even one you already have
+            i = random.randint(1, 16)
+            if g.own >> i & 1:
+                m = ["A " + GEAR[i][0] + "... but you", "already have one.", "No refunds. Heh."]
+            else:
+                g.own |= 1 << i
+                m = ["A " + GEAR[i][0] + "!", "Put it on at the", "village shop."]
         elif c == 9:
+            # the Treasure Map: a chest turns up in this land; 1 in 3 is empty
+            if put_egg(g, 0, False, "X"):
+                m = ["X marks the spot!", "Look for a chest", "somewhere in this land."]
+            else:
+                m = ["The map is all smudged.", "Can't read it. Oh well."]
+        elif c == 10:
+            # Dragon Insurance does absolutely nothing
+            m = ["Your dragons are now", "fully insured. Trust me.", "I'll take care of it."]
+        elif c == 20:
             m = ["The box was empty.", "Just air. Heh."]
         else:
             n = random.randint(10, 60)
             g.coins += n
             m = [str(n) + " coins inside!"]
-        message(m, n if c < 9 else "Mystery Box")
+        message(m, "Mystery Box" if box else n)
 
 
 def nest(g):
@@ -1407,7 +1440,7 @@ def put_egg(g, t, near, ch="E"):
             mp[y][x] = ch
             if ch == "E":
                 EGGS[(g.m, x, y)] = t
-            else:
+            elif ch == "M":
                 g.shen = (g.m, x, y)
             cells(g, [(x, y)], False)
             return True
@@ -1589,6 +1622,18 @@ def play():
             hud(g)
             message(["You found a" + (" shiny" if e > 31 else "") + " small egg!", "It's in your backpack."] if e % 32 == SMALL else
                     ["You found a" + (" shiny" if e > 31 else "n") + " egg with", RARE[DT[e % 32][2]] + " spots! It's in", "your backpack."], "An egg!")
+            draw_map(g, True)
+            continue
+        if ch == "X":
+            mp[ny][nx] = "."
+            cells(g, [(ox, oy), (nx, ny)], True)
+            if random.random() < 0.33:
+                message(["You dig it open...", "It's empty! Just dirt."], "Treasure")
+            else:
+                n = random.randint(30, 80) + 20 * g.m
+                g.coins += n
+                hud(g)
+                message(["You dig it open...", str(n) + " coins inside!"], "Treasure")
             draw_map(g, True)
             continue
         if ch == "Q":

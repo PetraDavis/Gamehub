@@ -30,6 +30,10 @@ def rect(x,y,w,h,c):
  col(c)
  fill_rect(x-1,y-1,w+1,h+1)
 COVER=[0]
+def cls(c=BLACK):
+ COVER[0]+=1
+ col(c)
+ fill_rect(-1,-1,321,211)
 TY=6
 def text(x,y,s,c=WHITE):
  col(c)
@@ -75,18 +79,18 @@ def message(lines,title=None):
   if k in(OK,CLR):
    return k
 G_TEST=False
-G_EVIL=0.12 if G_TEST else 0.004
 G_T=20
+G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^C....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
 G_LANDS=('Green Valley','Fire Mountain','Frost Peaks','Village')
 G_GROUND=((50,130,60),(85,65,55),(215,225,240),(75,150,70))
 G_TALL=((35,100,45),(120,90,60),(170,190,220),(75,150,70))
 G_WATER=(40,90,190)
 G_LAVA=(230,90,20)
-G_ROCK=(110,105,115)
 G_LEAF=(25,85,35)
 G_BARK=(90,60,30)
 G_CYAN=(60,230,230)
 G_MAG=(230,60,220)
+G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient')
 def G_cl(b):
  return[tuple(b[i:i+3])for i in range(0,len(b),3)]
 G_RCOL=G_cl(b'\xff\xff\xffx\xdcxZ\xa0\xff\xc8n\xf0\xe6\xb4(<\xe6\xe6\xf5\xa0<')
@@ -161,13 +165,23 @@ def G_egg_roll(g,t):
 def G_kids(g):
  return sum((1 if d[9]&8 else 4 for d in g.pen))+sum((1 if e%32==G_SMALL else 4 for e in g.bag))
 G_HUD=[None]
-class G_Game:
- pass
-def G_pack(nm):
- n=0
- for ch in nm.upper():
-  n=n*27+G_ABC.index(ch)+1
- return n
+def G_hud(g):
+ d=g.ride
+ if d is not None:
+  who=d[0]+' '+str(d[3])+'/'+str(d[4])
+ else:
+  who='You '+str(g.hp)+'/'+str(g.mhp)
+ t=(G_LANDS[g.m],who,'Egg '+str(g.warm)if g.bag else str(g.coins)+'c')
+ if t==G_HUD[0]:
+  return
+ old=G_HUD[0]or('','','')
+ if G_HUD[0]is None:
+  rect(0,0,320,20,BLACK)
+ for i,x,c in((0,4,GOLD),(1,140,WHITE),(2,262,YELLOW)):
+  if t[i]!=old[i]:
+   text(x,15,old[i],BLACK)
+   text(x,15,t[i],c)
+ G_HUD[0]=t
 def G_battle(*a):
  import GHDRAGOW
  r=GHDRAGOW.G_battle(*a)

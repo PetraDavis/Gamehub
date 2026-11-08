@@ -1,10 +1,6 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
 GREY=(110,110,110)
-def cls(c=BLACK):
- COVER[0]+=1
- col(c)
- fill_rect(-1,-1,321,211)
 def pause(s):
  time.sleep(s)
 def choose(title,opts,sel=0):
@@ -34,9 +30,11 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
+G_EVIL=0.12 if G_TEST else 0.004
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
+G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
 def G_egg_type(m,up=0):
  r=random.randint(0,999)
  c=((4,30,110,330),(10,50,180,450),(15,80,260,570))[min(m,2)]
@@ -48,27 +46,6 @@ def G_grown(g):
   if not d[9]&8:
    return d
  return None
-def G_cells(g,todo,with_hero):
- mp=g.maps[g.m]
- ops=[]
- rows={}
- for x,y in todo:
-  rows.setdefault(y,[]).append(x)
- for y in rows:
-  xs=sorted(rows[y])
-  i=0
-  while i<len(xs):
-   c=G_base(g.m,mp[y][xs[i]])
-   j=i+1
-   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
-    j+=1
-   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
-   i=j
- for x,y in todo:
-  G_shapes(g.m,x,y,mp[y][x],ops)
- if with_hero:
-  G_hero(g,ops)
- G_paint(ops)
 def G_draw_map(g,after_msg=False):
  r0,r1=(0,9)
  if after_msg:
@@ -80,6 +57,13 @@ def G_draw_map(g,after_msg=False):
  G_CAVE[0]=not g.book>>26&1 and any((d[1]==20 and(not d[9]&8)for d in g.pen))
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
+class G_Game:
+ pass
+def G_pack(nm):
+ n=0
+ for ch in nm.upper():
+  n=n*27+G_ABC.index(ch)+1
+ return n
 def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
  big=[d for d in g.pen if not d[9]&8]
@@ -120,7 +104,7 @@ def G_put_egg(g,t,near,ch='E'):
    mp[y][x]=ch
    if ch=='E':
     G_EGGS[g.m,x,y]=t
-   else:
+   elif ch=='M':
     g.shen=(g.m,x,y)
    G_cells(g,[(x,y)],False)
    return True
@@ -236,6 +220,18 @@ def G_play():
    g.bag.append(e)
    G_hud(g)
    message(['You found a'+(' shiny'if e>31 else '')+' small egg!',"It's in your backpack."]if e%32==G_SMALL else['You found a'+(' shiny'if e>31 else 'n')+' egg with',G_RARE[G_DT[e%32][2]]+" spots! It's in",'your backpack.'],'An egg!')
+   G_draw_map(g,True)
+   continue
+  if ch=='X':
+   mp[ny][nx]='.'
+   G_cells(g,[(ox,oy),(nx,ny)],True)
+   if random.random()<0.33:
+    message(['You dig it open...',"It's empty! Just dirt."],'Treasure')
+   else:
+    n=random.randint(30,80)+20*g.m
+    g.coins+=n
+    G_hud(g)
+    message(['You dig it open...',str(n)+' coins inside!'],'Treasure')
    G_draw_map(g,True)
    continue
   if ch=='Q':

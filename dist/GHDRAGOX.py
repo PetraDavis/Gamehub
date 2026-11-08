@@ -6,7 +6,6 @@ def G_unpack(n):
   nm=G_ABC[n%27-1]+nm
   n//=27
  return nm[0]+nm[1:].lower()
-G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
 G_PAINTN=('Red','Blue','Green','Gold','Purple','Pink','Black','White')
 def G_rest(g):
  g.hp=g.mhp
