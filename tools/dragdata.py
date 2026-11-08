@@ -135,6 +135,9 @@ FEAT = [
      [('t', 0, 9, 9, 20, -6, 14, 10), ('t', 0, 6, 8, 12, -4, 10, 9),
       ('r', 23, 0, 15, 11, 1), ('r', 1, 2, 15, 1, 2), ('r', 1, 5, 15, 1, 2), ('r', 1, 8, 15, 1, 2),
       ('r', 18, 3, 9, 5, 4), ('r', 22, 4, 10, 3, 2), ('r', 1, 5, 10, 1, 1), ('t', 0, 3, 8, 9, 8, 9, 10)]),
+    # 23 Dustmite (Junk, from Shen's fake Shiny Egg): plain and dusty, always sneezing a dust cloud
+    ([('r', 25, 21, 20, 2, 1), ('r', 25, 27, 22, 2, 1), ('r', 25, 34, 20, 1, 1)], (15, 16),
+     [('c', 6, -3, 13, 2), ('c', 6, -6, 10, 3), ('c', 5, -6, 9, 1), ('c', 6, -4, 5, 1), ('r', 5, -1, 15, 1, 1)]),
 ]
 
 # rarity extras: each rarity gets everything the rarer-less ones have, plus more,
