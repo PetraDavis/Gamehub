@@ -19,7 +19,7 @@ def G_egg(x,y,s,t):
   s=max(2,s*2//3)
   y+=2*s
   t=0
- r=G_DT[t][2]
+ r=max(0,G_DT[t][2])
  shell=((245,235,210),(225,240,205),(215,230,250),(235,215,250),(30,30,70),(20,20,45),(125,118,110))[r]
  if q:
   shell=G_SCH[q][2]
@@ -75,7 +75,7 @@ def G_backpack(g):
   if k==OK:
    return True
 def G_book(g):
- P=list(range(20))+[k for k in(20,21)if g.book>>k&1]
+ P=list(range(20))+[k for k in(20,21,23)if g.book>>k&1]
  n=len(P)
  i=0
  while True:
@@ -151,6 +151,7 @@ def G_hatch(g):
  v=g.bag.pop(0)
  g.warm=12
  q,e=(v//32,v%32)
+ q*=e!=23
  b=e==G_SMALL
  if b:
   e=random.choice([i for i in range(22)if g.book>>i&1]or[0])

@@ -136,7 +136,7 @@ def G_shen(g):
  if free:
   message(["Psst... you didn't tell",'the officer about me.','Pick one thing. Free.'],'Shady Shen')
  while True:
-  S=(('Glimmer Stone',60),('Power Fruit',40),('Mystery Egg',50),('Healing Tonic',20),('Lucky Charm',35),('Mystery Box',30),('Egg Swap',25),('Golden Coin',45),('Accessory Crate',40),('Treasure Map',35),('Dragon Insurance',20),('Speed Saddle',50),('Shiny Polish',25),('Moldy Egg',15))+((('Glimmer Pack x5',250),)if g.buys>=10 else())
+  S=(('Glimmer Stone',60),('Power Fruit',40),('Mystery Egg',50),('Healing Tonic',20),('Lucky Charm',35),('Mystery Box',30),('Egg Swap',25),('Golden Coin',45),('Accessory Crate',40),('Treasure Map',35),('Dragon Insurance',20),('Speed Saddle',50),('Shiny Polish',25),('Moldy Egg',15),('Shiny Egg',70))+((('Glimmer Pack x5',250),)if g.buys>=10 else())
   S=[(n,p*(1+mad))for n,p in S]
   z=len(S)
   c=G_zl('Pick 1 thing for FREE!'if free else 'Shady Shen   '+str(g.coins)+' coins',[n+(' - sold out'if n=='Moldy Egg'and g.book>>29&1 else ' '+str(p)+'c')for n,p in S]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
@@ -159,7 +159,7 @@ def G_shen(g):
   if c==13 and g.book>>29&1:
    message(['All gone. Heh.',"Should've bought more",'when you had the chance.'],'Shady Shen')
    continue
-  if c in(2,13)and(len(g.bag)>=5 or G_kids(g)+4>40):
+  if c in(2,13,14)and(len(g.bag)>=5 or G_kids(g)+4>40):
    message(['No room for an egg.'],'Shady Shen')
    continue
   if c==6:
@@ -247,6 +247,9 @@ def G_shen(g):
    g.book|=1<<29
    g.bag.append(random.choice([i for i in range(20)if G_DT[i][2]>=3]))
    m=['A Moldy Egg. Ew.',"It's probably rotten.",'No refunds. Heh.']
+  elif c==14:
+   g.bag.append(23+32*random.randint(1,4))
+   m=['A Shiny Egg! Super rare.','Totally worth it.','Heh heh heh.']
   elif c==20:
    m=['The box was empty.','Just air. Heh.']
   else:
