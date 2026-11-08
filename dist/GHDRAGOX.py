@@ -187,6 +187,9 @@ def G_dress(g,d,first):
  G_portrait(d)
  message([d[0]+' looks great!'],'Dressed up')
 def G_shop(g):
+ if g.pick is None:
+  message(['Hatch a dragon first!'],'Shop')
+  return
  while True:
   d=g.pick
   c=choose(d[0]+': '+str(g.coins)+' coins',['Buy accessories','Head: '+(G_GEAR[d[7]][0]or 'nothing'),'Body: '+(G_GEAR[d[8]][0]or 'nothing'),'Paint it 20c','Back'])
