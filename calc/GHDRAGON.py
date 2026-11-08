@@ -591,7 +591,7 @@ def bar(x, y, w, v, mx, c):
 def foe_art(f):
     n = f[0]
     if len(f) > 6:
-        drag(162, 42, 2, f[6], f[4])
+        drag(162, 42, 2, f[6], f[4], sp=f[7] if len(f) > 7 else 0)
     elif f is BOSS or f is DREAD:
         drag(162, 42, 2, 22 if f is DREAD else 8, f[4])
     else:
@@ -688,6 +688,13 @@ def battle(g, f, lv=0, ar=0):
                 else:
                     log = "Breath hits for " + str(dm) + "."
             fhp -= dm
+        if len(f) > 7 and 0 < fhp <= mx // 2:
+            f = (DT[23][0],) + f[1:4] + (DT[23][3],) + f[5:7]
+            name = who = f[0]
+            message(["The shine is flaking", "off... It's just a", "DUSTMITE!"], "Huh?")
+            message(["Uh... a very rare", "Dustmite! Still", "counts! Heh..."], "Sheen")
+            foe_screen(f, who)
+            was = None
         if fhp <= 0:
             msg = []
             for dd in g.pen:
@@ -1252,10 +1259,10 @@ TAMERS = (("Timmy", 0, 2, "Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak
           ("Rocco", 6, 5, "Name's Rocco.#Rocks beat everything./That's science."),
           ("Mira", 9, 7, "I'm Mira. I've never/lost. Not once. Ever./Don't ruin it."),
           ("Dex", 7, 8, "Dex. Remember it,/because you'll be/crying it later."),
-          ("Sheen", 13, 10, "A hooded tamer with/yellow eyes steps up.#Name's Sheen. NOT/Shen. Never heard of/him. Wanna lose? Heh."),
           ("Captain Vex", 14, 11, "Captain Vex! I've/beaten 100 tamers./You're number 101."),
           ("Duchess Ivy", 18, 13, "I am Duchess Ivy.#Kneel before my/Rootwyrm, peasant!"),
           ("Grim", 16, 14, "...I'm Grim.#...Your dragon looks/tired already."),
+          ("Sheen", 23, 15, "A hooded tamer with/yellow eyes steps up.#Name's Sheen. NOT/Shen. Never heard of/him. Heh.#Behold my super rare/GOLDEN DRAGON!/Shiny, huh? Heh heh."),
           ("Aurora", 19, 16, "I'm Aurora, the/champion. So you/made it this far.#Impressive. Now watch/me end it."))
 
 
@@ -1277,7 +1284,12 @@ def arena(g):
         d[3] = d[4]
         g.ride = d
         t = DT[k]
-        if not battle(g, (t[0], 20 + 6 * t[2] + 6 * lv, 4 + lv + 2 * t[2], 3 * lv, t[3], t[1], k), 0, 1):
+        r = 4 if k == 23 else t[2]
+        f = (t[0], 20 + 6 * r + 6 * lv, 4 + lv + 2 * r, 3 * lv, t[3], t[1], k)
+        if k == 23:
+            # Sheen's "Golden Dragon" is a polished Dustmite; the shine flakes off at half health
+            f = ("Gold Dragon",) + f[1:4] + (GOLD,) + f[5:] + (2,)
+        if not battle(g, f, 0, 1):
             break
         w += 1
     d[3] = d[4]

@@ -19,7 +19,7 @@ def G_bar(x,y,w,v,mx,c):
 def G_foe_art(f):
  n=f[0]
  if len(f)>6:
-  G_drag(162,42,2,f[6],f[4])
+  G_drag(162,42,2,f[6],f[4],sp=f[7]if len(f)>7 else 0)
  elif f is G_BOSS or f is G_DREAD:
   G_drag(162,42,2,22 if f is G_DREAD else 8,f[4])
  else:
@@ -107,6 +107,13 @@ def G_battle(g,f,lv=0,ar=0):
     else:
      log='Breath hits for '+str(dm)+'.'
    fhp-=dm
+  if len(f)>7 and 0<fhp<=mx//2:
+   f=(G_DT[23][0],)+f[1:4]+(G_DT[23][3],)+f[5:7]
+   name=who=f[0]
+   message(['The shine is flaking',"off... It's just a",'DUSTMITE!'],'Huh?')
+   message(['Uh... a very rare','Dustmite! Still','counts! Heh...'],'Sheen')
+   G_foe_screen(f,who)
+   was=None
   if fhp<=0:
    msg=[]
    for dd in g.pen:
