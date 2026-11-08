@@ -35,6 +35,7 @@ def G_glim(g):
  cls(G_NIGHT)
  G_drag(102,10,2,d[1],d[6],d[7],d[8],None,0,q)if not d[9]&8 else G_drag(131,45,1,d[1],d[6],0,0,None,0,q)
  message([d[0]+' sparkles!','Now a '+G_SCH[q][0]+' '+G_DT[d[1]][0]+'!'],'Shiny!')
+ G_save(g)
 def G_zl(title,opts):
  cls()
  ctext(24,title,GOLD)

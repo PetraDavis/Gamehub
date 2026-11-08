@@ -202,10 +202,12 @@ def beats(a, b):
 
 
 def egg_type(m, up=0):
-    # most eggs are common; rare ones are very rare. Further lands are a bit luckier.
-    # Land 1: legendary 0.4%, epic 2.6%, rare 8%, uncommon 22%, common 67%
+    # most eggs are common; rare ones are very rare. Further lands are much luckier.
+    # Green Valley: legendary 0.4%, epic 2.6%, rare 8%, uncommon 22%, common 67%
+    # Fire Mountain: 1%, 4%, 13%, 27%, 55%. Frost Peaks: 1.5%, 6.5%, 18%, 31%, 43%
     r = random.randint(0, 999)
-    rar = 4 if r < 4 + 2 * m else 3 if r < 30 + 10 * m else 2 if r < 110 + 25 * m else 1 if r < 330 + 40 * m else 0
+    c = ((4, 30, 110, 330), (10, 50, 180, 450), (15, 80, 260, 570))[min(m, 2)]
+    rar = 4 if r < c[0] else 3 if r < c[1] else 2 if r < c[2] else 1 if r < c[3] else 0
     rar = min(4, rar + up)
     return random.choice([i for i in range(20) if DT[i][2] == rar])
 
@@ -1008,6 +1010,7 @@ def glim(g):
     cls(NIGHT)
     drag(102, 10, 2, d[1], d[6], d[7], d[8], None, 0, q) if not d[9] & 8 else drag(131, 45, 1, d[1], d[6], 0, 0, None, 0, q)
     message([d[0] + " sparkles!", "Now a " + SCH[q][0] + " " + DT[d[1]][0] + "!"], "Shiny!")
+    save(g)
 
 
 def zl(title, opts):
@@ -1177,12 +1180,19 @@ def backpack(g):
         r = DT[v % 32 % SMALL][2]
         text(16 + i * 60, 150, "Small" if v % 32 == SMALL else "Shiny" if v > 31 else "???" if r > 4 else RARE[r][:5],
              SCH[v // 32][2] if v > 31 else WHITE if v % 32 == SMALL else RCOL[r])
+    if g.glim:
+        text(6, 170, "Glimmer Stones: " + str(g.glim) + " (ENTER: use)", GOLD)
     if g.bag:
-        text(6, 186, "The first egg hatches in " + str(g.warm), WHITE)
+        text(6, 188, "The first egg hatches in " + str(g.warm), WHITE)
     n = len([i for i in range(1, 17) if g.own >> i & 1])
-    text(6, 204, "Accessories: " + str(n) + " of 16", GREY)
-    while wkey() not in (OK, CLR):
-        pass
+    text(6, 206, "Accessories: " + str(n) + " of 16", GREY)
+    # True: use the Glimmer Stones (play() does it, after this file leaves memory)
+    while True:
+        k = wkey()
+        if k == CLR or k == OK and not g.glim:
+            return False
+        if k == OK:
+            return True
 
 
 def book(g):
@@ -1507,7 +1517,8 @@ def play():
         if k in (OK, SECOND):
             c = menu(g)
             if c:
-                (backpack if c == 1 else book)(g)
+                if (backpack if c == 1 else book)(g) and c == 1:
+                    glim(g)
                 draw_map(g)
             continue
         dx, dy = {LEFT: (-1, 0), RIGHT: (1, 0), UP: (0, -1), DOWN: (0, 1)}.get(k, (0, 0))
@@ -1558,6 +1569,8 @@ def play():
         if ch == "M":
             # talk to the merchant without stepping on him
             shen(g)
+            # what you bought is saved right away
+            save(g)
             draw_map(g)
             continue
         ox, oy = g.x, g.y
@@ -1592,7 +1605,8 @@ def play():
                 c = nest(g)
                 if not c:
                     break
-                (backpack if c == 1 else book if c == 2 else glim)(g)
+                if (backpack if c == 1 else book if c == 2 else glim)(g) and c == 1:
+                    glim(g)
             draw_map(g)
             continue
         cells(g, [(ox, oy), (nx, ny)], True)
@@ -1628,7 +1642,8 @@ def play():
             if not evil(g):
                 return
             continue
-        if ch == '"' and steps > 3 and random.random() < 0.2:
+        # monsters hide in the tall grass, and further lands have more of them
+        if ch == '"' and steps > 3 and random.random() < 0.2 + 0.08 * min(g.m, 2):
             steps = 0
             # a level in this land's range; higher levels are rarer
             lo, hi = LVL[g.m]
