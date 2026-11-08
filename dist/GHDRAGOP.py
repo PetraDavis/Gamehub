@@ -1,10 +1,10 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
 GREY=(110,110,110)
-def cls(c=BLACK):
- COVER[0]+=1
- col(c)
- fill_rect(-1,-1,321,211)
+def shuffle(a):
+ for i in range(len(a)-1,0,-1):
+  j=random.randint(0,i)
+  a[i],a[j]=(a[j],a[i])
 def pause(s):
  time.sleep(s)
 def choose(title,opts,sel=0):
@@ -34,17 +34,19 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
+G_EVIL=0.12 if G_TEST else 0.004
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient','Junk')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
-def G_egg_type(m,up=0):
- r=random.randint(0,999)
- c=((4,30,110,330),(10,50,180,450),(15,80,260,570))[min(m,2)]
- rar=4 if r<c[0]else 3 if r<c[1]else 2 if r<c[2]else 1 if r<c[3]else 0
- rar=min(4,rar+up)
- return random.choice([i for i in range(20)if G_DT[i][2]==rar])
+def G_egg_roll(g,t):
+ if g.book&2097151 and random.random()<0.05:
+  t=G_SMALL
+ if random.random()<0.02:
+  r=random.random()
+  return t+32*(1 if r<0.4 else 2 if r<0.7 else 3 if r<0.9 else 4)
+ return t
 def G_grown(g):
  for d in g.pen:
   if not d[9]&8:
@@ -82,6 +84,11 @@ def G_draw_map(g,after_msg=False):
  G_CAVE[0]=not g.book>>26&1 and any((d[1]==20 and(not d[9]&8)for d in g.pen))
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
+def G_pack(nm):
+ n=0
+ for ch in nm.upper():
+  n=n*27+G_ABC.index(ch)+1
+ return n
 def G_save(g):
  q=g.pol
  if q:

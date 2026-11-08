@@ -790,6 +790,7 @@ def load(g):
     g.warm = 12
     g.spawn = 100
     g.pick = g.ride = g.quest = g.pol = g.shen = None
+    g.deck = {}
     g.coins = g.own = g.book = g.seen = g.face = g.dread = g.glim = g.luck = g.curse = g.buys = g.done = g.cd = g.sad = 0
     g.shn = random.randint(120, 180)
     try:
@@ -1155,10 +1156,12 @@ def cop(g):
 VILLAGER = (("Farmer Bo", "Eggs turn up every/hundred steps or so./Keep walking!|Monsters hide in the/tall grass. Ride over/it if you can.|"
              "The farther lands have/rarer eggs. And meaner/monsters.|My cow got stepped on/by a dragon. Again.|Stay away from Old/Nettle. She talks/to rocks.|"
              "Dragons ate my carrots./All of them.|Fire Mountain is hot./Bring a dragon that/likes heat.|Frost Peaks? Brr. Big/monsters up there.|"
-             "I saw a hooded fella/hanging around. Shifty."),
+             "I saw a hooded fella/hanging around. Shifty.|Old Nettle tried to sell/me a magic turnip./It was a turnip.|"
+             "Don't eat anything/Nettle gives you./Trust me on this.|Nettle yells at the/moon every night./Can't sleep!"),
             ("Baker Rose", "Walk into your nest/to heal your dragons.|I once saw a shiny egg./It sparkled like sugar!|Small eggs hatch babies./So cute. Can't ride/them, though.|"
              "Fresh bread! Oh, you/only have dragon food?|Old Nettle says a black/dragon ate her dragons./Crazy old bat!|Ride your dragon and/you can cross water.|"
-             "My pies win prizes./Dragons steal them.|Level up and your dragon/heals right up!|I sold a cake to a/hooded man. He paid/with a button."),
+             "My pies win prizes./Dragons steal them.|Level up and your dragon/heals right up!|I sold a cake to a/hooded man. He paid/with a button.|Nettle says my bread/talks to her. It does/NOT talk.|"
+             "They say Nettle was a/great tamer once. Then/she went cuckoo.|Old Nettle owes me for/twelve pies. Twelve!"),
             ("Little Pip", "When I grow up I'll/tame a Legendary!|The quest hall pays/lots of coins!|Did you know dragons/can fly over lava?|Wanna see my rock?/It's a good rock.|"
              "Old Nettle tells the/BEST stories! Grown-ups/say she's cuckoo.|Nettle gave me a cookie./It was a rock. I kept/it anyway!|"
              "I'm gonna name my dragon/Sir Fluffington.|Bet I can run faster/than your dragon!|I found a feather!/...It's a leaf.|Old Nettle says rocks/can sleep. COOL!"))
@@ -1206,7 +1209,8 @@ def nettle(g):
         P = "The stone one... AWAKE!/Hee hee hee! I KNEW it!#Take these shiny/stones. Five of 'em./No use to me."
         g.glim += 5
     else:
-        P = random.choice(NETTLE.split("|"))
+        P = NETTLE.split("|")
+        P = P[deal(g, "N", len(P))]
     for p in P.split("#"):
         message(p.split("/"), "Old Nettle")
 
@@ -1214,7 +1218,17 @@ def nettle(g):
 def talk(g, x):
     # the village people: tips and chatter
     n, L = VILLAGER[(x // 5) % 3]
-    message(random.choice(L.split("|")).split("/"), n)
+    L = L.split("|")
+    message(L[deal(g, n, len(L))].split("/"), n)
+
+
+def deal(g, k, n):
+    # every line once (in a shuffled order) before any of them comes up again
+    d = g.deck.setdefault(k, [])
+    if not d:
+        d += list(range(n))
+        shuffle(d)
+    return d.pop()
 
 
 def deliver(g):

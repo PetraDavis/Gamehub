@@ -28,6 +28,7 @@ def G_load(g):
  g.warm=12
  g.spawn=100
  g.pick=g.ride=g.quest=g.pol=g.shen=None
+ g.deck={}
  g.coins=g.own=g.book=g.seen=g.face=g.dread=g.glim=g.luck=g.curse=g.buys=g.done=g.cd=g.sad=0
  g.shn=random.randint(120,180)
  try:
