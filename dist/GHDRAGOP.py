@@ -32,8 +32,11 @@ def choose(title,opts,sel=0):
    ctext(y+18,opts[i],c)
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
+G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
+def G_kids(g):
+ return sum((1 if d[9]&8 else 4 for d in g.pen))+sum((1 if e%32==G_SMALL else 4 for e in g.bag))
 def G_grown(g):
  for d in g.pen:
   if not d[9]&8:
@@ -113,21 +116,11 @@ def G_play():
  g.m,g.x,g.y=(0,3,2)
  g.hp=g.mhp=30
  g.pen=[]
- g.pick=None
- g.ride=None
  g.bag=[]
  g.warm=12
- g.coins=0
- g.own=0
- g.book=0
- g.quest=None
- g.seen=0
- g.face=0
  g.spawn=100
- g.dread=0
- g.glim=g.luck=g.curse=g.buys=g.done=g.cd=g.sad=0
- g.pol=None
- g.shen=None
+ g.pick=g.ride=g.quest=g.pol=g.shen=None
+ g.coins=g.own=g.book=g.seen=g.face=g.dread=g.glim=g.luck=g.curse=g.buys=g.done=g.cd=g.sad=0
  g.shn=random.randint(120,180)
  G_load(g)
  steps=0
@@ -272,12 +265,7 @@ def G_play():
   if g.pol:
    g.pol[2]-=1
    if g.pol[2]<=0:
-    d=g.pol[0]
-    d[9]=d[9]&8|g.pol[1]
-    g.pol=None
-    if d in g.pen:
-     message([d[0]+"'s shine",'wore off...'],'Hm')
-     G_draw_map(g,True)
+    G_pol_off(g)
   G_hud(g)
   steps+=1
   if g.dread>0:

@@ -18,7 +18,7 @@ SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
               "win"),
         # the merchant has a file of his own, with its own copy of the list, so the
         # pen and fights don't have to carry his code
-        "Z": ("shen", "who", "glim", "zl", "shen_off"),
+        "Z": ("shen", "who", "glim", "zl", "shen_off", "pol_off"),
         "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed", "menu")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
@@ -1069,6 +1069,16 @@ def zl(title, opts):
             return -1
 
 
+def pol_off(g):
+    # the Shiny Polish wears off
+    d = g.pol[0]
+    d[9] = d[9] & 8 | g.pol[1]
+    g.pol = None
+    if d in g.pen:
+        message([d[0] + "'s shine", "wore off..."], "Hm")
+        draw_map(g, True)
+
+
 def shen(g):
     # Shady Shen. The game never tells you, but: after your first visit he sometimes
     # picks your pocket, after your first buy 1 thing in 10 is a fake, and the
@@ -1095,9 +1105,9 @@ def shen(g):
         # his best customers (10 things bought) see one more item
         S = (("Glimmer Stone", 60), ("Power Fruit", 40), ("Mystery Egg", 50), ("Healing Tonic", 20), ("Lucky Charm", 35),
              ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45), ("Accessory Crate", 40), ("Treasure Map", 35),
-             ("Dragon Insurance", 20), ("Speed Saddle", 50), ("Shiny Polish", 25)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
+             ("Dragon Insurance", 20), ("Speed Saddle", 50), ("Shiny Polish", 25), ("Moldy Egg", 15)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
         z = len(S)
-        c = zl("Shady Shen   " + str(g.coins) + " coins", [n + " " + str(p) + "c" for n, p in S] +
+        c = zl("Shady Shen   " + str(g.coins) + " coins", [n + (" - sold out" if n == "Moldy Egg" and g.book >> 29 & 1 else " " + str(p) + "c") for n, p in S] +
                 (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
         if c == z and g.glim:
             glim(g)
@@ -1114,7 +1124,10 @@ def shen(g):
             d = who(g, "Feed the Power Fruit to", False)
             if d is None:
                 continue
-        if c == 2 and (len(g.bag) >= 5 or kids(g) + 4 > 40):
+        if c == 13 and g.book >> 29 & 1:
+            message(["All gone. Heh.", "Should've bought more", "when you had the chance."], "Shady Shen")
+            continue
+        if c in (2, 13) and (len(g.bag) >= 5 or kids(g) + 4 > 40):
             message(["No room for an egg."], "Shady Shen")
             continue
         if c == 6:
@@ -1132,7 +1145,8 @@ def shen(g):
             if d is None:
                 continue
         g.coins -= p
-        if g.book >> 28 & 1 and random.random() < 0.1:
+        # (the Moldy Egg, his secret good deal, is never a fake)
+        if c != 13 and g.book >> 28 & 1 and random.random() < 0.1:
             message([random.choice(("It was just a painted rock!", "The box was empty...", "It crumbled into dust.",
                                     "It melted in your hand."))], "Huh?")
             continue
@@ -1204,6 +1218,11 @@ def shen(g):
             g.pol = [d, d[9] & 7, random.randint(80, 140)]
             d[9] = d[9] & 8 | random.randint(1, 4)
             m = [d[0] + " sparkles!", "So shiny. Totally", "real. Heh heh."]
+        elif c == 13:
+            # looks rotten, but it's always an Epic or Legendary egg. Only one, ever.
+            g.book |= 1 << 29
+            g.bag.append(random.choice([i for i in range(20) if DT[i][2] >= 3]))
+            m = ["A Moldy Egg. Ew.", "It's probably rotten.", "No refunds. Heh."]
         elif c == 20:
             m = ["The box was empty.", "Just air. Heh."]
         else:
@@ -1545,21 +1564,11 @@ def play():
     g.m, g.x, g.y = 0, 3, 2
     g.hp = g.mhp = 30
     g.pen = []
-    g.pick = None
-    g.ride = None
     g.bag = []
     g.warm = 12
-    g.coins = 0
-    g.own = 0
-    g.book = 0
-    g.quest = None
-    g.seen = 0
-    g.face = 0
     g.spawn = 100
-    g.dread = 0
-    g.glim = g.luck = g.curse = g.buys = g.done = g.cd = g.sad = 0
-    g.pol = None
-    g.shen = None
+    g.pick = g.ride = g.quest = g.pol = g.shen = None
+    g.coins = g.own = g.book = g.seen = g.face = g.dread = g.glim = g.luck = g.curse = g.buys = g.done = g.cd = g.sad = 0
     g.shn = random.randint(120, 180)
     load(g)
     steps = 0
@@ -1710,12 +1719,7 @@ def play():
         if g.pol:
             g.pol[2] -= 1
             if g.pol[2] <= 0:
-                d = g.pol[0]
-                d[9] = d[9] & 8 | g.pol[1]
-                g.pol = None
-                if d in g.pen:
-                    message([d[0] + "'s shine", "wore off..."], "Hm")
-                    draw_map(g, True)
+                pol_off(g)
         hud(g)
         steps += 1
         # the evil dragon only hunts tamers who own an Epic (or rarer) dragon
