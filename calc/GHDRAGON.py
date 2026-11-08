@@ -1140,9 +1140,9 @@ def cop(g):
         g.book |= 1 << 22
         message(["Hmm. Well, tell me", "if you see him."], "Officer Brick")
     shen_off(g)
-    # if you told, Shen sits in jail for about 10000 steps, then comes back with double prices forever
+    # if you told, Shen sits in jail for about 5000 steps, then comes back with double prices forever
     if g.book >> 31 & 1:
-        g.shn = 10000
+        g.shn = 5000
 
 
 def shen(g):
