@@ -1298,17 +1298,19 @@ def shen(g, ch="M", x=0):
     # you didn't tell Officer Brick about him (book bit 22): one thing for free
     if g.book >> 32 & 1:
         g.book &= ~(1 << 32)
-        g.coins -= min(g.coins, random.randint(20, 40))
         message(["You opened my package!", "Shen always knows. Heh.", "That'll cost you."], "Shady Shen")
+        # told the officer you'd never seen him? Then you can threaten him instead of paying
+        if g.book >> 30 & 1 and not mad and choose("Shen wants coins", ["Pay him", "Threaten him"]) == 1:
+            message(["\"Don't charge me unless", "you want to be", "arrested!\""], "You")
+            message(["...Fine. FINE.", "We're even.", "This time."], "Shady Shen")
+        else:
+            g.coins -= min(g.coins, random.randint(20, 40))
     # now and then a job: take a package to the village (book bit 24)
     elif met and not g.book >> 24 & 1 and random.random() < 0.15:
         message(["Psst... got a job. Take", "this package to the", "village. And DON'T peek."], "Shady Shen")
         if choose("Take the job?", ["Sure", "No thanks"]) == 0:
             g.book |= 1 << 24
             message(["Someone will be waiting", "there for it. Heh."], "Shady Shen")
-    # told the officer you'd never seen him? Then you can threaten him (once a visit)
-    thr = g.book >> 30 & 1 and not mad
-    h = 2
     free = g.book >> 22 & 1
     if free:
         message(["Psst... you didn't tell", "the officer about me.", "Pick one thing. Free."], "Shady Shen")
@@ -1318,22 +1320,12 @@ def shen(g, ch="M", x=0):
              ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45), ("Accessory Crate", 40), ("Treasure Map", 35),
              ("Dragon Insurance", 20), ("Speed Saddle", 50), ("Shiny Polish", 25), ("Moldy Egg", 15), ("Shiny Egg", 70)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
         # since you told on him, everything costs double
-        S = [(n, p * (1 + mad) * h // 2) for n, p in S]
+        S = [(n, p * (1 + mad)) for n, p in S]
         z = len(S)
         c = zl("Pick 1 thing for FREE!" if free else "Shady Shen   " + str(g.coins) + " coins", [n + (" - sold out" if n == "Moldy Egg" and g.book >> 29 & 1 else " " + str(p) + "c") for n, p in S] +
-                (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + (["Threaten Shen"] if thr else []) + ["Leave"])
+                (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
         if c == z and g.glim:
             glim(g)
-            continue
-        if thr and c == z + (g.glim > 0):
-            thr = 0
-            message(["\"Don't charge me unless", "you want to be", "arrested!\""], "You")
-            if random.random() < 0.5:
-                free = 1
-                message(["...Fine! Pick one thing.", "Free. Then you never", "saw me. Got it?"], "Shady Shen")
-            else:
-                h = 3
-                message(["Who'd believe YOU?", "Prices just went up.", "Heh heh."], "Shady Shen")
             continue
         if c < 0 or c >= z:
             message([random.choice(("No refunds. Ever.", "You didn't see me.", "Come back soon, friend."))], "Shady Shen")
