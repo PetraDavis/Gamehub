@@ -1,9 +1,5 @@
 # GHDRAGOY: part of GHDRAGON, loaded only while it is needed.
 from GHDRAGOP import*
-def shuffle(a):
- for i in range(len(a)-1,0,-1):
-  j=random.randint(0,i)
-  a[i],a[j]=(a[j],a[i])
 def sample(seq,k):
  a=list(seq)
  shuffle(a)
@@ -15,7 +11,7 @@ def G_oval(x,y,s,c,k=0):
  circ(x,y-5*s,4*s-k,c)
 def G_egg(x,y,s,t):
  q,t=(t//32,t%32)
- if t==G_SMALL:
+ if t>=30:
   s=max(2,s*2//3)
   y+=2*s
   t=0
@@ -60,8 +56,8 @@ def G_backpack(g):
  for i in range(len(g.bag)):
   v=g.bag[i]
   G_egg(40+i*60,90,3,v)
-  r=G_DT[v%32%G_SMALL][2]
-  text(16+i*60,150,'Small'if v%32==G_SMALL else 'Shiny'if v>31 else '???'if r>4 else G_RARE[r][:5],G_SCH[v//32][2]if v>31 else WHITE if v%32==G_SMALL else G_RCOL[r])
+  r=G_DT[v%32%30][2]
+  text(16+i*60,150,'Small'if v%32>=30 else 'Shiny'if v>31 else '???'if r>4 else G_RARE[r][:5],G_SCH[v//32][2]if v>31 else WHITE if v%32>=30 else G_RCOL[r])
  if g.glim:
   text(6,170,'Glimmer Stones: '+str(g.glim)+' (ENTER: use)',GOLD)
  if g.bag:
@@ -75,18 +71,18 @@ def G_backpack(g):
   if k==OK:
    return True
 def G_book(g):
- P=list(range(20))+[k for k in(20,21,23)if g.book>>k&1]
+ P=list(range(20))+[k for k in(20,21,23,24)if g.book>>k+12*(k==24)&1]
  n=len(P)
  i=0
  while True:
   cls(G_NIGHT)
   t=G_DT[P[i]]
-  got=g.book>>P[i]&1
+  got=g.book>>P[i]+12*(P[i]==24)&1
   ctext(22,'DRAGON BOOK  '+str(i+1)+'/'+str(n),GOLD)
   if got:
    G_drag(102,30,2,P[i],t[3])
    ctext(150,t[0],WHITE)
-   ctext(172,G_RARE[t[2]]+' '+G_ENAME[t[1]],G_RCOL[t[2]])
+   ctext(172,('Champion'if P[i]==24 else G_RARE[t[2]])+' '+G_ENAME[t[1]],G_RCOL[t[2]])
   else:
    G_oval(160,90,4,(30,32,55))
    ctext(98,'?',GREY)
@@ -152,9 +148,9 @@ def G_hatch(g):
  g.warm=12
  q,e=(v//32,v%32)
  q*=e!=23
- b=e==G_SMALL
+ b=e>=30
  if b:
-  e=random.choice([i for i in range(22)if g.book>>i&1]or[0])
+  e=random.choice([i for i in range(20)if G_DT[i][2]>=2]if e==30 else[i for i in range(22)if g.book>>i&1]or[0])
  t=G_DT[e]
  cls(G_NIGHT)
  ctext(24,'The egg is cracking!',GOLD)
@@ -172,15 +168,16 @@ def G_hatch(g):
  else:
   G_drag(73,30,3,e,t[3],0,0,None,0,q)
  rect(0,182,320,28,G_NIGHT)
- ctext(200,'A baby '+(G_SCH[q][0]+' 'if q else '')+t[0]+'!'if b else(G_SCH[q][0]+' 'if q else ''if t[2]>4 else G_RARE[t[2]]+' ')+t[0]+' dragon!',G_SCH[q][2]if q else G_RCOL[t[2]])
+ ctext(200,'A baby '+(G_SCH[q][0]+' 'if q else '')+t[0]+'!'if b else(G_SCH[q][0]+' 'if q else ''if t[2]>4 else('Champion'if e==24 else G_RARE[t[2]])+' ')+t[0]+' dragon!',G_SCH[q][2]if q else G_RCOL[t[2]])
  pause(1.2)
  names=sample(G_NAMES,4)
  i=choose('Name your '+t[0]+':',names+['Type a name'])
  nm=names[max(0,i)]if i<4 else G_typed(t[0])or names[0]
- mh=20+6*min(4,t[2])+6*(e==20)+16*(e==21)
+ mh=20+6*min(4,t[2])+6*(e==20)+16*(e==21)+3*(e==24)
  d=[nm,e,1,mh,mh,0,t[3],0,0,q+8*b]
  g.pen.append(d)
  msg=[nm+' joins your pen!']
+ e+=12*(e==24)
  if not g.book>>e&1:
   g.book|=1<<e
   msg.append('New page in your book!')

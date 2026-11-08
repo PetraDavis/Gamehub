@@ -38,14 +38,14 @@ def G_shapes(m,x,y,ch,out):
   if ch=='C'and G_CAVE[0]:
    out.append((2,(20,18,25),1,(px+10,py+17,5)))
    out.append((3,YELLOW,0,(px+8,py+9,5,1)))
- elif ch in 'QS':
+ elif ch in 'QSN':
   out.append((0,(235,215,170),0,(px+3,py+9,14,11)))
-  out.append((1,(200,50,40)if ch=='Q'else(50,90,200),2,([px,px+10,px+20],[py+10,py,py+10])))
+  out.append((1,(200,50,40)if ch=='Q'else(50,90,200)if ch=='S'else(120,50,150),2,([px,px+10,px+20],[py+10,py,py+10])))
   out.append((2,G_BARK,0,(px+8,py+13,4,7)))
   if ch=='Q':
    out.append((3,YELLOW,0,(px+9,py+3,2,4)))
    out.append((3,YELLOW,0,(px+9,py+8,2,1)))
-  else:
+  elif ch=='S':
    out.append((3,YELLOW,1,(px+10,py+5,2)))
  elif ch=='M':
   out.append((0,(70,45,95),2,([px+3,px+10,px+17],[py+19,py+2,py+19])))
@@ -58,6 +58,14 @@ def G_shapes(m,x,y,ch,out):
   out.append((1,(240,200,160),1,(px+10,py+6,3)))
   out.append((2,(20,30,80),0,(px+6,py+1,8,3)))
   out.append((2,YELLOW,0,(px+7,py+11,2,2)))
+ elif ch=='A':
+  out.append((0,G_ROCK,1,(px+10,py+11,9)))
+  out.append((1,(60,55,70),0,(px+5,py+12,11,6)))
+  out.append((2,RED,0,(px+9,py,2,5)))
+ elif ch=='V':
+  out.append((0,((200,60,60),(60,120,200),(220,180,60))[x%3],0,(px+5,py+9,10,10)))
+  out.append((1,(240,200,160),1,(px+10,py+6,3)))
+  out.append((2,G_BARK,0,(px+7,py+2,6,2)))
  elif ch=='X':
   out.append((0,G_BARK,0,(px+3,py+8,14,10)))
   out.append((1,YELLOW,0,(px+3,py+11,14,2)))
@@ -123,20 +131,3 @@ def G_paint(ops):
    fill_poly(a[0],a[1])
  if last:
   rect(last[1],last[2],last[3],last[4],last[0][1])
-def G_hud(g):
- d=g.ride
- if d is not None:
-  who=d[0]+' '+str(d[3])+'/'+str(d[4])
- else:
-  who='You '+str(g.hp)+'/'+str(g.mhp)
- t=(G_LANDS[g.m],who,'Egg '+str(g.warm)if g.bag else str(g.coins)+'c')
- if t==G_HUD[0]:
-  return
- old=G_HUD[0]or('','','')
- if G_HUD[0]is None:
-  rect(0,0,320,20,BLACK)
- for i,x,c in((0,4,GOLD),(1,140,WHITE),(2,262,YELLOW)):
-  if t[i]!=old[i]:
-   text(x,15,old[i],BLACK)
-   text(x,15,t[i],c)
- G_HUD[0]=t

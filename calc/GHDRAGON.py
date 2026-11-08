@@ -19,6 +19,8 @@ SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
         # the merchant has a file of his own, with its own copy of the list, so the
         # pen and fights don't have to carry his code
         "Z": ("shen", "cop", "who", "glim", "zl", "shen_off", "pol_off"),
+        # things you step on or talk to (eggs, chests, villagers, Shen's package): small, loaded on use
+        "V": ("found",),
         "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed", "menu")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
@@ -48,15 +50,15 @@ MAPS = (
      '.."""...........',
      '..""".....^C....',
      "^^^^^^^^^^^^^^^^"],
-    # the village, left of Green Valley: Q quest hall, S shop, W well, = path
+    # the village, left of Green Valley: Q quest hall, S shop, A arena, N Old Nettle's hut, W well, = path, V villagers
     ["TTTTTTTTTTTTTTTT",
-     "T..............T",
+     "T.....A......N.T",
      "T..Q.......S...T",
      "T..=.......=...T",
      "T..=============",
      "T.......W......T",
-     "T..............T",
-     "T..............T",
+     "T.....V......V.T",
+     "T.V............T",
      "TTTTTTTTTTTTTTTT"],
 )
 LANDS = ("Green Valley", "Fire Mountain", "Frost Peaks", "Village")
@@ -85,7 +87,7 @@ RCOL = cl(b'\xff\xff\xffx\xdcxZ\xa0\xff\xc8n\xf0\xe6\xb4(<\xe6\xe6\xf5\xa0<\x8c\
 # 22 is the Dread Drake's picture (never hatched); 23 Dustmite is Junk, rarity -1 (below Common):
 # it only comes from Shen's fake Shiny Egg
 DT = list(zip(('Pyrrak', 'Smoldedrake', 'Aquawyrm', 'Gillwing', 'Fernling', 'Lichenwing', 'Stonewyrm', 'Volcanox', 'Ashveil', 'Glacius', 'Tempestra', 'Thornwyrm', 'Dawnwing', 'Pearlhorn', 'Jadewyrm', 'Petalwyrm', 'Blazequill', 'Abyssar', 'Rootwyrm', 'Lumora', 'Quantum', 'Petralith'),
-         b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03\x03', b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05\x06', cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP}vn'))) + [("", 0, 0, BLACK), ("Dustmite", 2, -1, (150, 145, 135))]
+         b'\x00\x00\x01\x01\x02\x02\x02\x00\x00\x01\x01\x02\x00\x01\x02\x02\x00\x01\x02\x03\x03\x03', b'\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x01\x01\x02\x02\x02\x02\x03\x03\x03\x04\x05\x06', cl(b'\xdcF(\xeb\x8c(<\x82\xe6(\xaa\xaaF\xaaF\x82\x96<\x96\x8cx\xaa(\x1eKKU\xa0\xd2\xf5xd\xc8\x1en<\xf0\xbe(\xf0x\x96<\xc8\x96\xfa\xa0\xd2\xffZ<\x1e<\xa0nP(\x19\x19#\x19\x1eP}vn'))) + [("", 0, 0, BLACK), ("Dustmite", 2, -1, (150, 145, 135)), ("Crestwyrm", 0, 3, (160, 25, 35))]
 ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NAMES = ("Blaze", "Splash", "Fern", "Spark", "Misty", "Clover", "Ziggy", "Nova",
          "Pebble", "Rocket", "Biscuit", "Luna", "Comet", "Pip", "Maple", "Echo",
@@ -129,8 +131,9 @@ ARTF = (b'\x02\x036\x1e<\x10@\x1e\x02\x029\x1e<\x15>\x1e',
         b'\x00\x00"\x19\x07\n\x00\x00\x01\x00)\x1e\x05\x00\x00\x00\x02\x00)\x1a9\x1f)#\x02\x12*\x1b-\x14/\x1c\x02\x120\x1d3\x175\x1e\x02\x16+\x1b-\x14.\x1b\x02\x161\x1d3\x174\x1d\x02\x16\x12\x10\x19\n\x15\x12\x00\x16\x11\x18\x02\x06\x00\x00\x00\x16\x19\x1d\x08\x01\x00\x00\x00\x16 \x1d\x01\x03\x00\x00\x00\x16 \x1f\t\x01\x00\x00\x00\x16)\x1c\x01\x04\x00\x00\x00\x16.\x1d\x07\x01\x00\x00',
         b"\x00\x10\x1b\x1a\x05\x03\x00\x00\x00\x10#\x1e\x05\x03\x00\x00\x00\x10,\x1c\x04\x02\x00\x00\x02\x10\x12\x16\x16\x15\x14\x1a\x02\x13\x13\x15\x15\r\x18\x15\x02\x13\x17\x17\x1a\x10\x1c\x18\x02\x13*\x1b-\x120\x1c\x02\x130\x1d3\x156\x1e\x02\x135\x1e7\x199\x1e\x02\x01\x14\x15\x15\r\x15\x15\x02\x01+\x1a-\x12-\x1a\x02\x011\x1c3\x153\x1c\x00\x03\x19\x1d\x07\x01\x00\x00\x00\x03\x1f\x1d\x01\x04\x00\x00\x00\x03\x1f \x08\x01\x00\x00\x00\x03'\x1c\x01\x05\x00\x00\x00\x03'\x1c\x07\x01\x00\x00\x00\x03.\x1d\x01\x02\x00\x00\x00\x03\x11\x17\x01\x05\x00\x00\x00\x03\x11\x17\x03\x01\x00\x00\x00\x02\x1a\x1d\x05\x01\x00\x00\x00\x02  \x06\x01\x00\x00\x00\x02(\x1c\x05\x01\x00\x00",
         b'\x02\x17\x1c\x19\x1e\x13 \x19\x02\x17+\x1b-\x150\x1c\x02\x171\x1d3\x186\x1e\x02\x17\x13\x14\x15\x0f\x18\x14\x00\x19\x18 \x13\x03\x00\x00\x00\x17\x11\x18\x02\x06\x00\x00',
-        b'\x00\x19\x1d\x1c\x02\x01\x00\x00\x00\x19#\x1e\x02\x01\x00\x00\x00\x19*\x1c\x01\x01\x00\x00')
-ARTW = b'\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x05\x1c\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x03\x02\x0f\x10\x0f\x10\x15\x00\x15\x16\x10\r\x00\x17\x0f\x10'
+        b'\x00\x19\x1d\x1c\x02\x01\x00\x00\x00\x19#\x1e\x02\x01\x00\x00\x00\x19*\x1c\x01\x01\x00\x00',
+        b'\x00\x1b\x1a \x10\x01\x00\x00\x02\x02\x17\x19\x1a\x10\x1d\x19\x02\x02\x1d\x19 \x11#\x19\x02\x02#\x19&\x12)\x19\x02\x1b*\x1b-\x150\x1c\x02\x1b1\x1d3\x186\x1e')
+ARTW = b'\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x05\x1c\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x0f\x10\x03\x02\x0f\x10\x0f\x10\x15\x00\x15\x16\x10\r\x00\x17\x0f\x10\x0f\x10'
 ARTO = (b'',
         b'\x01\x06\x06\x12\x02\x00\x00\x00\x01\x06\x04\x0e\x02\x00\x00\x00\x01\x05\x03\n\x01\x00\x00\x00',
         b'\x02\x0f\x11\x13\x16\x10\x14\x16',
@@ -154,7 +157,8 @@ ARTO = (b'',
         b'\x00\x01 \x13\x01\x01\x00\x00\x00!#\x0f\x01\x01\x00\x00\x00\x01\x1d\x17\x01\x01\x00\x00\x00!$\x16\x01\x01\x00\x00\x00!!\x18\x01\x01\x00\x00\x00\x01%\x0c\x01\x03\x00\x00\x00\x01$\r\x03\x01\x00\x00\x02\x16\x13\x1c\x16\x18\x19\x1c\x02\x16\x13\x1c\x16 \x19\x1c\x00!\x15\x1b\x03\x02\x00\x00\x00\x01\x16\x1b\x01\x02\x00\x00\x02\x12\x0e\x11\x12\x05\x12\x11\x02\x16\x11\x11\x1b\x01\x16\x12\x02!\x13\x10\x1b\x01\x15\x10\x02\x166\x1b<\x1f6#\x01\x16=\x1f\x03\x00\x00\x00\x01!=\x1f\x02\x00\x00\x00\x00\x01=\x1e\x01\x01\x00\x00\x00\x16\n\x15\x06\x01\x00\x00\x00\x16\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00',
         b'\x01\x10=\x1f\x04\x00\x00\x00\x01\x05<\x1e\x03\x00\x00\x00\x01\x06;\x1d\x01\x00\x00\x00\x00\x03<\x1e\x03\x01\x00\x00\x00\x02>\x1f\x01\x02\x00\x00\x02\x10\r\x11\x10\x07\x12\x11\x02\x13\x10\x11\x15\x00\x18\x11\x02\x01\x13\x0f\x15\x00\x15\x0f\x02\x02\x14\x03\x15\x00\x16\x03\x02\x02\x0f\n\x10\x07\x11\n\x00\x02\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00\x00\x03\n\x15\x06\x01\x00\x00\x02\x03\x12\x1c\x15\x17\x18\x1c\x02\x03\x12\x1c\x15!\x18\x1c\x02\x02\x13\x1c\x15\x19\x17\x1c\x02\x02\x13\x1c\x15\x1f\x17\x1c\x00\x01\x14\x1a\x01\x02\x00\x00\x01\x05\x04\x0b\x02\x00\x00\x00\x00\x06\x03\n\x01\x01\x00\x00\x01\x05\x1f\x04\x02\x00\x00\x00\x00\x06\x1e\x03\x01\x01\x00\x00\x01\x05;\x11\x02\x00\x00\x00\x00\x06:\x10\x01\x01\x00\x00\x00\x02#\x06\x01\x01\x00\x00\x00\x02?\x12\x01\x01\x00\x00',
         b'\x02\x00\x11\x11\x1c\x02\x16\x12\x02\x00\x0e\x10\x14\x04\x12\x11\x00\x17\x08\x17\x0b\x01\x00\x00\x00\x01\n\x17\x01\x02\x00\x00\x00\x01\r\x17\x01\x02\x00\x00\x00\x01\x10\x17\x01\x02\x00\x00\x00\x12\x0b\x11\x05\x04\x00\x00\x00\x16\x0c\x12\x03\x02\x00\x00\x00\x01\r\x12\x01\x01\x00\x00\x02\x00\x0b\x10\x11\x10\x11\x12',
-        b'\x01\x06\x05\x15\x02\x00\x00\x00\x01\x06\x02\x12\x03\x00\x00\x00\x01\x05\x02\x11\x01\x00\x00\x00\x01\x06\x04\r\x01\x00\x00\x00\x00\x05\x07\x17\x01\x01\x00\x00')
+        b'\x01\x06\x05\x15\x02\x00\x00\x00\x01\x06\x02\x12\x03\x00\x00\x00\x01\x05\x02\x11\x01\x00\x00\x00\x01\x06\x04\r\x01\x00\x00\x00\x00\x05\x07\x17\x01\x01\x00\x00',
+        b'\x02\x02\x0b\x10\x0e\x04\x11\x10\x02\x1b\r\x10\x0e\x04\x11\x10\x02\x02\x11\x14\x14\n\x16\x14\x00\x02\x0c\x12\x03\x02\x00\x00\x00\x00\r\x12\x01\x01\x00\x00')
 ARTU = (b'', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e', b'', b'')
 ARTT = (b'', b'', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x02\x17\x0c\x19\n\x18\r\x02\x02\x12\x0c\x14\n\x13\r\x02\x1b+\x1b-\x17/\x1c\x02\x1b0\x1c2\x194\x1d\x02\x1b4\x1d6\x1b7\x1e\x02\x02,\x1a-\x17.\x1a\x02\x021\x1b2\x193\x1b\x00\x02\x16)\x01\x01\x00\x00\x00\x02#)\x01\x01\x00\x00\x02\x1b\x13\x1c\x15\x19\x17\x1c\x02\x1b\x13\x1c\x15\x1f\x17\x1c\x00\x01\x15\x1b\x01\x02\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x02\x17\x0c\x19\n\x18\r\x02\x02\x12\x0c\x14\n\x13\r\x02\x1b+\x1b-\x17/\x1c\x02\x1b0\x1c2\x194\x1d\x02\x1b4\x1d6\x1b7\x1e\x02\x02,\x1a-\x17.\x1a\x02\x021\x1b2\x193\x1b\x00\x02\x16)\x01\x01\x00\x00\x00\x02#)\x01\x01\x00\x00\x02\x1b\x13\x1c\x15\x19\x17\x1c\x02\x1b\x13\x1c\x15\x1f\x17\x1c\x00\x01\x15\x1b\x01\x02\x00\x00\x02\x0f\x11\x14\n\x0b\x15\x11\x02\x10\x11\x14\r\x0e\x14\x12\x00\x02\x05\x0b\x01\x05\x00\x00\x00\x02\x03\r\x05\x01\x00\x00\x00\x02\x1d\x06\x01\x05\x00\x00\x00\x02\x1b\x08\x05\x01\x00\x00\x00\x02:\x14\x01\x05\x00\x00\x00\x028\x16\x05\x01\x00\x00\x00\x01\x05\r\x01\x01\x00\x00\x00\x01\x1d\x08\x01\x01\x00\x00\x00\x01:\x16\x01\x01\x00\x00\x00\x02\x0c\t\x01\x01\x00\x00\x00\x022\x0c\x01\x01\x00\x00\x00\x02>$\x01\x01\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x0f\x11\x14\n\x0b\x15\x11\x02\x10\x11\x14\r\x0e\x14\x12\x00!\x05\x0b\x01\x05\x00\x00\x00!\x03\r\x05\x01\x00\x00\x00!\x1d\x06\x01\x05\x00\x00\x00!\x1b\x08\x05\x01\x00\x00\x00!:\x14\x01\x05\x00\x00\x00!8\x16\x05\x01\x00\x00\x00\x01\x05\r\x01\x01\x00\x00\x00\x01\x1d\x08\x01\x01\x00\x00\x00\x01:\x16\x01\x01\x00\x00\x00!\x0c\t\x01\x01\x00\x00\x00!2\x0c\x01\x01\x00\x00\x00!>$\x01\x01\x00\x00', b'\x02\x0f\x13\x15\x19\x11\x16\x18\x02\x10\x14\x16\x19\x14\x16\x18\x00\x01\r\x12\x01\x01\x00\x00\x02\x0f\x11\x14\n\x0b\x15\x11\x02\x10\x11\x14\r\x0e\x14\x12')
 ARTG = (b'',
@@ -294,7 +298,7 @@ def oval(x, y, s, c, k=0):
 def egg(x, y, s, t):
     # a shaded egg; its pattern shows how rare it is. Small eggs are smaller, shiny ones shine.
     q, t = t // 32, t % 32
-    if t == SMALL:
+    if t >= 30:
         s = max(2, s * 2 // 3)
         y += 2 * s
         t = 0
@@ -368,15 +372,15 @@ def shapes(m, x, y, ch, out):
         if ch == "C" and CAVE[0]:
             out.append((2, (20, 18, 25), 1, (px + 10, py + 17, 5)))
             out.append((3, YELLOW, 0, (px + 8, py + 9, 5, 1)))
-    elif ch in "QS":
-        # a little house: walls, roof, door and a sign (! for quests, a coin for the shop)
+    elif ch in "QSN":
+        # a little house: walls, roof, door and a sign (! for quests, a coin for the shop; Nettle's has none)
         out.append((0, (235, 215, 170), 0, (px + 3, py + 9, 14, 11)))
-        out.append((1, (200, 50, 40) if ch == "Q" else (50, 90, 200), 2, ([px, px + 10, px + 20], [py + 10, py, py + 10])))
+        out.append((1, (200, 50, 40) if ch == "Q" else (50, 90, 200) if ch == "S" else (120, 50, 150), 2, ([px, px + 10, px + 20], [py + 10, py, py + 10])))
         out.append((2, BARK, 0, (px + 8, py + 13, 4, 7)))
         if ch == "Q":
             out.append((3, YELLOW, 0, (px + 9, py + 3, 2, 4)))
             out.append((3, YELLOW, 0, (px + 9, py + 8, 2, 1)))
-        else:
+        elif ch == "S":
             out.append((3, YELLOW, 1, (px + 10, py + 5, 2)))
     elif ch == "M":
         out.append((0, (70, 45, 95), 2, ([px + 3, px + 10, px + 17], [py + 19, py + 2, py + 19])))
@@ -390,6 +394,16 @@ def shapes(m, x, y, ch, out):
         out.append((1, (240, 200, 160), 1, (px + 10, py + 6, 3)))
         out.append((2, (20, 30, 80), 0, (px + 6, py + 1, 8, 3)))
         out.append((2, YELLOW, 0, (px + 7, py + 11, 2, 2)))
+    elif ch == "A":
+        # the arena: a round stone building with dark arches
+        out.append((0, ROCK, 1, (px + 10, py + 11, 9)))
+        out.append((1, (60, 55, 70), 0, (px + 5, py + 12, 11, 6)))
+        out.append((2, RED, 0, (px + 9, py, 2, 5)))
+    elif ch == "V":
+        # a villager; the shirt colour tells them apart
+        out.append((0, ((200, 60, 60), (60, 120, 200), (220, 180, 60))[x % 3], 0, (px + 5, py + 9, 10, 10)))
+        out.append((1, (240, 200, 160), 1, (px + 10, py + 6, 3)))
+        out.append((2, BARK, 0, (px + 7, py + 2, 6, 2)))
     elif ch == "X":
         # a treasure chest from Shen's map
         out.append((0, BARK, 0, (px + 3, py + 8, 14, 10)))
@@ -444,7 +458,7 @@ def egg_roll(g, t):
 
 def kids(g):
     # how full the pen is, in quarters: a dragon or a big egg takes 4, a baby or a small egg 1
-    return sum(1 if d[9] & 8 else 4 for d in g.pen) + sum(1 if e % 32 == SMALL else 4 for e in g.bag)
+    return sum(1 if d[9] & 8 else 4 for d in g.pen) + sum(1 if e % 32 >= 30 else 4 for e in g.bag)
 
 
 def grown(g):
@@ -576,7 +590,9 @@ def bar(x, y, w, v, mx, c):
 
 def foe_art(f):
     n = f[0]
-    if f is BOSS or f is DREAD:
+    if len(f) > 6:
+        drag(162, 42, 2, f[6], f[4], sp=f[7] if len(f) > 7 else 0)
+    elif f is BOSS or f is DREAD:
         drag(162, 42, 2, 22 if f is DREAD else 8, f[4])
     else:
         k = ([m[0] for l in FOES for m in l] + [TITAN[0]]).index(n)
@@ -590,11 +606,11 @@ def foe_screen(f, title):
     ctext(24, title, GOLD)
 
 
-def battle(g, f, lv=0):
+def battle(g, f, lv=0, ar=0):
     # returns True when the monster is beaten, 2 when you got away, False
     # when you died. lv: the monster's level (each level past its land's lowest adds
     # 4 HP, 1 attack and 3 XP); bosses have no level.
-    name, fhp, fat, xp, fc, fe = f
+    name, fhp, fat, xp, fc, fe = f[:6]
     up = lv - LVL[g.m][0] if lv else 0
     fhp, fat, xp = fhp + 4 * up, fat + up, xp + 3 * up
     who = ("Lv " + str(lv) + " " if lv else "") + name
@@ -644,6 +660,8 @@ def battle(g, f, lv=0):
             if f is BOSS:
                 log = "The Wyrm blocks your way!"
                 continue
+            if ar:
+                return 0
             if random.random() < 0.6:
                 return 2
             log = "Couldn't get away."
@@ -654,7 +672,7 @@ def battle(g, f, lv=0):
         else:
             # the secret dragons hit harder: Quantum claw 18-21, breath 21-25 at level 1;
             # Petralith claw 21-25, breath 25-30
-            q = (d[1] == 20) + 2 * (d[1] == 21)
+            q = (d[1] == 20) + 2 * (d[1] == 21) + (d[1] == 24)
             at = 5 + 2 * d[2] + 2 * DT[d[1]][2] + q
             if o == "Claw":
                 dm = at + random.randint(0, 2 + q)
@@ -670,6 +688,13 @@ def battle(g, f, lv=0):
                 else:
                     log = "Breath hits for " + str(dm) + "."
             fhp -= dm
+        if len(f) > 7 and 0 < fhp <= mx // 2:
+            f = (DT[23][0],) + f[1:4] + (DT[23][3],) + f[5:7]
+            name = who = f[0]
+            message(["The shine is flaking", "off... It's just a", "DUSTMITE!"], "Huh?")
+            message(["Uh... a very rare", "Dustmite! Still", "counts! Heh..."], "Sheen")
+            foe_screen(f, who)
+            was = None
         if fhp <= 0:
             msg = []
             for dd in g.pen:
@@ -699,6 +724,10 @@ def battle(g, f, lv=0):
         if d is not None:
             d[3] = max(0, d[3] - dm)
             if d[3] == 0:
+                # in the arena a knocked-out dragon just loses the match
+                if ar:
+                    message([d[0] + " is knocked out!"], "Arena")
+                    return 0
                 g.ride = None
                 message([d[0] + " is too tired to fly.", "You fight on foot!"], "Oh no")
                 foe_screen(f, who)
@@ -783,6 +812,7 @@ def load(g):
     g.warm = 12
     g.spawn = 100
     g.pick = g.ride = g.quest = g.pol = g.shen = None
+    g.deck = {}
     g.coins = g.own = g.book = g.seen = g.face = g.dread = g.glim = g.luck = g.curse = g.buys = g.done = g.cd = g.sad = 0
     g.shn = random.randint(120, 180)
     try:
@@ -809,7 +839,7 @@ def load(g):
         else:
             nm, t = NAMES[s[i] // 32], s[i] % 32
         lv = s[i + 1]
-        mh = 20 + 6 * min(4, DT[t][2]) + 6 * (lv - 1) + 6 * (t == 20) + 16 * (t == 21)
+        mh = 20 + 6 * min(4, DT[t][2]) + 6 * (lv - 1) + 6 * (t == 20) + 16 * (t == 21) + 3 * (t == 24)
         x = s[i + 3] % 4000
         p = x // 200
         g.pen.append([nm, t, lv, mh, mh, s[i + 2], PAINT[p - 1] if p else DT[t][3], x // 20 % 10, x % 20, s[i + 3] // 4000])
@@ -918,7 +948,7 @@ def pen(g):
             # the facts go under the picture, so nothing covers the dragon
             ctext(122, d[0], GOLD)
             ctext(142, (SCH[q][0] + " " if q else "") + t[0])
-            ctext(160, RARE[t[2]] + "  " + ENAME[t[1]] + " element")
+            ctext(160, ("Champion" if d[1] == 24 else RARE[t[2]]) + "  " + ENAME[t[1]] + " element")
             ctext(178, "A baby" if b else "Level " + str(d[2]) + "  HP " + str(d[4]))
             ctext(200, "ENTER: back", GREY)
             while wkey() not in (OK, CLR):
@@ -1145,7 +1175,219 @@ def cop(g):
         g.shn = 5000
 
 
-def shen(g):
+VILLAGER = (("Farmer Bo", "Eggs turn up every/hundred steps or so./Keep walking!|Monsters hide in the/tall grass. Ride over/it if you can.|"
+             "The farther lands have/rarer eggs. And meaner/monsters.|My cow got stepped on/by a dragon. Again.|Stay away from Old/Nettle. She talks/to rocks.|"
+             "Dragons ate my carrots./All of them.|Fire Mountain is hot./Bring a dragon that/likes heat.|Frost Peaks? Brr. Big/monsters up there.|"
+             "I saw a hooded fella/hanging around. Shifty.|Old Nettle tried to sell/me a magic turnip./It was a turnip.|"
+             "Don't eat anything/Nettle gives you./Trust me on this.|Nettle yells at the/moon every night./Can't sleep!"),
+            ("Baker Rose", "Walk into your nest/to heal your dragons.|I once saw a shiny egg./It sparkled like sugar!|Small eggs hatch babies./So cute. Can't ride/them, though.|"
+             "Fresh bread! Oh, you/only have dragon food?|Old Nettle says a black/dragon ate her dragons./Crazy old bat!|Ride your dragon and/you can cross water.|"
+             "My pies win prizes./Dragons steal them.|Level up and your dragon/heals right up!|I sold a cake to a/hooded man. He paid/with a button.|Nettle says my bread/talks to her. It does/NOT talk.|"
+             "They say Nettle was a/great tamer once. Then/she went cuckoo.|Old Nettle owes me for/twelve pies. Twelve!"),
+            ("Little Pip", "When I grow up I'll/tame a Legendary!|The quest hall pays/lots of coins!|Did you know dragons/can fly over lava?|Wanna see my rock?/It's a good rock.|"
+             "Old Nettle tells the/BEST stories! Grown-ups/say she's cuckoo.|Nettle gave me a cookie./It was a rock. I kept/it anyway!|"
+             "I'm gonna name my dragon/Sir Fluffington.|Bet I can run faster/than your dragon!|I found a feather!/...It's a leaf.|Old Nettle says rocks/can sleep. COOL!"))
+
+# Old Nettle: everyone says she's crazy, but her stories are about the secret dragons.
+# Packed: "|" between things she says, "#" between pages, "/" between lines; any of them can come up any time.
+NETTLE = ("Black as night, it was!/Came when I was young/and ate my good dragons.#I'd have run, but it/had an EGG. Hee hee!|"
+          "Purple eyes in the dark!/It only hunts tamers/with big strong dragons.|I beat the purple-eyed/beast once. It left me/something not in books!|"
+          "Never run from the/purple eyes, dearie./It just comes back.|The cold peaks remember/a name carved in stone./My name? No... not mine.|"
+          "A giant of rock with a/heart of gold. I heard/it snore once! Hee!|Only the darkest dragon/can wake the stone one./Remember that, dearie.|"
+          "Five letters on a door,/up where the snow is./Or was it four? Hee!|Stone eggs don't crack./They CRUMBLE. Hee!|"
+          "The moon owes me three/coins. I'll get 'em.|My cat is a dragon./Don't tell him.|Who are you? Go away!/...No, come back. Sit.|"
+          "I ate a rock once./Good rock. Crunchy.|I'm 300 years old./Or 30. One of those.|Don't step on the grass./It's sleeping.|"
+          "I had a husband once./Or was it a goat?/Lovely beard, anyway.|Shh! The kettle is/listening.|I named all the clouds./That one's Gerald.|"
+          "Soup is just wet food./Think about it, dearie.|My left shoe is lucky./My right shoe is a liar.|Hee hee hee hee hee!/...What were we saying?|"
+          "Little Pip visits me./Good child. Brings me/rocks. Tasty rocks.|Is it Tuesday? It/smells like Tuesday.|I talk to my plants./They never talk back./Rude.")
+
+
+def nettle(g):
+    cls(NIGHT)
+    col((110, 50, 140))
+    fill_poly([125, 160, 200], [200, 80, 200])
+    circ(150, 70, 20, WHITE)
+    circ(132, 60, 10, WHITE)
+    circ(168, 58, 10, WHITE)
+    circ(150, 78, 15, (225, 190, 160))
+    rect(143, 76, 4, 3, BLACK)
+    rect(155, 76, 4, 3, BLACK)
+    rect(205, 110, 4, 90, BARK)
+    rect(196, 106, 13, 4, BARK)
+    ctext(24, "OLD NETTLE", GOLD)
+    ctext(196, "Eh? Who's there?")
+    while wkey() not in (OK, CLR):
+        pass
+    # she knows when you've got one of the secret dragons (book bits 33, 34: she's seen it)
+    k = [d[1] for d in g.pen]
+    if 20 in k and not g.book >> 33 & 1:
+        g.book |= 1 << 33
+        P = "THE BLACK DRAGON!/I TOLD them! Nobody/believed old Nettle!#Take my old crown,/dearie. I kept it/for this day."
+        if g.own >> 4 & 1:
+            g.coins += 150
+        g.own |= 1 << 4
+    elif 21 in k and not g.book >> 34 & 1:
+        g.book |= 1 << 34
+        P = "The stone one... AWAKE!/Hee hee hee! I KNEW it!#Take these shiny/stones. Five of 'em./No use to me."
+        g.glim += 5
+    else:
+        P = NETTLE.split("|")
+        P = P[deal(g, "N", len(P))]
+    for p in P.split("#"):
+        message(p.split("/"), "Old Nettle")
+
+
+def talk(g, x):
+    # the village people: tips and chatter
+    n, L = VILLAGER[(x // 5) % 3]
+    L = L.split("|")
+    message(L[deal(g, n, len(L))].split("/"), n)
+
+
+def deal(g, k, n):
+    # every line once (in a shuffled order) before any of them comes up again
+    d = g.deck.setdefault(k, [])
+    if not d:
+        d += list(range(n))
+        shuffle(d)
+    return d.pop()
+
+
+# the arena's 10 tamers: name, dragon kind, its level, what they say ("/" = new line, "#" = next box)
+TAMERS = (("Timmy", 0, 2, "Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak is gonna/toast you!/...Probably."),
+          ("Lulu", 4, 4, "I'm Lulu. Aww, is/that your dragon?/It's so tiny!"),
+          ("Rocco", 6, 5, "Name's Rocco.#Rocks beat everything./That's science."),
+          ("Mira", 9, 7, "I'm Mira. I've never/lost. Not once. Ever./Don't ruin it."),
+          ("Dex", 7, 8, "Dex. Remember it,/because you'll be/crying it later."),
+          ("Captain Vex", 14, 11, "Captain Vex! I've/beaten 100 tamers./You're number 101."),
+          ("Duchess Ivy", 18, 13, "I am Duchess Ivy.#Kneel before my/Rootwyrm, peasant!"),
+          ("Grim", 16, 14, "...I'm Grim.#...Your dragon looks/tired already."),
+          ("Sheen", 23, 15, "A hooded tamer with/yellow eyes steps up.#Name's Sheen. NOT/Shen. Never heard of/him. Heh.#Behold my super rare/GOLDEN DRAGON!/Shiny, huh? Heh heh."),
+          ("Aurora", 19, 16, "I'm Aurora, the/champion. So you/made it this far.#Impressive. Now watch/me end it."))
+
+
+def arena(g):
+    # 10 tamers in a row; your partner is healed before every match. Lose (or run) and the
+    # prize is what you've earned so far. The first full win gives the Crestwyrm egg (book bit 35).
+    d = g.pick
+    if d is None:
+        message(["Come back when you", "have a grown dragon!"], "Arena")
+        return
+    if choose("THE ARENA", ["Enter tournament", "Leave"]) != 0:
+        return
+    w = 0
+    for n, k, lv, say in TAMERS:
+        cls(NIGHT)
+        ctext(24, "ROUND " + str(w + 1) + " OF 10", GOLD)
+        for p in say.split("#"):
+            message(p.split("/"), n)
+        d[3] = d[4]
+        g.ride = d
+        t = DT[k]
+        r = 4 if k == 23 else t[2]
+        f = (t[0], 20 + 6 * r + 6 * lv, 4 + lv + 2 * r, 3 * lv, t[3], t[1], k)
+        if k == 23:
+            # Sheen's "Golden Dragon" is a polished Dustmite; the shine flakes off at half health
+            f = ("Gold Dragon",) + f[1:4] + (GOLD,) + f[5:] + (2,)
+        if not battle(g, f, 0, 1):
+            break
+        w += 1
+    d[3] = d[4]
+    c = (0, 15, 30, 50, 75, 100, 130, 165, 200, 250, 300)[w]
+    m = ["You won " + str(w) + " of 10 matches.", "+" + str(c) + " coins!"]
+    if w > 6:
+        g.glim += 1
+        m.append("And a Glimmer Stone!")
+    if w == 10:
+        if not g.book >> 35 & 1 and len(g.bag) < 5 and kids(g) + 4 <= 40:
+            g.book |= 1 << 35
+            g.bag.append(24)
+            m = ["YOU ARE THE CHAMPION!", "+300 coins and a", "Champion egg!"]
+        else:
+            c = 400
+            g.glim += 1
+            m = ["CHAMPION AGAIN!", "+400 coins and two", "Glimmer Stones!"]
+    g.coins += c
+    message(m, "Arena")
+
+
+def deliver(g):
+    # Shen's package: hand it over for coins, or peek. Take what's inside and Shen finds out
+    # (book bit 32); put it back and it's delivered like nothing happened.
+    message(["A hooded stranger is", "waiting for Shen's", "package."], "Village")
+    c = choose("The package", ["Hand it over", "Peek inside"])
+    g.book &= ~(1 << 24)
+    if c == 1:
+        r = random.random()
+        e = n = 0
+        # rarely an egg: a shiny Rare (or rarer) egg, a small Rare+ egg, or now and then a small shiny
+        if r < 0.15:
+            r = random.random()
+            e = 30 + 32 * random.randint(1, 4) if r < 0.08 else 30 if r < 0.4 else \
+                random.choice([i for i in range(20) if DT[i][2] >= 2]) + 32 * random.randint(1, 4)
+            m = ["An egg! It's a" + (" small" if e % 32 == 30 else ""), ("shiny " if e > 31 else "") + "egg, wow."]
+        elif r < 0.6:
+            n = random.randint(30, 100)
+            m = [str(n) + " coins!"]
+        else:
+            m = None
+        if m:
+            message(["You peek inside..."] + m, "Package")
+            if e and (len(g.bag) >= 5 or kids(g) + 4 > 40):
+                message(["No room for an egg.", "You close the package."], "Package")
+            elif choose("Take it?", ["Take it", "Leave it"]) == 0:
+                g.book |= 1 << 32
+                g.coins += n
+                if e:
+                    g.bag.append(e)
+                message(["You take it. The", "stranger snatches the", "package and runs off."], "Package")
+                return
+        else:
+            message(["You peek inside...", "Just rocks!", "You close it up again."], "Package")
+    n = random.randint(60, 120)
+    g.coins += n
+    n = str(n)
+    message(random.choice(["He nods and pays you/" + n + " coins. Shen keeps/his word. This time.",
+                           "The stranger grunts and/tosses you " + n + " coins./Then he's gone.",
+                           "\"Took you long enough.\"/He pays " + n + " coins/and vanishes."]).split("/"), "Village")
+
+
+def found(g, ch, nx, ny=0):
+    # V: a villager, N: Old Nettle, D: Shen's package reaches the village, E: an egg, X: a treasure chest
+    if ch == "V":
+        return talk(g, nx)
+    if ch == "N":
+        return nettle(g)
+    if ch == "A":
+        return arena(g)
+    if ch == "D":
+        return deliver(g)
+    if ch == "E" and (len(g.bag) >= 5 or kids(g) + (1 if EGGS.get((g.m, nx, ny), 0) % 32 == SMALL else 4) > 40):
+        message(["Your backpack is full."] if len(g.bag) >= 5 else ["No room in your pen.", "Let a dragon go first."], "Egg")
+        return
+    ox, oy = g.x, g.y
+    g.x, g.y = nx, ny
+    mp = g.maps[g.m]
+    mp[ny][nx] = "."
+    cells(g, [(ox, oy), (nx, ny)], True)
+    if ch == "E":
+        e = EGGS.pop((g.m, nx, ny), 0)
+        if not g.bag:
+            g.warm = 12
+        g.bag.append(e)
+        hud(g)
+        message(["You found a" + (" shiny" if e > 31 else "") + " small egg!", "It's in your backpack."] if e % 32 == SMALL else
+                ["You found a" + (" shiny" if e > 31 else "n") + " egg with", RARE[DT[e % 32][2]] + " spots! It's in", "your backpack."], "An egg!")
+    elif random.random() < 0.33:
+        message(["You dig it open...", "It's empty! Just dirt."], "Treasure")
+    else:
+        n = random.randint(30, 80) + 20 * g.m
+        g.coins += n
+        hud(g)
+        message(["You dig it open...", str(n) + " coins inside!"], "Treasure")
+
+
+def shen(g, ch="M", x=0):
     # Shady Shen. The game never tells you, but: after your first visit he sometimes
     # picks your pocket, after your first buy 1 thing in 10 is a fake, and the
     # Golden Coin makes coins go missing more often (book bit 27 = met, 28 = bought)
@@ -1166,12 +1408,27 @@ def shen(g):
     rect(214, 150, 16, 4, (110, 75, 40))
     ctext(24, "SHADY SHEN", GOLD)
     mad = g.book >> 31 & 1
-    ctext(196, random.choice(("You! You told on me!", "Prices went up. Wonder why.", "I remember you, snitch.")) if mad else random.choice(("Psst... over here.", "Rare goods. Very real.", "Don't ask where I got these.",
-                              "Best prices in all the lands.", "You look like a smart tamer.",
-                              "Nice dragon. Shame if it got sparkly.")))
+    ctext(196, random.choice(("You! You told on me!|Prices went up. Wonder why.|I remember you, snitch." if mad else "Psst... over here.|Rare goods. Very real.|"
+                              "Don't ask where I got these.|Best prices in all the lands.|You look like a smart tamer.|"
+                              "Nice dragon. Shame if it got sparkly.").split("|")))
     while wkey() not in (OK, CLR):
         pass
     # you didn't tell Officer Brick about him (book bit 22): one thing for free
+    if g.book >> 32 & 1:
+        g.book &= ~(1 << 32)
+        message(["You opened my package!", "Shen always knows. Heh.", "That'll cost you."], "Shady Shen")
+        # told the officer you'd never seen him? Then you can threaten him instead of paying
+        if g.book >> 30 & 1 and not mad and choose("Shen wants coins", ["Pay him", "Threaten him"]) == 1:
+            message(["\"Don't charge me unless", "you want to be", "arrested!\""], "You")
+            message(["...Fine. FINE.", "We're even.", "This time."], "Shady Shen")
+        else:
+            g.coins -= min(g.coins, random.randint(20, 40))
+    # now and then a job: take a package to the village (book bit 24)
+    elif met and not g.book >> 24 & 1 and random.random() < 0.15:
+        message(["Psst... got a job. Take", "this package to the", "village. And DON'T peek."], "Shady Shen")
+        if choose("Take the job?", ["Sure", "No thanks"]) == 0:
+            g.book |= 1 << 24
+            message(["Someone will be waiting", "there for it. Heh."], "Shady Shen")
     free = g.book >> 22 & 1
     if free:
         message(["Psst... you didn't tell", "the officer about me.", "Pick one thing. Free."], "Shady Shen")
@@ -1189,7 +1446,7 @@ def shen(g):
             glim(g)
             continue
         if c < 0 or c >= z:
-            message([random.choice(("No refunds. Ever.", "You didn't see me.", "Come back soon, friend."))], "Shady Shen")
+            message([random.choice("No refunds. Ever.|You didn't see me.|Come back soon, friend.".split("|"))], "Shady Shen")
             return
         n, p = S[c]
         p *= 1 - free
@@ -1341,9 +1598,9 @@ def backpack(g):
     for i in range(len(g.bag)):
         v = g.bag[i]
         egg(40 + i * 60, 90, 3, v)
-        r = DT[v % 32 % SMALL][2]
-        text(16 + i * 60, 150, "Small" if v % 32 == SMALL else "Shiny" if v > 31 else "???" if r > 4 else RARE[r][:5],
-             SCH[v // 32][2] if v > 31 else WHITE if v % 32 == SMALL else RCOL[r])
+        r = DT[v % 32 % 30][2]
+        text(16 + i * 60, 150, "Small" if v % 32 >= 30 else "Shiny" if v > 31 else "???" if r > 4 else RARE[r][:5],
+             SCH[v // 32][2] if v > 31 else WHITE if v % 32 >= 30 else RCOL[r])
     if g.glim:
         text(6, 170, "Glimmer Stones: " + str(g.glim) + " (ENTER: use)", GOLD)
     if g.bag:
@@ -1362,18 +1619,18 @@ def backpack(g):
 def book(g):
     # one page a species; a page fills in once you have hatched that kind.
     # The secret page only exists after you have hatched the secret dragon.
-    P = list(range(20)) + [k for k in (20, 21, 23) if g.book >> k & 1]
+    P = list(range(20)) + [k for k in (20, 21, 23, 24) if g.book >> k + 12 * (k == 24) & 1]
     n = len(P)
     i = 0
     while True:
         cls(NIGHT)
         t = DT[P[i]]
-        got = g.book >> P[i] & 1
+        got = g.book >> P[i] + 12 * (P[i] == 24) & 1
         ctext(22, "DRAGON BOOK  " + str(i + 1) + "/" + str(n), GOLD)
         if got:
             drag(102, 30, 2, P[i], t[3])
             ctext(150, t[0], WHITE)
-            ctext(172, RARE[t[2]] + " " + ENAME[t[1]], RCOL[t[2]])
+            ctext(172, ("Champion" if P[i] == 24 else RARE[t[2]]) + " " + ENAME[t[1]], RCOL[t[2]])
         else:
             oval(160, 90, 4, (30, 32, 55))
             ctext(98, "?", GREY)
@@ -1450,10 +1707,10 @@ def hatch(g):
     q, e = v // 32, v % 32
     # the "shiny" Dustmite egg was only dusty: the dragon inside is never shiny
     q *= e != 23
-    b = e == SMALL
+    b = e >= 30
     if b:
-        # a baby of a kind you have discovered
-        e = random.choice([i for i in range(22) if g.book >> i & 1] or [0])
+        # a baby of a kind you have discovered (30: of a Rare or rarer kind, from Shen's package)
+        e = random.choice([i for i in range(20) if DT[i][2] >= 2] if e == 30 else [i for i in range(22) if g.book >> i & 1] or [0])
     t = DT[e]
     cls(NIGHT)
     ctext(24, "The egg is cracking!", GOLD)
@@ -1472,16 +1729,17 @@ def hatch(g):
     else:
         drag(73, 30, 3, e, t[3], 0, 0, None, 0, q)
     rect(0, 182, 320, 28, NIGHT)
-    ctext(200, "A baby " + (SCH[q][0] + " " if q else "") + t[0] + "!" if b else (SCH[q][0] + " " if q else "" if t[2] > 4 else RARE[t[2]] + " ") + t[0] + " dragon!",
+    ctext(200, "A baby " + (SCH[q][0] + " " if q else "") + t[0] + "!" if b else (SCH[q][0] + " " if q else "" if t[2] > 4 else ("Champion" if e == 24 else RARE[t[2]]) + " ") + t[0] + " dragon!",
           SCH[q][2] if q else RCOL[t[2]])
     pause(1.2)
     names = sample(NAMES, 4)
     i = choose("Name your " + t[0] + ":", names + ["Type a name"])
     nm = names[max(0, i)] if i < 4 else typed(t[0]) or names[0]
-    mh = 20 + 6 * min(4, t[2]) + 6 * (e == 20) + 16 * (e == 21)
+    mh = 20 + 6 * min(4, t[2]) + 6 * (e == 20) + 16 * (e == 21) + 3 * (e == 24)
     d = [nm, e, 1, mh, mh, 0, t[3], 0, 0, q + 8 * b]
     g.pen.append(d)
     msg = [nm + " joins your pen!"]
+    e += 12 * (e == 24)
     if not g.book >> e & 1:
         g.book |= 1 << e
         msg.append("New page in your book!")
@@ -1679,6 +1937,11 @@ def play():
                     if g.shen:
                         shen_off(g)
                     g.m = m
+                    # bringing Shen's package to the village (book bit 24)
+                    if m == 3 and g.book >> 24 & 1:
+                        draw_map(g)
+                        found(g, "D", 0)
+                        save(g)
                     if m < 3:
                         g.seen = max(g.seen, m)
                     g.x = 15 - g.x
@@ -1702,44 +1965,19 @@ def play():
                 return
             draw_map(g)
             continue
-        if ch == "E" and (len(g.bag) >= 5 or kids(g) + (1 if EGGS.get((g.m, nx, ny), 0) % 32 == SMALL else 4) > 40):
-            draw_map(g)
-            message(["Your backpack is full."] if len(g.bag) >= 5 else ["No room in your pen.", "Let a dragon go first."], "Egg")
+        if ch in "EX":
+            found(g, ch, nx, ny)
             draw_map(g, True)
             continue
-        if ch in "MO":
-            # talk to the merchant (or the officer) without stepping on him
-            shen(g)
+        if ch in "MOVNA":
+            # talk to the merchant (or the officer, a villager, Old Nettle, the arena) without stepping on them
+            (found if ch in "VNA" else shen)(g, ch, nx)
             # what you bought is saved right away
             save(g)
             draw_map(g)
             continue
         ox, oy = g.x, g.y
         g.x, g.y = nx, ny
-        if ch == "E":
-            mp[ny][nx] = "."
-            cells(g, [(ox, oy), (nx, ny)], True)
-            e = EGGS.pop((g.m, nx, ny), 0)
-            if not g.bag:
-                g.warm = 12
-            g.bag.append(e)
-            hud(g)
-            message(["You found a" + (" shiny" if e > 31 else "") + " small egg!", "It's in your backpack."] if e % 32 == SMALL else
-                    ["You found a" + (" shiny" if e > 31 else "n") + " egg with", RARE[DT[e % 32][2]] + " spots! It's in", "your backpack."], "An egg!")
-            draw_map(g, True)
-            continue
-        if ch == "X":
-            mp[ny][nx] = "."
-            cells(g, [(ox, oy), (nx, ny)], True)
-            if random.random() < 0.33:
-                message(["You dig it open...", "It's empty! Just dirt."], "Treasure")
-            else:
-                n = random.randint(30, 80) + 20 * g.m
-                g.coins += n
-                hud(g)
-                message(["You dig it open...", str(n) + " coins inside!"], "Treasure")
-            draw_map(g, True)
-            continue
         if ch == "Q":
             board(g)
             draw_map(g)

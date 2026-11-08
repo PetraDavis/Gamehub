@@ -1,6 +1,10 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
 GREY=(110,110,110)
+def shuffle(a):
+ for i in range(len(a)-1,0,-1):
+  j=random.randint(0,i)
+  a[i],a[j]=(a[j],a[i])
 def pause(s):
  time.sleep(s)
 def choose(title,opts,sel=0):
@@ -33,8 +37,18 @@ def choose(title,opts,sel=0):
 G_EVIL=0.12 if G_TEST else 0.004
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
+G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient','Junk')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
+G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
+def G_egg_type(m,up=0):
+ r=random.randint(0,999)
+ c=((4,30,110,330),(10,50,180,450),(15,80,260,570))[min(m,2)]
+ rar=4 if r<c[0]else 3 if r<c[1]else 2 if r<c[2]else 1 if r<c[3]else 0
+ rar=min(4,rar+up)
+ return random.choice([i for i in range(20)if G_DT[i][2]==rar])
+def G_kids(g):
+ return sum((1 if d[9]&8 else 4 for d in g.pen))+sum((1 if e%32>=30 else 4 for e in g.bag))
 def G_grown(g):
  for d in g.pen:
   if not d[9]&8:
@@ -165,6 +179,10 @@ def G_play():
      if g.shen:
       G_shen_off(g)
      g.m=m
+     if m==3 and g.book>>24&1:
+      G_draw_map(g)
+      G_found(g,'D',0)
+      G_save(g)
      if m<3:
       g.seen=max(g.seen,m)
      g.x=15-g.x
@@ -188,41 +206,17 @@ def G_play():
     return
    G_draw_map(g)
    continue
-  if ch=='E'and(len(g.bag)>=5 or G_kids(g)+(1 if G_EGGS.get((g.m,nx,ny),0)%32==G_SMALL else 4)>40):
-   G_draw_map(g)
-   message(['Your backpack is full.']if len(g.bag)>=5 else['No room in your pen.','Let a dragon go first.'],'Egg')
+  if ch in 'EX':
+   G_found(g,ch,nx,ny)
    G_draw_map(g,True)
    continue
-  if ch in 'MO':
-   G_shen(g)
+  if ch in 'MOVNA':
+   (G_found if ch in 'VNA'else G_shen)(g,ch,nx)
    G_save(g)
    G_draw_map(g)
    continue
   ox,oy=(g.x,g.y)
   g.x,g.y=(nx,ny)
-  if ch=='E':
-   mp[ny][nx]='.'
-   G_cells(g,[(ox,oy),(nx,ny)],True)
-   e=G_EGGS.pop((g.m,nx,ny),0)
-   if not g.bag:
-    g.warm=12
-   g.bag.append(e)
-   G_hud(g)
-   message(['You found a'+(' shiny'if e>31 else '')+' small egg!',"It's in your backpack."]if e%32==G_SMALL else['You found a'+(' shiny'if e>31 else 'n')+' egg with',G_RARE[G_DT[e%32][2]]+" spots! It's in",'your backpack.'],'An egg!')
-   G_draw_map(g,True)
-   continue
-  if ch=='X':
-   mp[ny][nx]='.'
-   G_cells(g,[(ox,oy),(nx,ny)],True)
-   if random.random()<0.33:
-    message(['You dig it open...',"It's empty! Just dirt."],'Treasure')
-   else:
-    n=random.randint(30,80)+20*g.m
-    g.coins+=n
-    G_hud(g)
-    message(['You dig it open...',str(n)+' coins inside!'],'Treasure')
-   G_draw_map(g,True)
-   continue
   if ch=='Q':
    G_board(g)
    G_draw_map(g)
