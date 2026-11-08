@@ -1307,12 +1307,9 @@ def shen(g, ch="M", x=0):
     rect(214, 150, 16, 4, (110, 75, 40))
     ctext(24, "SHADY SHEN", GOLD)
     mad = g.book >> 31 & 1
-    ctext(196, random.choice(("You! You told on me!|Prices went up. Wonder why.|I remember you, snitch.|Snitches pay double.|"
-                              "Jail food was awful.|Oh. It's YOU." if mad else "Psst... over here.|Rare goods. Very real.|"
+    ctext(196, random.choice(("You! You told on me!|Prices went up. Wonder why.|I remember you, snitch." if mad else "Psst... over here.|Rare goods. Very real.|"
                               "Don't ask where I got these.|Best prices in all the lands.|You look like a smart tamer.|"
-                              "Nice dragon. Shame if it got sparkly.|Fresh stock. Mostly legal.|Shh! Not so loud.|"
-                              "Got coins? I got stuff.|Everything's real. Probably.|My prices are a steal. Heh.|"
-                              "Back again? Smart choice.").split("|")))
+                              "Nice dragon. Shame if it got sparkly.").split("|")))
     while wkey() not in (OK, CLR):
         pass
     # you didn't tell Officer Brick about him (book bit 22): one thing for free
@@ -1348,8 +1345,7 @@ def shen(g, ch="M", x=0):
             glim(g)
             continue
         if c < 0 or c >= z:
-            message([random.choice("No refunds. Ever.|You didn't see me.|Come back soon, friend.|Tell no one.|"
-                                    "Pleasure doing business.|Watch your pockets. Heh.".split("|"))], "Shady Shen")
+            message([random.choice("No refunds. Ever.|You didn't see me.|Come back soon, friend.".split("|"))], "Shady Shen")
             return
         n, p = S[c]
         p *= 1 - free
