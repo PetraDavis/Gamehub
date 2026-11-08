@@ -30,9 +30,9 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
+G_EVIL=0.12 if G_TEST else 0.004
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
-G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 def G_egg_type(m,up=0):
  r=random.randint(0,999)
@@ -40,16 +40,6 @@ def G_egg_type(m,up=0):
  rar=4 if r<c[0]else 3 if r<c[1]else 2 if r<c[2]else 1 if r<c[3]else 0
  rar=min(4,rar+up)
  return random.choice([i for i in range(20)if G_DT[i][2]==rar])
-def G_base(m,ch):
- if ch=='~':
-  return G_WATER
- if ch=='L':
-  return G_LAVA
- if ch=='"':
-  return G_TALL[m]
- if ch=='=':
-  return(190,160,110)
- return G_GROUND[m]
 def G_grown(g):
  for d in g.pen:
   if not d[9]&8:
@@ -87,6 +77,13 @@ def G_draw_map(g,after_msg=False):
  G_CAVE[0]=not g.book>>26&1 and any((d[1]==20 and(not d[9]&8)for d in g.pen))
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
+class G_Game:
+ pass
+def G_pack(nm):
+ n=0
+ for ch in nm.upper():
+  n=n*27+G_ABC.index(ch)+1
+ return n
 def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
  big=[d for d in g.pen if not d[9]&8]
@@ -179,7 +176,8 @@ def G_play():
   if k in(OK,SECOND):
    c=G_menu(g)
    if c:
-    (G_backpack if c==1 else G_book)(g)
+    if(G_backpack if c==1 else G_book)(g)and c==1:
+     G_glim(g)
     G_draw_map(g)
    continue
   dx,dy={LEFT:(-1,0),RIGHT:(1,0),UP:(0,-1),DOWN:(0,1)}.get(k,(0,0))
@@ -228,6 +226,7 @@ def G_play():
    continue
   if ch=='M':
    G_shen(g)
+   G_save(g)
    G_draw_map(g)
    continue
   ox,oy=(g.x,g.y)
@@ -261,7 +260,8 @@ def G_play():
     c=G_nest(g)
     if not c:
      break
-    (G_backpack if c==1 else G_book if c==2 else G_glim)(g)
+    if(G_backpack if c==1 else G_book if c==2 else G_glim)(g)and c==1:
+     G_glim(g)
    G_draw_map(g)
    continue
   G_cells(g,[(ox,oy),(nx,ny)],True)

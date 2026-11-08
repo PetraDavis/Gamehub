@@ -1010,6 +1010,7 @@ def glim(g):
     cls(NIGHT)
     drag(102, 10, 2, d[1], d[6], d[7], d[8], None, 0, q) if not d[9] & 8 else drag(131, 45, 1, d[1], d[6], 0, 0, None, 0, q)
     message([d[0] + " sparkles!", "Now a " + SCH[q][0] + " " + DT[d[1]][0] + "!"], "Shiny!")
+    save(g)
 
 
 def zl(title, opts):
@@ -1179,12 +1180,19 @@ def backpack(g):
         r = DT[v % 32 % SMALL][2]
         text(16 + i * 60, 150, "Small" if v % 32 == SMALL else "Shiny" if v > 31 else "???" if r > 4 else RARE[r][:5],
              SCH[v // 32][2] if v > 31 else WHITE if v % 32 == SMALL else RCOL[r])
+    if g.glim:
+        text(6, 170, "Glimmer Stones: " + str(g.glim) + " (ENTER: use)", GOLD)
     if g.bag:
-        text(6, 186, "The first egg hatches in " + str(g.warm), WHITE)
+        text(6, 188, "The first egg hatches in " + str(g.warm), WHITE)
     n = len([i for i in range(1, 17) if g.own >> i & 1])
-    text(6, 204, "Accessories: " + str(n) + " of 16", GREY)
-    while wkey() not in (OK, CLR):
-        pass
+    text(6, 206, "Accessories: " + str(n) + " of 16", GREY)
+    # True: use the Glimmer Stones (play() does it, after this file leaves memory)
+    while True:
+        k = wkey()
+        if k == CLR or k == OK and not g.glim:
+            return False
+        if k == OK:
+            return True
 
 
 def book(g):
@@ -1509,7 +1517,8 @@ def play():
         if k in (OK, SECOND):
             c = menu(g)
             if c:
-                (backpack if c == 1 else book)(g)
+                if (backpack if c == 1 else book)(g) and c == 1:
+                    glim(g)
                 draw_map(g)
             continue
         dx, dy = {LEFT: (-1, 0), RIGHT: (1, 0), UP: (0, -1), DOWN: (0, 1)}.get(k, (0, 0))
@@ -1560,6 +1569,8 @@ def play():
         if ch == "M":
             # talk to the merchant without stepping on him
             shen(g)
+            # what you bought is saved right away
+            save(g)
             draw_map(g)
             continue
         ox, oy = g.x, g.y
@@ -1594,7 +1605,8 @@ def play():
                 c = nest(g)
                 if not c:
                     break
-                (backpack if c == 1 else book if c == 2 else glim)(g)
+                if (backpack if c == 1 else book if c == 2 else glim)(g) and c == 1:
+                    glim(g)
             draw_map(g)
             continue
         cells(g, [(ox, oy), (nx, ny)], True)
