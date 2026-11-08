@@ -18,21 +18,27 @@ def free(step):
 # a run that stopped with an error can leave the game's files in memory
 # (and stale, even after new ones are sent): clear every GH file first
 drop([k for k in sys.modules if k[:2]=="GH" and k!=__name__])
-while True:
- free("start")
+# the game's files are only touched inside these small functions, so once
+# one returns nothing points at that file and dropping it frees the memory
+def front():
  import GHDRAGOH
  free("home loaded")
- c=GHDRAGOH.G_front()
- GHDRAGOH=None
- drop(["GHDRAGOH"])
- free("home dropped")
- if c<0:
-  break
- try:
-  import GHDRAGOP
-  free("game loaded")
-  GHDRAGOP.G_back()
- finally:
-  GHDRAGOP=None
-  drop([k for k in sys.modules if k[:2]=="GH" and k!=__name__])
+ return GHDRAGOH.G_front()
+def back():
+ import GHDRAGOP
+ free("game loaded")
+ GHDRAGOP.G_back()
+def run():
+ while True:
+  free("start")
+  c=front()
+  drop(["GHDRAGOH"])
+  free("home dropped")
+  if c<0:
+   break
+  try:
+   back()
+  finally:
+   drop([k for k in sys.modules if k[:2]=="GH" and k!=__name__])
+run()
 RAN=True
