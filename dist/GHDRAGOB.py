@@ -1,11 +1,7 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-UP=25
-def G_egg_type(m,up=0):
- r=random.randint(0,999)
- rar=4 if r<4+2*m else 3 if r<30+10*m else 2 if r<110+25*m else 1 if r<330+40*m else 0
- rar=min(4,rar+up)
- return random.choice([i for i in range(20)if G_DT[i][2]==rar])
+G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^C....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
+G_ARTU=(b'',b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e',b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e',b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e',b'\x02\x10\x14\x14\x16\x10\x18\x15\x02\x10\x17\x16\x19\x12\x1b\x18\x02\x10+\x1b-\x17/\x1c\x02\x100\x1c2\x194\x1d\x02\x104\x1d6\x1b7\x1e',b'',b'')
 def G_drag(x,y,s,t,c,head=0,body=0,out=None,f=0,sp=0):
  P=G_PAL+[lt(c,0.45),dk(c,0.6),c]+G_PAL2+[lt(c,0.2),dk(c,0.4)]+G_PAL3
  if sp:

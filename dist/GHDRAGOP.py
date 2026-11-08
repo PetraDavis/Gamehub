@@ -30,11 +30,26 @@ def choose(title,opts,sel=0):
    c=GOLD if i==sel else WHITE
    edge(60,y,200,24,8,c)
    ctext(y+18,opts[i],c)
-G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^C....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
+G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
-G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),(('Lava Imp',26,7,12,(240,120,30),0),('Rock Troll',32,7,14,(120,110,90),2)),(('Ice Wraith',34,9,16,(150,200,240),1),('Snow Yeti',42,9,18,(235,235,245),3)))
+def G_egg_type(m,up=0):
+ r=random.randint(0,999)
+ c=((4,30,110,330),(10,50,180,450),(15,80,260,570))[min(m,2)]
+ rar=4 if r<c[0]else 3 if r<c[1]else 2 if r<c[2]else 1 if r<c[3]else 0
+ rar=min(4,rar+up)
+ return random.choice([i for i in range(20)if G_DT[i][2]==rar])
+def G_base(m,ch):
+ if ch=='~':
+  return G_WATER
+ if ch=='L':
+  return G_LAVA
+ if ch=='"':
+  return G_TALL[m]
+ if ch=='=':
+  return(190,160,110)
+ return G_GROUND[m]
 def G_grown(g):
  for d in g.pen:
   if not d[9]&8:
@@ -72,8 +87,6 @@ def G_draw_map(g,after_msg=False):
  G_CAVE[0]=not g.book>>26&1 and any((d[1]==20 and(not d[9]&8)for d in g.pen))
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
-class G_Game:
- pass
 def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
  big=[d for d in g.pen if not d[9]&8]
@@ -280,7 +293,7 @@ def G_play():
    if not G_evil(g):
     return
    continue
-  if ch=='"'and steps>3 and(random.random()<0.2):
+  if ch=='"'and steps>3 and(random.random()<0.2+0.08*min(g.m,2)):
    steps=0
    lo,hi=G_LVL[g.m]
    if not G_battle(g,random.choice(G_FOES[g.m]),lo+min(hi-lo,int(random.random()**1.6*(hi-lo+1)))):

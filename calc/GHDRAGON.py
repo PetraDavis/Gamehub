@@ -202,10 +202,12 @@ def beats(a, b):
 
 
 def egg_type(m, up=0):
-    # most eggs are common; rare ones are very rare. Further lands are a bit luckier.
-    # Land 1: legendary 0.4%, epic 2.6%, rare 8%, uncommon 22%, common 67%
+    # most eggs are common; rare ones are very rare. Further lands are much luckier.
+    # Green Valley: legendary 0.4%, epic 2.6%, rare 8%, uncommon 22%, common 67%
+    # Fire Mountain: 1%, 4%, 13%, 27%, 55%. Frost Peaks: 1.5%, 6.5%, 18%, 31%, 43%
     r = random.randint(0, 999)
-    rar = 4 if r < 4 + 2 * m else 3 if r < 30 + 10 * m else 2 if r < 110 + 25 * m else 1 if r < 330 + 40 * m else 0
+    c = ((4, 30, 110, 330), (10, 50, 180, 450), (15, 80, 260, 570))[min(m, 2)]
+    rar = 4 if r < c[0] else 3 if r < c[1] else 2 if r < c[2] else 1 if r < c[3] else 0
     rar = min(4, rar + up)
     return random.choice([i for i in range(20) if DT[i][2] == rar])
 
@@ -1628,7 +1630,8 @@ def play():
             if not evil(g):
                 return
             continue
-        if ch == '"' and steps > 3 and random.random() < 0.2:
+        # monsters hide in the tall grass, and further lands have more of them
+        if ch == '"' and steps > 3 and random.random() < 0.2 + 0.08 * min(g.m, 2):
             steps = 0
             # a level in this land's range; higher levels are rarer
             lo, hi = LVL[g.m]
