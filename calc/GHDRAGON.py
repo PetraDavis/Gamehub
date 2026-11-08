@@ -1269,6 +1269,14 @@ TAMERS = (("Timmy", 0, 2, "Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak
           ("Aurora", 19, 16, "I'm Aurora, the/champion. So you/made it this far.#Impressive. Now watch/me end it."))
 
 
+# what some tamers say when your dragon is shiny, one line for each kind (Silver, Gold, Neon, Purple-blue: rarest last)
+SHINE = {"Lulu": "Ooh, a silver one!/Okay, that's kind/of cute.|Is that GOLD? Fine,/it's not tiny./It's adorable.|It GLOWS?! I want/one so bad! This/isn't fair!|Purple AND blue?!/Only in books! Can/I pet it? PLEASE?",
+         "Mira": "Silver. Nice./Still losing, though.|Gold scales... okay,/that's pretty cool./Don't tell anyone.|Neon?! How did you/even FIND that?|Purple and blue...?/The rarest one./Now I'm nervous.",
+         "Captain Vex": "A silver beast!/Fine polish, matey.|GOLD! I'd trade my/whole ship for/that dragon!|Neon! It'd light up/the sea at night!/Ahoy, beauty!|Purple and blue! In/100 battles I've/never seen one!",
+         "Duchess Ivy": "Silver. Almost/worthy of royalty.|Gold! Finally, a/dragon fit for/a duchess.|Neon? So flashy.../but I admit, I'm/jealous.|Purple and blue! I/demand it for my/royal collection!",
+         "Aurora": "A silver shiny./Not bad at all.|Gold. You must be/very lucky.|Neon... in all my/years I've seen only/one. Until now.|Purple and blue./The rarest shiny./You have my respect."}
+
+
 def arena(g, *a):
     # lives in the fight file (W) so a match never needs a second file loaded beside it
     import gc
@@ -1293,6 +1301,10 @@ def arena(g, *a):
         ctext(24, "ROUND " + str(w + 1) + " OF 10", GOLD)
         for p in say.split("#"):
             message(p.split("/"), n)
+        # a shiny partner gets a compliment from some tamers, a bigger one the rarer the shine
+        p = SHINE.get(n) if d[9] & 7 else 0
+        if p:
+            message(p.split("|")[(d[9] & 7) - 1].split("/"), n)
         d[3] = d[4]
         g.ride = d
         t = DT[k]
