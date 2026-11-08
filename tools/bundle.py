@@ -345,6 +345,9 @@ def drop(names):
    del sys.modules[k]
   except Exception:
    pass
+# a game that stopped with an error last time can leave its files in memory
+# (and stale, even after new ones are sent): clear every GH file first
+drop([k for k in sys.modules if k[:2]=="GH"])
 st=[0,0,0,"",""]
 while True:
  gc.collect()
@@ -475,6 +478,9 @@ def free(step):
   print(step,gc.mem_free())
  except Exception:
   print(step)
+# a run that stopped with an error can leave the game's files in memory
+# (and stale, even after new ones are sent): clear every GH file first
+drop([k for k in sys.modules if k[:2]=="GH" and k!=__name__])
 while True:
  free("start")
  import {h}
@@ -485,11 +491,13 @@ while True:
  free("home dropped")
  if c<0:
   break
- import {p}
- free("game loaded")
- {p}.G_back()
- {p}=None
- drop(["{p}"]+["{g7}"+c for c in "ABCDEFVWXYZ"])
+ try:
+  import {p}
+  free("game loaded")
+  {p}.G_back()
+ finally:
+  {p}=None
+  drop([k for k in sys.modules if k[:2]=="GH" and k!=__name__])
 RAN=True
 """
 
