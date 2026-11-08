@@ -187,6 +187,11 @@ def G_hud(g):
  G_HUD[0]=t
 class G_Game:
  pass
+def G_rest(g):
+ g.hp=g.mhp
+ g.ride=None
+ for d in g.pen:
+  d[3]=d[4]
 def G_pack(nm):
  n=0
  for ch in nm.upper():
@@ -215,12 +220,6 @@ def G_titan(*a):
  r=GHDRAGOW.G_titan(*a)
  GHDRAGOW=None
  G__drop('GHDRAGOW')
- return r
-def G_rest(*a):
- import GHDRAGOX
- r=GHDRAGOX.G_rest(*a)
- GHDRAGOX=None
- G__drop('GHDRAGOX')
  return r
 def G_load(*a):
  import GHDRAGOX

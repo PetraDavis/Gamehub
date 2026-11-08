@@ -14,7 +14,7 @@ T = 20
 # these functions in their own files. Each file is loaded when one of its
 # functions is called and dropped from memory again when it returns.
 SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
-        "X": ("rest", "load", "new_quest", "board", "portrait", "pen", "lst", "dress", "shop", "nest",
+        "X": ("load", "new_quest", "board", "portrait", "pen", "lst", "dress", "shop", "nest",
               "win"),
         # the merchant has a file of his own, with its own copy of the list, so the
         # pen and fights don't have to carry his code
