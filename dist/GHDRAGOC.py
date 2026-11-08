@@ -3,7 +3,6 @@ from ti_draw import*
 from ti_system import*
 import time
 import random
-UP=25
 DOWN=34
 LEFT=24
 RIGHT=26
@@ -60,10 +59,28 @@ def edge(x,y,w,h,r,c,t=2,inner=BLACK):
   if bw>0 and bh>0:
    fr(bx,by,bw,bh)
 MSG=[0,0]
+def message(lines,title=None):
+ n=len(lines)+(1 if title else 0)
+ h=n*18+30
+ y=(H-h)//2
+ rbox(20,y,280,h,8,WHITE)
+ MSG[0],MSG[1]=(y,h)
+ COVER[0]+=1
+ yy=y+24
+ if title:
+  ctext(yy,title,GOLD)
+  yy+=18
+ for s in lines:
+  ctext(yy,s)
+  yy+=18
+ while True:
+  k=wkey()
+  if k in(OK,CLR):
+   return k
 G_TEST=False
 G_EVIL=0.12 if G_TEST else 0.004
 G_T=20
-G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^C....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
+G_LANDS=('Green Valley','Fire Mountain','Frost Peaks','Village')
 G_GROUND=((50,130,60),(85,65,55),(215,225,240),(75,150,70))
 G_TALL=((35,100,45),(120,90,60),(170,190,220),(75,150,70))
 G_WATER=(40,90,190)
@@ -94,11 +111,6 @@ G_ARTG=(b'',b'\x02\t\x14\x0e\x10\n\x10\x12\x02\t\x14\x0e\x18\n\x18\x12\x02\x1d\x
 G_LVL=((1,3),(3,6),(6,10),(1,1))
 G_BOSS=('Shadow Wyrm',110,12,0,(90,50,140),3)
 G_CAVE=[0]
-def G_egg_type(m,up=0):
- r=random.randint(0,999)
- rar=4 if r<4+2*m else 3 if r<30+10*m else 2 if r<110+25*m else 1 if r<330+40*m else 0
- rar=min(4,rar+up)
- return random.choice([i for i in range(20)if G_DT[i][2]==rar])
 def G_art(b,x,y,s,P,out=None,f=0):
  for i in range(0,len(b),8):
   c=P[b[i+1]]
@@ -130,6 +142,16 @@ def G_art(b,x,y,s,P,out=None,f=0):
   else:
    col(c)
    fill_poly([x+a1*s,x+a3*s,x+a5*s],[y+a2*s,y+a4*s,y+a6*s])
+def G_base(m,ch):
+ if ch=='~':
+  return G_WATER
+ if ch=='L':
+  return G_LAVA
+ if ch=='"':
+  return G_TALL[m]
+ if ch=='=':
+  return(190,160,110)
+ return G_GROUND[m]
 G_EGGS={}
 G_SMALL=31
 def G_egg_roll(g,t):
@@ -142,8 +164,6 @@ def G_egg_roll(g,t):
 def G_kids(g):
  return sum((1 if d[9]&8 else 4 for d in g.pen))+sum((1 if e%32==G_SMALL else 4 for e in g.bag))
 G_HUD=[None]
-class G_Game:
- pass
 def G_pack(nm):
  n=0
  for ch in nm.upper():

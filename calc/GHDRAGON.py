@@ -1604,10 +1604,11 @@ def play():
         g.spawn -= 1
         if g.spawn <= 0:
             g.spawn = random.randint(100, 200)
-            if g.m < 3 and not any(q[0] == g.m for q in EGGS):
+            # up to 2 eggs can wait in one land
+            if g.m < 3 and sum(1 for q in EGGS if q[0] == g.m) < 2:
                 put_egg(g, egg_roll(g, egg_type(g.m, g.luck)), False)
                 g.luck = 0
-        # the merchant turns up every 300 steps or so and stays for about 60
+        # the merchant turns up every 150 steps or so and stays for about 60
         g.shn -= 1
         if g.shen:
             if g.shn < 0:
