@@ -1,6 +1,5 @@
 # GHMENU: the GAMEHUB menu. Run GAMEHUB, not this.
 from GHMENUB import*
-UP=25
 def rect(x,y,w,h,c):
  if w<1 or h<1:
   return
@@ -53,6 +52,16 @@ def message(lines,title=None):
   k=wkey()
   if k in(OK,CLR):
    return k
+def I_solitaire(x,y,c):
+ suits=((I_spade,I_INK),(I_diamond,I_RED),(I_heart,I_RED))
+ for i in range(3):
+  l=x-18+i*10
+  t=y-12
+  I_box(l-1,t-1,18,26,I_INK)
+  I_box(l,t,16,24,(250,250,245))
+  f,col=suits[i]
+  f(l+4,t+5,2,col)
+ I_heart(x+10,y+3,3,I_RED)
 def I_blocks(x,y,c):
  s=8
  cells=((-2,1,(220,70,70)),(-1,1,(220,70,70)),(0,1,(70,110,220)),(1,1,(70,110,220)),(-2,0,(80,190,90)),(0,0,(70,110,220)),(1,0,(230,200,60)),(-2,-1,(80,190,90)),(1,-1,(230,200,60)),(-1,-3,(170,90,210)),(0,-3,(170,90,210)),(0,-2,(170,90,210)))
@@ -100,6 +109,19 @@ def I_flap(x,y,c):
  I_circ(x+4,y-5,2,I_BLACK)
  I_poly([x+7,x+17,x+7],[y-2,y+1,y+2],(245,140,30))
  I_poly([x+7,x+15,x+7],[y+2,y+3,y+5],(200,100,20))
+def I_superttt(x,y,c):
+ for i in(-1,1):
+  I_box(x+i*7-1,y-20,3,41,I_INK)
+  I_box(x-20,y+i*7-1,41,3,I_INK)
+ for i in(-1,1):
+  I_box(x+i*2,y-5,1,11,(150,150,160))
+  I_box(x-5,y+i*2,11,1,(150,150,160))
+ I_line(x-17,y-17,x-11,y-11,I_RED,2)
+ I_line(x-11,y-17,x-17,y-11,I_RED,2)
+ I_c_((40,90,210))
+ fill_circle(x+13,y+13,4)
+ I_c_(I_WHITE)
+ fill_circle(x+13,y+13,2)
 def I_breakout(x,y,c):
  cols=((220,60,60),(235,140,50),(230,210,60),(70,190,90))
  for r in range(3):
@@ -176,21 +198,7 @@ def I_star(x,y,c):
  I_box(x-10,y+7,20,10,(90,200,255))
  I_box(x-10,y+7,7,4,(8,10,32))
  I_box(x+3,y+7,7,4,(8,10,32))
-def I_dragon(x,y,c):
- I_poly([x-2,x+10,x+4],[y-2,y-17,y+2],(240,190,40))
- I_box(x-10,y-2,20,11,(220,70,40))
- I_box(x-18,y-9,11,9,(220,70,40))
- I_box(x+9,y+3,9,3,(220,70,40))
- I_box(x-7,y+9,4,5,(220,70,40))
- I_box(x+4,y+9,4,5,(220,70,40))
- I_box(x-15,y-7,3,3,I_BLACK)
-def I_detect(x,y,c):
- I_box(x-14,y+4,6,9,(120,90,60))
- I_box(x-6,y+8,6,9,(120,90,60))
- I_circ(x+2,y-4,11,(230,180,40))
- I_circ(x+2,y-4,8,(190,220,245))
- I_poly([x+9,x+13,x+19,x+15],[y+5,y+1,y+13,y+17],(120,80,40))
-I_ICONS={'GHSOLI':I_solitaire,'GHBLOCKS':I_blocks,'GHSUDOKU':I_sudoku,'GHANIM':I_anim,'GHFLAP':I_flap,'GHTTT':I_ttt,'GHMERGE':I_g2048,'GHPONG':I_pong,'GHBREAK':I_breakout,'GHRPG':I_rpg,'GHSIMON':I_simon,'GHHANG':I_hangman,'GHSPACE':I_space,'GHFORTUN':I_fortune,'GHNAMES':I_names,'GHSTAR':I_star,'GHMATCH':I_match,'GHDRAGON':I_dragon,'GHDETECT':I_detect,'*keys':I_keys,'*wipe':I_wipe,'*about':I_about}
+I_ICONS={'GHSOLI':I_solitaire,'GHBLOCKS':I_blocks,'GHSUDOKU':I_sudoku,'GHANIM':I_anim,'GHFLAP':I_flap,'GHTTT':I_ttt,'GHMERGE':I_g2048,'GHPONG':I_pong,'GHBREAK':I_breakout,'GHRPG':I_rpg,'GHSIMON':I_simon,'GHHANG':I_hangman,'GHSPACE':I_space,'GHFORTUN':I_fortune,'GHNAMES':I_names,'GHSTAR':I_star,'GHMATCH':I_match,'GHDRAGON':I_dragon,'GHDETECT':I_detect,'GHSUPER':I_superttt,'*keys':I_keys,'*wipe':I_wipe,'*about':I_about}
 def I_draw(mod,x,y,c):
  f=I_ICONS.get(mod)
  if f:
@@ -222,10 +230,7 @@ def S_wipe():
   except Exception:
    pass
  return n
-H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK'),('Star Patrol','GHSTAR')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG'),('Memory Match','GHMATCH')]),('Adventure',[('Tiny Quest','GHRPG'),('Dragon Tamer','GHDRAGON'),('Detective Case','GHDETECT'),('Lost Orbit','GHSPACE')]),('Create',[('Animation Studio','GHANIM'),('Fortune Cards','GHFORTUN'),('Name Generator','GHNAMES')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
-def H_header():
- cls()
- ctext(22,'GAMEHUB',WHITE)
+H_CATS=[('Arcade',[('Wing It','GHFLAP'),('Pong','GHPONG'),('Breakout','GHBREAK'),('Star Patrol','GHSTAR')]),('Puzzle',[('Stack Drop','GHBLOCKS'),('2048','GHMERGE'),('Sudoku','GHSUDOKU'),('Simon','GHSIMON'),('Super Tic-Tac-Toe','GHSUPER')]),('Classics',[('Solitaire','GHSOLI'),('Tic-Tac-Toe','GHTTT'),('Hangman','GHHANG'),('Memory Match','GHMATCH')]),('Adventure',[('Tiny Quest','GHRPG'),('Dragon Tamer','GHDRAGON'),('Detective Case','GHDETECT'),('Lost Orbit','GHSPACE')]),('Create',[('Animation Studio','GHANIM'),('Fortune Cards','GHFORTUN'),('Name Generator','GHNAMES')]),('Settings',[('Key Test','*keys'),('Delete All Saves','*wipe'),('About','*about')])]
 def H_draw_bar(i,on,first=False):
  y=H_BAR_Y+i*H_BAR_GAP
  c=GOLD if on else WHITE

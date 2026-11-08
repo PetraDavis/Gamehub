@@ -13,7 +13,7 @@ GOLD = (230, 180, 40)
 BG = {"GHSOLI": (25, 110, 55), "GHBLOCKS": (40, 30, 90), "GHSUDOKU": WHITE, "GHANIM": WHITE,
       "GHFLAP": (110, 195, 240), "GHTTT": WHITE, "GHMERGE": (187, 173, 160), "GHPONG": (30, 85, 165),
       "GHBREAK": (30, 70, 170), "GHHANG": WHITE, "GHSPACE": (15, 20, 50), "GHFORTUN": (55, 25, 85), "GHNAMES": (20, 60, 70),
-      "GHSTAR": (8, 10, 32), "GHMATCH": (30, 90, 80), "GHDRAGON": (50, 130, 60), "GHDETECT": (35, 30, 55)}
+      "GHSTAR": (8, 10, 32), "GHMATCH": (30, 90, 80), "GHDRAGON": (50, 130, 60), "GHDETECT": (35, 30, 55), "GHSUPER": WHITE}
 
 # 3x5 digits, read row by row
 FONT = {"0": "111101101101111", "1": "010110010010111", "2": "111001111100111",
@@ -220,6 +220,22 @@ def ttt(x, y, c):
         line(cx + 3, cy - 4, cx - 4, cy + 3, INK, 2)
 
 
+def superttt(x, y, c):
+    # a big grid with a little grid inside the middle box, an X and an O
+    for i in (-1, 1):
+        box(x + i * 7 - 1, y - 20, 3, 41, INK)
+        box(x - 20, y + i * 7 - 1, 41, 3, INK)
+    for i in (-1, 1):
+        box(x + i * 2, y - 5, 1, 11, (150, 150, 160))
+        box(x - 5, y + i * 2, 11, 1, (150, 150, 160))
+    line(x - 17, y - 17, x - 11, y - 11, RED, 2)
+    line(x - 11, y - 17, x - 17, y - 11, RED, 2)
+    c_((40, 90, 210))
+    fill_circle(x + 13, y + 13, 4)
+    c_(WHITE)
+    fill_circle(x + 13, y + 13, 2)
+
+
 def g2048(x, y, c):
     rr(x - 20, y - 12, 41, 28, 4, (200, 160, 30))
     rr(x - 20, y - 14, 41, 28, 4, (237, 194, 46))
@@ -399,7 +415,7 @@ def about(x, y, c):
 
 ICONS = {"GHSOLI": solitaire, "GHBLOCKS": blocks, "GHSUDOKU": sudoku, "GHANIM": anim,
          "GHFLAP": flap, "GHTTT": ttt, "GHMERGE": g2048, "GHPONG": pong, "GHBREAK": breakout,
-         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHSPACE": space, "GHFORTUN": fortune, "GHNAMES": names, "GHSTAR": star, "GHMATCH": match, "GHDRAGON": dragon, "GHDETECT": detect,
+         "GHRPG": rpg, "GHSIMON": simon, "GHHANG": hangman, "GHSPACE": space, "GHFORTUN": fortune, "GHNAMES": names, "GHSTAR": star, "GHMATCH": match, "GHDRAGON": dragon, "GHDETECT": detect, "GHSUPER": superttt,
          "*keys": keys, "*wipe": wipe, "*about": about}
 
 
