@@ -41,8 +41,14 @@ def G_arena(g):
  if d is None:
   message(['Come back when you','have a grown dragon!'],'Arena')
   return
- if choose('THE ARENA',['Enter tournament','Leave'])!=0:
+ fee=min(500,25+25*g.ar)
+ if choose('THE ARENA',['Enter: '+str(fee)+'c','Leave'])!=0:
   return
+ if g.coins<fee:
+  message(['The entry fee is',str(fee)+' coins. Come','back with more!'],'Arena')
+  return
+ g.coins-=fee
+ g.ar+=1
  w=0
  for n,k,lv,say in G_TAMERS:
   cls(G_NIGHT)

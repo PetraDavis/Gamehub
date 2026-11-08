@@ -1,5 +1,6 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
+UP=25
 GREY=(110,110,110)
 def shuffle(a):
  for i in range(len(a)-1,0,-1):
@@ -39,7 +40,6 @@ G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient','Junk')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
-G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
 def G_egg_type(m,up=0):
  r=random.randint(0,999)
@@ -94,7 +94,7 @@ def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
  big=[d for d in g.pen if not d[9]&8]
  pk=([i for i in range(len(big))if big[i]is g.pick]+[0])[0]
- b=[2,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)+4400*min(99,g.done)+500000*pk+6000000*min(15,g.cd)+96000000*g.sad+192000000*(g.book>>31&1)*min(100,max(0,g.shn)//100)]
+ b=[3,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)+4400*min(99,g.done)+500000*pk+6000000*min(15,g.cd)+96000000*g.sad+192000000*(g.book>>31&1)*min(100,max(0,g.shn)//100),g.ar]
  for d in g.pen:
   if d[9]&8:
    b+=[G_pack(d[0]),d[1]+32*(d[9]&7)]
