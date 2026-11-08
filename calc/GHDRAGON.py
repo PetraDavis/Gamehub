@@ -1157,7 +1157,7 @@ VILLAGER = (("Farmer Bo", ("Eggs turn up every", "hundred steps or so.", "Keep w
             ("Baker Rose", ("Walk into your nest", "to heal your dragons."), ("I once saw a shiny egg.", "It sparkled like sugar!"),
              ("Small eggs hatch babies.", "So cute. Can't ride", "them, though."), ("Fresh bread! Oh, you", "only have dragon food?"), ("Old Nettle says a black", "dragon ate her dragons.", "Crazy old bat!")),
             ("Little Pip", ("When I grow up I'll", "tame a Legendary!"), ("The quest hall pays", "lots of coins!"),
-             ("Did you know dragons", "can fly over lava?"), ("Wanna see my rock?", "It's a good rock."), ("Mom says Old Nettle is", "cuckoo. Her hut is the", "purple one.")))
+             ("Did you know dragons", "can fly over lava?"), ("Wanna see my rock?", "It's a good rock."), ("Old Nettle tells the", "BEST stories! Grown-ups", "say she's cuckoo."), ("Nettle gave me a cookie.", "It was a rock. I kept", "it anyway!")))
 
 # Old Nettle: everyone says she's crazy, but her stories are about the secret dragons.
 # Each entry is one or two pages; any of them can come up any time.
@@ -1171,7 +1171,16 @@ NETTLE = ((("Black as night, it was!", "Came when I was young", "and ate my good
           (("The moon owes me three", "coins. I'll get 'em."),),
           (("My cat is a dragon.", "Don't tell him."),),
           (("Who are you? Go away!", "...No, come back. Sit."),),
-          (("I ate a rock once.", "Good rock. Crunchy."),))
+          (("I ate a rock once.", "Good rock. Crunchy."),),
+          (("I'm 300 years old.", "Or 30. One of those."),),
+          (("Don't step on the grass.", "It's sleeping."),),
+          (("I had a husband once.", "Or was it a goat?", "Lovely beard, anyway."),),
+          (("Shh! The kettle is", "listening."),),
+          (("I named all the clouds.", "That one's Gerald."),),
+          (("Soup is just wet food.", "Think about it, dearie."),),
+          (("My left shoe is lucky.", "My right shoe is a liar."),),
+          (("Hee hee hee hee hee!", "...What were we saying?"),),
+          (("Little Pip visits me.", "Good child. Brings me", "rocks. Tasty rocks."),))
 
 
 def nettle(g):
