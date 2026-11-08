@@ -23,6 +23,7 @@ def G_load(g):
   return
  v=s[0]
  k=min(1,v-2)
+ pk=0
  g.coins,g.own,g.book=(s[1],s[2],s[3])
  if k:
   g.dread=s[4]
@@ -43,6 +44,8 @@ def G_load(g):
  try:
   b=[int(v)for v in recall_list('DRB')]
   if b[0]>1:
+   pk=b[1]//500000
+   b[1]%=500000
    g.glim,g.luck,g.curse,g.buys,g.done=(b[1]%100,b[1]//100%2,b[1]//200%2,b[1]//400%11,b[1]//4400)
    b=b[1:]
   for i in range(1,len(b)-1,2):
@@ -50,7 +53,8 @@ def G_load(g):
    g.pen.append([G_unpack(b[i]),t,1,10,10,0,G_DT[t][3],0,0,8+b[i+1]//32])
  except Exception:
   pass
- g.pick=G_grown(g)
+ big=[d for d in g.pen if not d[9]&8]
+ g.pick=big[pk]if pk<len(big)else G_grown(g)
  g.warm=12
 def G_new_quest(g):
  t=min(10,g.done)

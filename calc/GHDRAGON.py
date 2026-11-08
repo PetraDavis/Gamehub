@@ -704,7 +704,8 @@ def rest(g):
 #  eggs in the bag (up to 5, -1 = none), then 5 numbers a dragon: name (letters 1-26 in base 27),
 #  kind, level, xp, shiny*4000+paint*200+head*20+body]
 # DRB: [2, things from the merchant (Glimmer Stones + 100 * Lucky Charm + 200 * Golden Coin
-#  + 400 * things bought from him, up to 10, + 4400 * quests finished, up to 99),
+#  + 400 * things bought from him, up to 10, + 4400 * quests finished, up to 99,
+#  + 500000 * which grown dragon is your partner),
 #  then 2 numbers a baby: name, kind + 32 * shiny]  (version 1 had no second number)
 def pack(nm):
     n = 0
@@ -723,7 +724,9 @@ def unpack(n):
 
 def save(g):
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
-    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done)]
+    big = [d for d in g.pen if not d[9] & 8]
+    pk = ([i for i in range(len(big)) if big[i] is g.pick] + [0])[0]
+    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk]
     for d in g.pen:
         if d[9] & 8:
             b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
@@ -748,6 +751,7 @@ def load(g):
         return
     v = s[0]
     k = min(1, v - 2)
+    pk = 0
     g.coins, g.own, g.book = s[1], s[2], s[3]
     if k:
         g.dread = s[4]
@@ -769,6 +773,8 @@ def load(g):
     try:
         b = [int(v) for v in recall_list("DRB")]
         if b[0] > 1:
+            pk = b[1] // 500000
+            b[1] %= 500000
             g.glim, g.luck, g.curse, g.buys, g.done = b[1] % 100, b[1] // 100 % 2, b[1] // 200 % 2, b[1] // 400 % 11, b[1] // 4400
             b = b[1:]
         for i in range(1, len(b) - 1, 2):
@@ -776,7 +782,8 @@ def load(g):
             g.pen.append([unpack(b[i]), t, 1, 10, 10, 0, DT[t][3], 0, 0, 8 + b[i + 1] // 32])
     except Exception:
         pass
-    g.pick = grown(g)
+    big = [d for d in g.pen if not d[9] & 8]
+    g.pick = big[pk] if pk < len(big) else grown(g)
     g.warm = 12
 
 

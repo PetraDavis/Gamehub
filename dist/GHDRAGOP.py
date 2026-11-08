@@ -33,17 +33,6 @@ def choose(title,opts,sel=0):
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
-G_PAINT=G_cl(b'\xdcF(<\x82\xe6F\xaaF\xf0\xbe(\xc8n\xf0\xf0x\x96((2\xf0\xf0\xf5')
-def G_base(m,ch):
- if ch=='~':
-  return G_WATER
- if ch=='L':
-  return G_LAVA
- if ch=='"':
-  return G_TALL[m]
- if ch=='=':
-  return(190,160,110)
- return G_GROUND[m]
 def G_grown(g):
  for d in g.pen:
   if not d[9]&8:
@@ -100,7 +89,9 @@ def G_hud(g):
  G_HUD[0]=t
 def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
- b=[2,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)+4400*min(99,g.done)]
+ big=[d for d in g.pen if not d[9]&8]
+ pk=([i for i in range(len(big))if big[i]is g.pick]+[0])[0]
+ b=[2,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)+4400*min(99,g.done)+500000*pk]
  for d in g.pen:
   if d[9]&8:
    b+=[G_pack(d[0]),d[1]+32*(d[9]&7)]
