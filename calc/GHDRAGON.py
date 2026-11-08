@@ -18,7 +18,7 @@ SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
               "win"),
         # the merchant has a file of his own, with its own copy of the list, so the
         # pen and fights don't have to carry his code
-        "Z": ("shen", "who", "glim", "zl", "shen_off", "pol_off"),
+        "Z": ("shen", "cop", "who", "glim", "zl", "shen_off", "pol_off"),
         "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed", "menu")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
@@ -380,6 +380,12 @@ def shapes(m, x, y, ch, out):
         out.append((1, (150, 105, 55), 1, (px + 16, py + 15, 3)))
         out.append((2, YELLOW, 0, (px + 8, py + 7, 1, 1)))
         out.append((2, YELLOW, 0, (px + 11, py + 7, 1, 1)))
+    elif ch == "O":
+        # Officer Brick: blue coat, cap and a gold badge
+        out.append((0, (40, 60, 150), 0, (px + 5, py + 9, 10, 10)))
+        out.append((1, (240, 200, 160), 1, (px + 10, py + 6, 3)))
+        out.append((2, (20, 30, 80), 0, (px + 6, py + 1, 8, 3)))
+        out.append((2, YELLOW, 0, (px + 7, py + 11, 2, 2)))
     elif ch == "X":
         # a treasure chest from Shen's map
         out.append((0, BARK, 0, (px + 3, py + 8, 14, 10)))
@@ -740,7 +746,7 @@ def save(g):
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
     big = [d for d in g.pen if not d[9] & 8]
     pk = ([i for i in range(len(big)) if big[i] is g.pick] + [0])[0]
-    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk + 6000000 * min(15, g.cd) + 96000000 * g.sad]
+    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk + 6000000 * min(15, g.cd) + 96000000 * g.sad + 192000000 * (g.book >> 31 & 1) * min(100, max(0, g.shn) // 100)]
     for d in g.pen:
         if d[9] & 8:
             b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
@@ -758,6 +764,23 @@ def save(g):
 
 
 def load(g):
+    # a new game first (this lives here, in a swap file, to keep the main file small)
+    g.maps = [[list(r) for r in mp] for mp in MAPS]
+    EGGS.clear()
+    for m in range(3):
+        for y in range(9):
+            for x in range(16):
+                if MAPS[m][y][x] == "E":
+                    EGGS[(m, x, y)] = random.randint(0, 6) if m == 0 else egg_type(m)
+    g.m, g.x, g.y = 0, 3, 2
+    g.hp = g.mhp = 30
+    g.pen = []
+    g.bag = []
+    g.warm = 12
+    g.spawn = 100
+    g.pick = g.ride = g.quest = g.pol = g.shen = None
+    g.coins = g.own = g.book = g.seen = g.face = g.dread = g.glim = g.luck = g.curse = g.buys = g.done = g.cd = g.sad = 0
+    g.shn = random.randint(120, 180)
     try:
         from ti_system import recall_list
         s = [int(v) for v in recall_list("DRG")]
@@ -791,7 +814,8 @@ def load(g):
         if b[0] > 1:
             pk = b[1] // 500000 % 12
             g.cd = b[1] // 6000000 % 16
-            g.sad = b[1] // 96000000
+            g.sad = b[1] // 96000000 % 2
+            g.shn = max(g.shn, b[1] // 192000000 * 100)
             b[1] %= 500000
             g.glim, g.luck, g.curse, g.buys, g.done = b[1] % 100, b[1] // 100 % 2, b[1] // 200 % 2, b[1] // 400 % 11, b[1] // 4400
             b = b[1:]
@@ -1079,10 +1103,51 @@ def pol_off(g):
         draw_map(g, True)
 
 
+def cop(g):
+    # Officer Brick comes once: turn Shen in (an Epic egg and 300 coins, but Shen is gone
+    # for good) or keep quiet (Shen gives you one free thing next time)
+    cls(NIGHT)
+    rect(125, 105, 70, 72, (40, 60, 150))
+    circ(160, 80, 26, (240, 200, 160))
+    rect(130, 50, 60, 16, (20, 30, 80))
+    rect(124, 64, 72, 5, (20, 30, 80))
+    rect(150, 120, 10, 12, YELLOW)
+    rect(148, 78, 6, 4, BLACK)
+    rect(166, 78, 6, 4, BLACK)
+    ctext(24, "OFFICER BRICK", GOLD)
+    ctext(196, "Excuse me, tamer!")
+    while wkey() not in (OK, CLR):
+        pass
+    message(["Have you seen a shady", "merchant? Hood, yellow", "eyes, sells fake stuff?"], "Officer Brick")
+    g.book |= 1 << 30
+    if choose("Tell on Shen?", ["Turn him in", "Never seen him"]) == 0:
+        g.book |= 1 << 31
+        g.coins += 300
+        t = random.choice([i for i in range(20) if DT[i][2] == 3])
+        if len(g.bag) < 5 and kids(g) + 4 <= 40:
+            g.bag.append(t)
+            m = "It's in your backpack."
+        else:
+            put_egg(g, t, True)
+            m = "I'll leave it by you."
+        message(["Got him! He'll be locked", "up for a long time. Here's", "300 coins and an Epic egg."], "Officer Brick")
+        message([m], "Officer Brick")
+    else:
+        g.book |= 1 << 22
+        message(["Hmm. Well, tell me", "if you see him."], "Officer Brick")
+    shen_off(g)
+    # if you told, Shen sits in jail for about 5000 steps, then comes back with double prices forever
+    if g.book >> 31 & 1:
+        g.shn = 5000
+
+
 def shen(g):
     # Shady Shen. The game never tells you, but: after your first visit he sometimes
     # picks your pocket, after your first buy 1 thing in 10 is a fake, and the
     # Golden Coin makes coins go missing more often (book bit 27 = met, 28 = bought)
+    m, x, y = g.shen
+    if g.maps[m][y][x] == "O":
+        return cop(g)
     met = g.book >> 27 & 1
     g.book |= 1 << 27
     if met and random.random() < 0.25 + 0.25 * g.curse:
@@ -1096,18 +1161,25 @@ def shen(g):
     circ(222, 170, 20, (150, 105, 55))
     rect(214, 150, 16, 4, (110, 75, 40))
     ctext(24, "SHADY SHEN", GOLD)
-    ctext(196, random.choice(("Psst... over here.", "Rare goods. Very real.", "Don't ask where I got these.",
+    mad = g.book >> 31 & 1
+    ctext(196, random.choice(("You! You told on me!", "Prices went up. Wonder why.", "I remember you, snitch.")) if mad else random.choice(("Psst... over here.", "Rare goods. Very real.", "Don't ask where I got these.",
                               "Best prices in all the lands.", "You look like a smart tamer.",
                               "Nice dragon. Shame if it got sparkly.")))
     while wkey() not in (OK, CLR):
         pass
+    # you didn't tell Officer Brick about him (book bit 22): one thing for free
+    free = g.book >> 22 & 1
+    if free:
+        message(["Psst... you didn't tell", "the officer about me.", "Pick one thing. Free."], "Shady Shen")
     while True:
         # his best customers (10 things bought) see one more item
         S = (("Glimmer Stone", 60), ("Power Fruit", 40), ("Mystery Egg", 50), ("Healing Tonic", 20), ("Lucky Charm", 35),
              ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45), ("Accessory Crate", 40), ("Treasure Map", 35),
              ("Dragon Insurance", 20), ("Speed Saddle", 50), ("Shiny Polish", 25), ("Moldy Egg", 15)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
+        # since you told on him, everything costs double
+        S = [(n, p * (1 + mad)) for n, p in S]
         z = len(S)
-        c = zl("Shady Shen   " + str(g.coins) + " coins", [n + (" - sold out" if n == "Moldy Egg" and g.book >> 29 & 1 else " " + str(p) + "c") for n, p in S] +
+        c = zl("Pick 1 thing for FREE!" if free else "Shady Shen   " + str(g.coins) + " coins", [n + (" - sold out" if n == "Moldy Egg" and g.book >> 29 & 1 else " " + str(p) + "c") for n, p in S] +
                 (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
         if c == z and g.glim:
             glim(g)
@@ -1116,6 +1188,7 @@ def shen(g):
             message([random.choice(("No refunds. Ever.", "You didn't see me.", "Come back soon, friend."))], "Shady Shen")
             return
         n, p = S[c]
+        p *= 1 - free
         if g.coins < p:
             message(["That's " + str(p) + " coins, friend.", "Come back richer."], "Shady Shen")
             continue
@@ -1146,11 +1219,12 @@ def shen(g):
                 continue
         g.coins -= p
         # (the Moldy Egg, his secret good deal, is never a fake)
-        if c != 13 and g.book >> 28 & 1 and random.random() < 0.1:
+        if not free and c != 13 and g.book >> 28 & 1 and random.random() < 0.1:
             message([random.choice(("It was just a painted rock!", "The box was empty...", "It crumbled into dust.",
                                     "It melted in your hand."))], "Huh?")
             continue
-        g.book |= 1 << 28
+        g.book = g.book & ~(1 << 22) | 1 << 28
+        free = 0
         g.buys += 1
         if g.buys == 10:
             message(["Psst... you're my best", "customer. Next time I'll", "have something special."], "Shady Shen")
@@ -1463,7 +1537,7 @@ def shen_off(g):
     # the merchant leaves (when you leave the land or his time is up)
     if g.shen:
         m, x, y = g.shen
-        if g.maps[m][y][x] == "M":
+        if g.maps[m][y][x] in "MO":
             g.maps[m][y][x] = "."
             if m == g.m:
                 cells(g, [(x, y)], False)
@@ -1485,7 +1559,7 @@ def put_egg(g, t, near, ch="E"):
             mp[y][x] = ch
             if ch == "E":
                 EGGS[(g.m, x, y)] = t
-            elif ch == "M":
+            elif ch in "MO":
                 g.shen = (g.m, x, y)
             cells(g, [(x, y)], False)
             return True
@@ -1554,22 +1628,6 @@ def win(g):
 
 def play():
     g = Game()
-    g.maps = [[list(r) for r in mp] for mp in MAPS]
-    EGGS.clear()
-    for m in range(3):
-        for y in range(9):
-            for x in range(16):
-                if MAPS[m][y][x] == "E":
-                    EGGS[(m, x, y)] = random.randint(0, 6) if m == 0 else egg_type(m)
-    g.m, g.x, g.y = 0, 3, 2
-    g.hp = g.mhp = 30
-    g.pen = []
-    g.bag = []
-    g.warm = 12
-    g.spawn = 100
-    g.pick = g.ride = g.quest = g.pol = g.shen = None
-    g.coins = g.own = g.book = g.seen = g.face = g.dread = g.glim = g.luck = g.curse = g.buys = g.done = g.cd = g.sad = 0
-    g.shn = random.randint(120, 180)
     load(g)
     steps = 0
     draw_map(g)
@@ -1639,8 +1697,8 @@ def play():
             message(["Your backpack is full."] if len(g.bag) >= 5 else ["No room in your pen.", "Let a dragon go first."], "Egg")
             draw_map(g, True)
             continue
-        if ch == "M":
-            # talk to the merchant without stepping on him
+        if ch in "MO":
+            # talk to the merchant (or the officer) without stepping on him
             shen(g)
             # what you bought is saved right away
             save(g)
@@ -1712,7 +1770,8 @@ def play():
         if g.shen:
             if g.shn < 0:
                 shen_off(g)
-        elif g.shn <= 0 and g.m < 3 and put_egg(g, 0, False, "M"):
+        # once you've met Shen, Officer Brick comes looking for him (book bit 30 = asked, 31 = told on Shen)
+        elif g.shn <= 0 and g.m < 3 and put_egg(g, 0, False, "O" if g.book >> 27 & 1 and not g.book >> 30 & 1 and random.random() < 0.3 else "M"):
             g.shn = 60
         if g.curse and random.random() < 0.01:
             g.coins -= min(g.coins, random.randint(1, 3))

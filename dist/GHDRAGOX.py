@@ -7,12 +7,29 @@ def G_unpack(n):
   n//=27
  return nm[0]+nm[1:].lower()
 G_PAINTN=('Red','Blue','Green','Gold','Purple','Pink','Black','White')
+G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^C....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
 def G_rest(g):
  g.hp=g.mhp
  g.ride=None
  for d in g.pen:
   d[3]=d[4]
 def G_load(g):
+ g.maps=[[list(r)for r in mp]for mp in G_MAPS]
+ G_EGGS.clear()
+ for m in range(3):
+  for y in range(9):
+   for x in range(16):
+    if G_MAPS[m][y][x]=='E':
+     G_EGGS[m,x,y]=random.randint(0,6)if m==0 else G_egg_type(m)
+ g.m,g.x,g.y=(0,3,2)
+ g.hp=g.mhp=30
+ g.pen=[]
+ g.bag=[]
+ g.warm=12
+ g.spawn=100
+ g.pick=g.ride=g.quest=g.pol=g.shen=None
+ g.coins=g.own=g.book=g.seen=g.face=g.dread=g.glim=g.luck=g.curse=g.buys=g.done=g.cd=g.sad=0
+ g.shn=random.randint(120,180)
  try:
   from ti_system import recall_list
   s=[int(v)for v in recall_list('DRG')]
@@ -45,7 +62,8 @@ def G_load(g):
   if b[0]>1:
    pk=b[1]//500000%12
    g.cd=b[1]//6000000%16
-   g.sad=b[1]//96000000
+   g.sad=b[1]//96000000%2
+   g.shn=max(g.shn,b[1]//192000000*100)
    b[1]%=500000
    g.glim,g.luck,g.curse,g.buys,g.done=(b[1]%100,b[1]//100%2,b[1]//200%2,b[1]//400%11,b[1]//4400)
    b=b[1:]

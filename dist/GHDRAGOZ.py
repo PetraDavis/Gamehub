@@ -78,7 +78,43 @@ def G_pol_off(g):
  if d in g.pen:
   message([d[0]+"'s shine",'wore off...'],'Hm')
   G_draw_map(g,True)
+def G_cop(g):
+ cls(G_NIGHT)
+ rect(125,105,70,72,(40,60,150))
+ circ(160,80,26,(240,200,160))
+ rect(130,50,60,16,(20,30,80))
+ rect(124,64,72,5,(20,30,80))
+ rect(150,120,10,12,YELLOW)
+ rect(148,78,6,4,BLACK)
+ rect(166,78,6,4,BLACK)
+ ctext(24,'OFFICER BRICK',GOLD)
+ ctext(196,'Excuse me, tamer!')
+ while wkey()not in(OK,CLR):
+  pass
+ message(['Have you seen a shady','merchant? Hood, yellow','eyes, sells fake stuff?'],'Officer Brick')
+ g.book|=1<<30
+ if choose('Tell on Shen?',['Turn him in','Never seen him'])==0:
+  g.book|=1<<31
+  g.coins+=300
+  t=random.choice([i for i in range(20)if G_DT[i][2]==3])
+  if len(g.bag)<5 and G_kids(g)+4<=40:
+   g.bag.append(t)
+   m="It's in your backpack."
+  else:
+   G_put_egg(g,t,True)
+   m="I'll leave it by you."
+  message(["Got him! He'll be locked","up for a long time. Here's",'300 coins and an Epic egg.'],'Officer Brick')
+  message([m],'Officer Brick')
+ else:
+  g.book|=1<<22
+  message(['Hmm. Well, tell me','if you see him.'],'Officer Brick')
+ G_shen_off(g)
+ if g.book>>31&1:
+  g.shn=5000
 def G_shen(g):
+ m,x,y=g.shen
+ if g.maps[m][y][x]=='O':
+  return G_cop(g)
  met=g.book>>27&1
  g.book|=1<<27
  if met and random.random()<0.25+0.25*g.curse:
@@ -92,13 +128,18 @@ def G_shen(g):
  circ(222,170,20,(150,105,55))
  rect(214,150,16,4,(110,75,40))
  ctext(24,'SHADY SHEN',GOLD)
- ctext(196,random.choice(('Psst... over here.','Rare goods. Very real.',"Don't ask where I got these.",'Best prices in all the lands.','You look like a smart tamer.','Nice dragon. Shame if it got sparkly.')))
+ mad=g.book>>31&1
+ ctext(196,random.choice(('You! You told on me!','Prices went up. Wonder why.','I remember you, snitch.'))if mad else random.choice(('Psst... over here.','Rare goods. Very real.',"Don't ask where I got these.",'Best prices in all the lands.','You look like a smart tamer.','Nice dragon. Shame if it got sparkly.')))
  while wkey()not in(OK,CLR):
   pass
+ free=g.book>>22&1
+ if free:
+  message(["Psst... you didn't tell",'the officer about me.','Pick one thing. Free.'],'Shady Shen')
  while True:
   S=(('Glimmer Stone',60),('Power Fruit',40),('Mystery Egg',50),('Healing Tonic',20),('Lucky Charm',35),('Mystery Box',30),('Egg Swap',25),('Golden Coin',45),('Accessory Crate',40),('Treasure Map',35),('Dragon Insurance',20),('Speed Saddle',50),('Shiny Polish',25),('Moldy Egg',15))+((('Glimmer Pack x5',250),)if g.buys>=10 else())
+  S=[(n,p*(1+mad))for n,p in S]
   z=len(S)
-  c=G_zl('Shady Shen   '+str(g.coins)+' coins',[n+(' - sold out'if n=='Moldy Egg'and g.book>>29&1 else ' '+str(p)+'c')for n,p in S]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
+  c=G_zl('Pick 1 thing for FREE!'if free else 'Shady Shen   '+str(g.coins)+' coins',[n+(' - sold out'if n=='Moldy Egg'and g.book>>29&1 else ' '+str(p)+'c')for n,p in S]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
   if c==z and g.glim:
    G_glim(g)
    continue
@@ -106,6 +147,7 @@ def G_shen(g):
    message([random.choice(('No refunds. Ever.',"You didn't see me.",'Come back soon, friend.'))],'Shady Shen')
    return
   n,p=S[c]
+  p*=1-free
   if g.coins<p:
    message(["That's "+str(p)+' coins, friend.','Come back richer.'],'Shady Shen')
    continue
@@ -135,10 +177,11 @@ def G_shen(g):
    if d is None:
     continue
   g.coins-=p
-  if c!=13 and g.book>>28&1 and(random.random()<0.1):
+  if not free and c!=13 and g.book>>28&1 and(random.random()<0.1):
    message([random.choice(('It was just a painted rock!','The box was empty...','It crumbled into dust.','It melted in your hand.'))],'Huh?')
    continue
-  g.book|=1<<28
+  g.book=g.book&~(1<<22)|1<<28
+  free=0
   g.buys+=1
   if g.buys==10:
    message(["Psst... you're my best","customer. Next time I'll",'have something special.'],'Shady Shen')
@@ -214,7 +257,7 @@ def G_shen(g):
 def G_shen_off(g):
  if g.shen:
   m,x,y=g.shen
-  if g.maps[m][y][x]=='M':
+  if g.maps[m][y][x]in 'MO':
    g.maps[m][y][x]='.'
    if m==g.m:
     G_cells(g,[(x,y)],False)
