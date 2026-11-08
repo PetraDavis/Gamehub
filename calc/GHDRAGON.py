@@ -1261,109 +1261,116 @@ def deal(g, k, n):
     return d.pop()
 
 
-# the arena's 10 tamers: name, dragon kind, its level, what they say ("/" = new line, "#" = next box)
-TAMERS = (("Timmy", 0, 2, "Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak is gonna/toast you!/...Probably."),
-          ("Lulu", 4, 4, "I'm Lulu. Aww, is/that your dragon?/It's so tiny!"),
-          ("Rocco", 6, 5, "Name's Rocco.#Rocks beat everything./That's science."),
-          ("Mira", 2, 7, "I'm Mira. I've never/lost. Not once. Ever./Don't ruin it."),
-          ("Dex", 1, 8, "Dex. Remember it,/because you'll be/crying it later."),
-          ("Captain Vex", 3, 11, "Captain Vex! I've/beaten 100 tamers./You're number 101."),
-          ("Duchess Ivy", 5, 13, "I am Duchess Ivy.#Kneel before my/Lichenwing, peasant!"),
-          ("Grim", 8, 14, "...I'm Grim.#...Your dragon looks/tired already."),
-          ("Sheen", 23, 15, "A hooded tamer with/yellow eyes steps up.#Name's Sheen. NOT/Shen. Never heard of/him. Heh.#Behold my super rare/GOLDEN DRAGON!/Shiny, huh? Heh heh."),
-          ("Aurora", 10, 16, "I'm Aurora, the/champion. So you/made it this far.#Impressive. Now watch/me end it."))
+# Arena section 1 (10 tamers). One line per tamer, fields split by "~": name, dragon kind, its level,
+# what they say ("/" = new line, "#" = next box), what they say to your Lumora|Quantum|Petralith
+# (nobody names the secret two), and for Timmy only, his shiny compliment (Silver|Gold|Neon|Purple-blue).
+# Packed into one string per section so the little tamer file (A) costs very few code words.
+TAMERS = ("Timmy~0~2~Hi! I'm Timmy!/This is my first/tournament!#My Pyrrak is gonna/toast you!/...Probably.~Is that a LUMORA?!/Those are, like,/super legendary!|WHAT is THAT?!/It looks like space!/Is it even real?!|A ROCK DRAGON?!/With GOLD cracks?!/Best rock EVER!~WHOA! It's SILVER!/Is that normal?!/That's so cool!|It's GOLD! Like a/treasure! Can my/Pyrrak be gold too?|It GLOWS! Mom has/to see this! Wait,/do I still fight it?|PURPLE AND BLUE?!/Best. Day. EVER!/I'm telling everyone!\n"
+          "Lulu~4~4~I'm Lulu. Aww, is/that your dragon?/It's so tiny!~A Lumora?! Okay,/that is NOT tiny./That's amazing.|What... IS that?/I'm scared. And/also jealous.|Is it... a statue?/Wait, it MOVED!/Ahh!\n"
+          "Rocco~6~5~Name's Rocco.#Rocks beat everything./That's science.~|That thing isn't/rock. I don't trust/it. At all.|A dragon made of/ROCK! I TOLD you/rocks are the best!\n"
+          "Mira~2~7~I'm Mira. I've never/lost. Not once. Ever./Don't ruin it.~A Lumora... I've/only seen one in/a painting.|I've never seen a/dragon like that./What IS it?|Gold cracks and/crystals? Is that/even a dragon?\n"
+          "Dex~1~8~Dex. Remember it,/because you'll be/crying it later.~||\n"
+          "Captain Vex~3~11~Captain Vex! I've/beaten 100 tamers./You're number 101.~A Lumora! Stars on/its wings, like a/sailor's night sky!|Blimey! What beast/is THAT? It's like/the night itself!|That's no dragon,/it's a walking/treasure chest! Arr!\n"
+          "Duchess Ivy~5~13~I am Duchess Ivy.#Kneel before my/Lichenwing, peasant!~A Lumora! Even I/don't own one./How dare you.|That dragon... it's/darker than my/castle dungeon!|Gold AND crystals!/The fanciest dragon/in all the land!\n"
+          "Grim~8~14~...I'm Grim.#...Your dragon looks/tired already.~|......!#...Finally. A dragon/as dark as me.|...A stone dragon.#...It looks older/than the mountains.\n"
+          "Sheen~23~15~A hooded tamer with/yellow eyes steps up.#Name's Sheen. NOT/Shen. Never heard of/him. Heh.#Behold my super rare/GOLDEN DRAGON!/Shiny, huh? Heh heh.~|Ooh, nice dragon./Wanna sell it? I'll/give you 20 coins.|Those crystals look/valuable. Wanna/trade? Heh heh.\n"
+          "Aurora~10~16~I'm Aurora, the/champion. So you/made it this far.#Impressive. Now watch/me end it.~A Lumora! I've/always wanted one./Lucky you.|I've never seen/that dragon. Not/even in books.|A dragon of stone?/I didn't know they/existed. Amazing.")
 
-
-# what tamers say about a Legendary (19), Quantum (20) or Petralith (21) partner
-# (only Timmy gushes about shinies: SHINE below)
-SPECIAL = {19: {"Timmy": "Is that a LUMORA?!/Those are, like,/super legendary!",
-               "Lulu": "A Lumora?! Okay,/that is NOT tiny./That's amazing.",
-               "Mira": "A Lumora... I've/only seen one in/a painting.",
-               "Captain Vex": "A Lumora! Stars on/its wings, like a/sailor's night sky!",
-               "Duchess Ivy": "A Lumora! Even I/don't own one./How dare you.",
-               "Aurora": "A Lumora! I've/always wanted one./Lucky you."},
-           20: {"Timmy": "WHAT is THAT?!/It looks like space!/Is it even real?!",
-               "Lulu": "What... IS that?/I'm scared. And/also jealous.",
-               "Rocco": "That thing isn't/rock. I don't trust/it. At all.",
-               "Mira": "I've never seen a/dragon like that./What IS it?",
-               "Captain Vex": "Blimey! What beast/is THAT? It's like/the night itself!",
-               "Duchess Ivy": "That dragon... it's/darker than my/castle dungeon!",
-               "Grim": "......!#...Finally. A dragon/as dark as me.",
-               "Sheen": "Ooh, nice dragon./Wanna sell it? I'll/give you 20 coins.",
-               "Aurora": "I've never seen/that dragon. Not/even in books."},
-           21: {"Timmy": "A ROCK DRAGON?!/With GOLD cracks?!/Best rock EVER!",
-               "Lulu": "Is it... a statue?/Wait, it MOVED!/Ahh!",
-               "Rocco": "A dragon made of/ROCK! I TOLD you/rocks are the best!",
-               "Mira": "Gold cracks and/crystals? Is that/even a dragon?",
-               "Captain Vex": "That's no dragon,/it's a walking/treasure chest! Arr!",
-               "Duchess Ivy": "Gold AND crystals!/The fanciest dragon/in all the land!",
-               "Grim": "...A stone dragon.#...It looks older/than the mountains.",
-               "Sheen": "Those crystals look/valuable. Wanna/trade? Heh heh.",
-               "Aurora": "A dragon of stone?/I didn't know they/existed. Amazing."}}
-
-# Timmy is so new that any shiny amazes him: one line for each kind (Silver, Gold, Neon, Purple-blue)
-SHINE = {"Timmy": "WHOA! It's SILVER!/Is that normal?!/That's so cool!|It's GOLD! Like a/treasure! Can my/Pyrrak be gold too?|It GLOWS! Mom has/to see this! Wait,/do I still fight it?|PURPLE AND BLUE?!/Best. Day. EVER!/I'm telling everyone!"}
 
 
 # sections 2 (20 tamers, levels 18-28) and 3 (30 tamers, levels 30-46); the last of each is its boss.
 # Dragons go up in rarity across all 60: Common, Uncommon, Rare, Epic, and only Grandmaster Zora has a Lumora.
 # A name starting with * is a tamer who doesn't say their name (shown as ???).
-# Last: what they say to your Lumora|Quantum|Petralith (they've never heard of the secret two)
-SEC2 = (("Gus", 7, 19, "GUS! I'M GUS! I/YELL A LOT!#SORRY! NOT SORRY!/LET'S FIGHT!", "A LUMORA?! THAT'S/SO COOL I'M/YELLING MORE!|WHAT IS THAT?!/IT'S SO DARK! I/CAN'T STOP YELLING!|A ROCK DRAGON?!/WITH GOLD?! THAT'S/LOUD-LEVEL COOL!"),
-        ("Ash", 8, 18, "I'm Ash. Like the/dragon. Like what/fire leaves behind.#Guess which one/you'll be soon.", "Stars on its wings./Fire could never/burn that bright.|That thing is/darker than ash./I don't like it.|Stone doesn't/burn. That's.../a problem for me."),
-        ("*Cole", 9, 21, "...#...My Glacius/does the talking.", "...!#...Nice Lumora.|......#...What IS that?|...#...Whoa."),
-        ("Bree", 10, 19, "Bree here! I talk/fast, I fight fast,/I win fast!#Ready? Set? GO!", "LumoraLumoraLumora!/I can't talk fast/enough for this!|Wait-what-is-that?/I've never seen/that! Not ever!|Is-that-a-ROCK?/That-MOVES?! Okay,/I'm-slowing-down."),
-        ("Kip", 10, 18, "Hi, I'm Kip! I'm/the youngest in/Section 2!#Don't go easy on/me. I won't!", "Is that a real/Lumora?! Can I/touch it? Please?|Whoa... it's like/a shadow with/eyes. I'm scared!|A dragon made of/rocks?! I want to be/you when I grow up!"),
-        ("Ivo", 11, 22, "Ivo's the name./Thorns are my/game.#Touch my dragon/and you'll regret it.", "Even my thorns/bow to a Lumora./Respect.|Thorns can't hurt/a shadow. What/is that thing?!|Thorns on stone/just snap. Great./Just great."),
-        ("Otto", 11, 20, "I'm Otto. I grow/the best turnips/in the land.#Also, I crush/tamers. Hobby.", "A Lumora! Worth/more than every/turnip I've grown.|That's no turnip./That's no dragon/I know, either!|I hate rocks in/my field. But THAT/rock I'd keep!"),
-        ("Pia", 9, 18, "Pia! I've never/won a match.#But today feels/different!", "A Lumora?! Okay,/today does NOT/feel different now.|What is THAT?!/Never mind. I've/lost already.|A walking boulder!/Maybe I'll win/next year..."),
-        ("*Quinn", 8, 23, "Fastest tamer/alive. Don't/blink.#You blinked. That's/one point for me.", "A Lumora. My fast/eyes saw that/one coming.|I blinked. And/that thing was/still staring.|Fast beats rock?/...Usually. Not/that rock."),
-        ("*Max", 7, 24, "Maximum power./Maximum speed.#Minimum mercy.", "Maximum Lumora./Maximum jealous.|Maximum creepy./Minimum idea what/that thing is.|Maximum rock./Maximum gold./Maximum unfair."),
-        ("Eli", 12, 21, "Eli. I wake up at/dawn every day/to train.#What time did YOU/wake up? Thought so.", "A Lumora! Like/the sky right/before dawn.|That thing is/darker than the/night before dawn.|Gold cracks, like/the sun rising/through stone."),
-        ("Luna", 12, 25, "I'm Luna. I only/fight at night...#...but I'll make an/exception for you.", "Stars on its/wings... my kind/of dragon.|I love the night./But THAT is/darker than night.|It shines gold/in the dark./I like it."),
-        ("Faye", 13, 20, "I'm Faye, and this/is Princess Pearl./Say hi, Pearl!#She says you're/going down.", "Princess Pearl,/look! A Lumora!/Be polite!|Princess Pearl is/hiding behind me./Me too, honestly.|Pearl says rocks/aren't pretty. She's/WRONG this time."),
-        ("Hana", 14, 24, "I'm Hana. I've read/every dragon book/in the library.#I already know/your weak spot.", "A Lumora! It's on/page 1 of every/dragon book I own!|That's in NO book/I've read. And I've/read them all!|Not in any book!/I'm writing my/own book now."),
-        ("Jade", 14, 22, "I'm Jade, and yes,/my dragon is a/Jadewyrm.#We match. It's/a whole thing.", "A Lumora! We/don't match, but/I'll allow it.|That one matches/nothing. Not even/the night.|Gold and stone./That matches/everything."),
-        ("Dina", 15, 21, "I'm Dina! I braid/flowers into my/dragon's tail.#Pretty AND deadly!", "A Lumora! I'd/braid starflowers/into its tail!|No flower would/grow near that./Brr.|I'd put flowers/in its cracks!/So pretty!"),
-        ("*Rex", 13, 26, "Names are for/winners. Call me/'The End'.#...Okay, that one/sounded cooler/in my head.", "A Lumora. Fine./'The End' is still/coming. For you.|...'The End'/doesn't want to/fight that thing.|A rock dragon?!/...Call me/'The Beginning'."),
-        ("*Nora", 15, 25, "I found my dragon/in a cave nobody/came out of.#Want to know/why? Heh.", "Even my secret/cave had no/Lumora in it.|I've been in dark/caves. Nothing/THAT dark.|It looks like it/crawled out of MY/cave. Hmm."),
-        ("Sage", 14, 27, "I am Sage. I have/meditated for/three days.#I already know how/this ends.", "A Lumora. My/meditation did/not foresee that.|I meditated/three days. I did/not see THAT.|Stone is calm./Stone is patient./Stone is... winning."),
-        ("Sir Cedric", 16, 28, "I am Sir Cedric,/keeper of the/second gate.#Nineteen tamers fell/before me. You will/be the twentieth.", "A Lumora at my/gate. A worthy/challenger at last.|In all my years/at this gate, never/one like THAT.|A knight of stone/and gold! Even my/gate bows to it."))
-SEC3 = (("Tara", 15, 31, "I'm Tara. Welcome/to Section 3, where/dreams end.#Just kidding!/...Mostly.", "A Lumora! Okay,/your dreams might/NOT end here.|What is THAT?!/I'm the one whose/dreams are ending.|Stone and gold?/Section 3 just got/scary for ME."),
-        ("*Ugo", 14, 34, "I don't need an/intro. People/know me.#...You don't?/Rude.", "A Lumora? People/will know YOU now./Rude.|Nobody knows/what THAT is./Not even me.|Everybody will/talk about that/rock. Not me. Rude."),
-        ("Wade", 13, 30, "Wade here. I'm/a fisherman. So is/my Pearlhorn.#We're fishing for/a win today.", "A Lumora! The/best catch I've/ever seen!|That came from/deeper than any/fish I've caught.|Can't fish a rock./Can't beat one/either, I bet."),
-        ("Yuri", 12, 32, "Yuri. I paint my/dragon's wins on/its scales.#I'm running out/of room.", "I'd paint that/Lumora on my/dragon's scales!|I don't have paint/dark enough for/that thing.|Gold cracks! It/already looks/painted!"),
-        ("Dot", 12, 30, "I'm Dot! I'm tiny,/but my dragon/isn't!#Size isn't/everything!", "A Lumora! It's/even bigger than/my dragon!|That thing is/scary AND big!/Size IS everything!|A giant rock!/Okay, size is/kind of everything."),
-        ("Iris", 15, 35, "I'm Iris. My/dragon can see/every color.#And it sees you/losing.", "My dragon sees/every color. It/sees stars now.|My dragon sees/every color. It/can't see THAT.|Gold, silver and/grey. My dragon/loves those colors."),
-        ("Kai", 14, 33, "I'm Kai. I surf/on my dragon's/back. Gnarly!#Let's ride, dude!", "A Lumora!/Totally gnarly,/dude!|Dude... that is/NOT gnarly. That/is creepy, dude.|Dude, you can't/surf on a rock!/...Can you?"),
-        ("Gwen", 13, 31, "I'm Gwen, the/dragon doctor! I/fix hurt dragons.#Your dragon will/need me later.", "A Lumora! I'd/love to check/its heartbeat!|I don't know how/to fix whatever/THAT is.|A stone dragon!/My bandages won't/stick to that."),
-        ("Pax", 15, 32, "Hi! I'm Pax. I love/peace and making/friends!#...Right after I/beat you, though.", "A Lumora! Let's/be friends! After/I beat you.|I want to make/friends with that./...From far away.|Rocks are good/friends. They never/leave. Or move."),
-        ("Thea", 14, 36, "Thea. I collect/badges. I have 49.#You'll be/number 50.", "A Lumora! You/should get a badge/just for that!|There's no badge/for whatever that/is. I'd know.|A rock dragon/badge! That'd be/number 50!"),
-        ("Xena", 16, 38, "I'm Xena, warrior/tamer! My dragon/and I are ONE!#Feel our/POWER!", "A Lumora! Our/POWER meets its/LIGHT!|Even a warrior/feels fear. That/thing... is fear.|A warrior made/of stone! Finally,/a real fight!"),
-        ("Bea", 16, 33, "Bea! Like a bee!/Buzz buzz!#...And yes, I/sting. Hard.", "Buzz! A Lumora!/Even bees like/stars!|Bees run from/smoke. I'm running/from THAT.|Stinging a rock/hurts the bee./I learned that."),
-        ("Ezra", 16, 37, "Ezra. I've studied/your fights. All/of them.#I have notes./Lots of notes.", "A Lumora. Note:/change strategy./Big time.|My notes say/nothing about/that. NOTHING.|Note: stone./Note: gold./Note: I'm worried."),
-        ("*Flint", 16, 39, "Spark. Fire./Done.#That's how fast/this goes.", "Lumora. Bright./Nice.|Dark. Too dark./Nope.|Stone. Fire won't/help. Ugh."),
-        ("Orin", 16, 36, "Orin. I forge/swords AND tame/dragons.#Both are hot./Both burn.", "A Lumora! I'd/forge a sword/from its starlight.|I've worked dark/forges. Never seen/THAT kind of dark.|Gold veins in/stone! Best metal/I've ever seen."),
-        ("Abel", 17, 34, "I'm Abel. I came/all the way from/across the sea.#I'm not going/home a loser.", "Across the sea/they only TALK/about Lumoras!|Nobody across the/sea has seen/anything like that.|I crossed the sea/to see THAT?/Worth the trip."),
-        ("*Jax", 17, 40, "I used to be a/pirate. Now I'm/something worse.#A pirate with/a dragon.", "A Lumora! My/pirate heart says/steal it. I won't.|Even pirates know/when to sail away./Like now.|Gold in the/rock! That's/treasure, matey!"),
-        ("Rue", 17, 38, "I'm Rue. You'll rue/the day you met me.#Get it? Rue?/...Nobody laughs.", "You'll rue the/day... wait, a/Lumora? I rue it.|I rue the day/I saw that./Get it? ...Brr.|Rock beats me./Rue... ME./Oh no."),
-        ("*Vic", 17, 41, "My name? Let's just/say it's short/for victory.#My parents knew.", "A Lumora? Victory/just got harder.|Short for victory./Not short for/'fight THAT'.|That rock is/short for/'I lose'."),
-        ("Lark", 18, 35, "Lark! I sing to my/dragon before every/fight. La la la!#This one's a sad/song. For you.", "A Lumora! I'll/write a happy/song about it!|La la... la./I forgot the words./What IS that?|A rock song! I/finally get to/sing one!"),
-        ("Cyrus", 18, 42, "Cyrus. My family/has tamed dragons/for 300 years.#You're just/a beginner.", "A Lumora. My/family has met/only two.|300 years of/tamers. Not one/saw THAT.|My family never/tamed a rock./Until now?"),
-        ("*Hugo", 18, 44, "The biggest tamer/in the arena./Literally.#I'm 7 feet tall./Scared yet?", "A Lumora! For/once I feel/small. Nice.|7 feet tall,/and I'm hiding./What IS that?|That rock is/bigger than me!/Feels weird."),
-        ("*Nell", 18, 40, "...#I don't smile./...Okay, maybe/when I win.", "...#...I'm smiling./Don't tell anyone.|...#...I'm not smiling./At all.|...#...Okay. That's/cool. Fine."),
-        ("Una", 18, 43, "I'm Una. Number/one. Always.#Literally. Una/means one.", "A Lumora! Number/one dragon. Ugh,/I'm number two.|That's not number/one. That's number/zero. Scary.|One rock dragon./Only one./Like me."),
-        ("Vera", 18, 45, "I'm Vera. I've won/every tournament/for 10 years.#Except one. We/don't talk about it.", "A Lumora. In 10/years I've seen/only two.|10 years of/tournaments. Never/seen THAT.|Remember the one/I lost? Not to/that. Phew."),
-        ("Zoe", 17, 39, "I'm Zoe, and this/is my Abyssar./Pretty, right?#She's even prettier/when she wins.", "A Lumora! Okay,/that's prettier/than my Abyssar.|Pretty? No./Scary. Super/scary.|Gold and stone!/Pretty AND tough./I'm jealous."),
-        ("Milo", 18, 41, "I'm Milo. My/Rootwyrm was a gift/from my grandpa.#He never lost./Neither will I.", "Grandpa told me/about Lumoras./He'd love this.|Grandpa never/told me about/anything like that.|Grandpa liked/rocks. He'd have/LOVED that."),
-        ("Skye", 17, 42, "I'm Skye. My dragon/has never touched/the ground.#You won't either/after this hit.", "A Lumora! Its/wings look like/the night sky.|That came from/somewhere darker/than the sky.|A rock that/flies? Now I've/seen everything."),
-        ("Wren", 18, 44, "I'm Wren, the last/one before the/Grandmaster.#Nobody has passed/me in two years.", "A Lumora. Maybe/you WILL get past/me.|Two years nobody/passed me. That/thing might.|A stone wall,/like me. Who/blinks first?"),
-        ("Grandmaster Zora", 19, 46, "So. You're the one/everyone whispers/about.#I am Grandmaster/Zora. Nobody has/ever beaten me.", "Another Lumora.#Two stars in one/arena. Only one/will shine.|In all my years/I have never seen/such a creature.|Stone and gold./I thought I'd seen/it all. I was wrong."))
+# Same fields as section 1, without the shiny compliment
+SEC2 = ("Gus~7~19~GUS! I'M GUS! I/YELL A LOT!#SORRY! NOT SORRY!/LET'S FIGHT!~A LUMORA?! THAT'S/SO COOL I'M/YELLING MORE!|WHAT IS THAT?!/IT'S SO DARK! I/CAN'T STOP YELLING!|A ROCK DRAGON?!/WITH GOLD?! THAT'S/LOUD-LEVEL COOL!\n"
+        "Ash~8~18~I'm Ash. Like the/dragon. Like what/fire leaves behind.#Guess which one/you'll be soon.~Stars on its wings./Fire could never/burn that bright.|That thing is/darker than ash./I don't like it.|Stone doesn't/burn. That's.../a problem for me.\n"
+        "*Cole~9~21~...#...My Glacius/does the talking.~...!#...Nice Lumora.|......#...What IS that?|...#...Whoa.\n"
+        "Bree~10~19~Bree here! I talk/fast, I fight fast,/I win fast!#Ready? Set? GO!~LumoraLumoraLumora!/I can't talk fast/enough for this!|Wait-what-is-that?/I've never seen/that! Not ever!|Is-that-a-ROCK?/That-MOVES?! Okay,/I'm-slowing-down.\n"
+        "Kip~10~18~Hi, I'm Kip! I'm/the youngest in/Section 2!#Don't go easy on/me. I won't!~Is that a real/Lumora?! Can I/touch it? Please?|Whoa... it's like/a shadow with/eyes. I'm scared!|A dragon made of/rocks?! I want to be/you when I grow up!\n"
+        "Ivo~11~22~Ivo's the name./Thorns are my/game.#Touch my dragon/and you'll regret it.~Even my thorns/bow to a Lumora./Respect.|Thorns can't hurt/a shadow. What/is that thing?!|Thorns on stone/just snap. Great./Just great.\n"
+        "Otto~11~20~I'm Otto. I grow/the best turnips/in the land.#Also, I crush/tamers. Hobby.~A Lumora! Worth/more than every/turnip I've grown.|That's no turnip./That's no dragon/I know, either!|I hate rocks in/my field. But THAT/rock I'd keep!\n"
+        "Pia~9~18~Pia! I've never/won a match.#But today feels/different!~A Lumora?! Okay,/today does NOT/feel different now.|What is THAT?!/Never mind. I've/lost already.|A walking boulder!/Maybe I'll win/next year...\n"
+        "*Quinn~8~23~Fastest tamer/alive. Don't/blink.#You blinked. That's/one point for me.~A Lumora. My fast/eyes saw that/one coming.|I blinked. And/that thing was/still staring.|Fast beats rock?/...Usually. Not/that rock.\n"
+        "*Max~7~24~Maximum power./Maximum speed.#Minimum mercy.~Maximum Lumora./Maximum jealous.|Maximum creepy./Minimum idea what/that thing is.|Maximum rock./Maximum gold./Maximum unfair.\n"
+        "Eli~12~21~Eli. I wake up at/dawn every day/to train.#What time did YOU/wake up? Thought so.~A Lumora! Like/the sky right/before dawn.|That thing is/darker than the/night before dawn.|Gold cracks, like/the sun rising/through stone.\n"
+        "Luna~12~25~I'm Luna. I only/fight at night...#...but I'll make an/exception for you.~Stars on its/wings... my kind/of dragon.|I love the night./But THAT is/darker than night.|It shines gold/in the dark./I like it.\n"
+        "Faye~13~20~I'm Faye, and this/is Princess Pearl./Say hi, Pearl!#She says you're/going down.~Princess Pearl,/look! A Lumora!/Be polite!|Princess Pearl is/hiding behind me./Me too, honestly.|Pearl says rocks/aren't pretty. She's/WRONG this time.\n"
+        "Hana~14~24~I'm Hana. I've read/every dragon book/in the library.#I already know/your weak spot.~A Lumora! It's on/page 1 of every/dragon book I own!|That's in NO book/I've read. And I've/read them all!|Not in any book!/I'm writing my/own book now.\n"
+        "Jade~14~22~I'm Jade, and yes,/my dragon is a/Jadewyrm.#We match. It's/a whole thing.~A Lumora! We/don't match, but/I'll allow it.|That one matches/nothing. Not even/the night.|Gold and stone./That matches/everything.\n"
+        "Dina~15~21~I'm Dina! I braid/flowers into my/dragon's tail.#Pretty AND deadly!~A Lumora! I'd/braid starflowers/into its tail!|No flower would/grow near that./Brr.|I'd put flowers/in its cracks!/So pretty!\n"
+        "*Rex~13~26~Names are for/winners. Call me/'The End'.#...Okay, that one/sounded cooler/in my head.~A Lumora. Fine./'The End' is still/coming. For you.|...'The End'/doesn't want to/fight that thing.|A rock dragon?!/...Call me/'The Beginning'.\n"
+        "*Nora~15~25~I found my dragon/in a cave nobody/came out of.#Want to know/why? Heh.~Even my secret/cave had no/Lumora in it.|I've been in dark/caves. Nothing/THAT dark.|It looks like it/crawled out of MY/cave. Hmm.\n"
+        "Sage~14~27~I am Sage. I have/meditated for/three days.#I already know how/this ends.~A Lumora. My/meditation did/not foresee that.|I meditated/three days. I did/not see THAT.|Stone is calm./Stone is patient./Stone is... winning.\n"
+        "Sir Cedric~16~28~I am Sir Cedric,/keeper of the/second gate.#Nineteen tamers fell/before me. You will/be the twentieth.~A Lumora at my/gate. A worthy/challenger at last.|In all my years/at this gate, never/one like THAT.|A knight of stone/and gold! Even my/gate bows to it.")
+SEC3 = ("Tara~15~31~I'm Tara. Welcome/to Section 3, where/dreams end.#Just kidding!/...Mostly.~A Lumora! Okay,/your dreams might/NOT end here.|What is THAT?!/I'm the one whose/dreams are ending.|Stone and gold?/Section 3 just got/scary for ME.\n"
+        "*Ugo~14~34~I don't need an/intro. People/know me.#...You don't?/Rude.~A Lumora? People/will know YOU now./Rude.|Nobody knows/what THAT is./Not even me.|Everybody will/talk about that/rock. Not me. Rude.\n"
+        "Wade~13~30~Wade here. I'm/a fisherman. So is/my Pearlhorn.#We're fishing for/a win today.~A Lumora! The/best catch I've/ever seen!|That came from/deeper than any/fish I've caught.|Can't fish a rock./Can't beat one/either, I bet.\n"
+        "Yuri~12~32~Yuri. I paint my/dragon's wins on/its scales.#I'm running out/of room.~I'd paint that/Lumora on my/dragon's scales!|I don't have paint/dark enough for/that thing.|Gold cracks! It/already looks/painted!\n"
+        "Dot~12~30~I'm Dot! I'm tiny,/but my dragon/isn't!#Size isn't/everything!~A Lumora! It's/even bigger than/my dragon!|That thing is/scary AND big!/Size IS everything!|A giant rock!/Okay, size is/kind of everything.\n"
+        "Iris~15~35~I'm Iris. My/dragon can see/every color.#And it sees you/losing.~My dragon sees/every color. It/sees stars now.|My dragon sees/every color. It/can't see THAT.|Gold, silver and/grey. My dragon/loves those colors.\n"
+        "Kai~14~33~I'm Kai. I surf/on my dragon's/back. Gnarly!#Let's ride, dude!~A Lumora!/Totally gnarly,/dude!|Dude... that is/NOT gnarly. That/is creepy, dude.|Dude, you can't/surf on a rock!/...Can you?\n"
+        "Gwen~13~31~I'm Gwen, the/dragon doctor! I/fix hurt dragons.#Your dragon will/need me later.~A Lumora! I'd/love to check/its heartbeat!|I don't know how/to fix whatever/THAT is.|A stone dragon!/My bandages won't/stick to that.\n"
+        "Pax~15~32~Hi! I'm Pax. I love/peace and making/friends!#...Right after I/beat you, though.~A Lumora! Let's/be friends! After/I beat you.|I want to make/friends with that./...From far away.|Rocks are good/friends. They never/leave. Or move.\n"
+        "Thea~14~36~Thea. I collect/badges. I have 49.#You'll be/number 50.~A Lumora! You/should get a badge/just for that!|There's no badge/for whatever that/is. I'd know.|A rock dragon/badge! That'd be/number 50!\n"
+        "Xena~16~38~I'm Xena, warrior/tamer! My dragon/and I are ONE!#Feel our/POWER!~A Lumora! Our/POWER meets its/LIGHT!|Even a warrior/feels fear. That/thing... is fear.|A warrior made/of stone! Finally,/a real fight!\n"
+        "Bea~16~33~Bea! Like a bee!/Buzz buzz!#...And yes, I/sting. Hard.~Buzz! A Lumora!/Even bees like/stars!|Bees run from/smoke. I'm running/from THAT.|Stinging a rock/hurts the bee./I learned that.\n"
+        "Ezra~16~37~Ezra. I've studied/your fights. All/of them.#I have notes./Lots of notes.~A Lumora. Note:/change strategy./Big time.|My notes say/nothing about/that. NOTHING.|Note: stone./Note: gold./Note: I'm worried.\n"
+        "*Flint~16~39~Spark. Fire./Done.#That's how fast/this goes.~Lumora. Bright./Nice.|Dark. Too dark./Nope.|Stone. Fire won't/help. Ugh.\n"
+        "Orin~16~36~Orin. I forge/swords AND tame/dragons.#Both are hot./Both burn.~A Lumora! I'd/forge a sword/from its starlight.|I've worked dark/forges. Never seen/THAT kind of dark.|Gold veins in/stone! Best metal/I've ever seen.\n"
+        "Abel~17~34~I'm Abel. I came/all the way from/across the sea.#I'm not going/home a loser.~Across the sea/they only TALK/about Lumoras!|Nobody across the/sea has seen/anything like that.|I crossed the sea/to see THAT?/Worth the trip.\n"
+        "*Jax~17~40~I used to be a/pirate. Now I'm/something worse.#A pirate with/a dragon.~A Lumora! My/pirate heart says/steal it. I won't.|Even pirates know/when to sail away./Like now.|Gold in the/rock! That's/treasure, matey!\n"
+        "Rue~17~38~I'm Rue. You'll rue/the day you met me.#Get it? Rue?/...Nobody laughs.~You'll rue the/day... wait, a/Lumora? I rue it.|I rue the day/I saw that./Get it? ...Brr.|Rock beats me./Rue... ME./Oh no.\n"
+        "*Vic~17~41~My name? Let's just/say it's short/for victory.#My parents knew.~A Lumora? Victory/just got harder.|Short for victory./Not short for/'fight THAT'.|That rock is/short for/'I lose'.\n"
+        "Lark~18~35~Lark! I sing to my/dragon before every/fight. La la la!#This one's a sad/song. For you.~A Lumora! I'll/write a happy/song about it!|La la... la./I forgot the words./What IS that?|A rock song! I/finally get to/sing one!\n"
+        "Cyrus~18~42~Cyrus. My family/has tamed dragons/for 300 years.#You're just/a beginner.~A Lumora. My/family has met/only two.|300 years of/tamers. Not one/saw THAT.|My family never/tamed a rock./Until now?\n"
+        "*Hugo~18~44~The biggest tamer/in the arena./Literally.#I'm 7 feet tall./Scared yet?~A Lumora! For/once I feel/small. Nice.|7 feet tall,/and I'm hiding./What IS that?|That rock is/bigger than me!/Feels weird.\n"
+        "*Nell~18~40~...#I don't smile./...Okay, maybe/when I win.~...#...I'm smiling./Don't tell anyone.|...#...I'm not smiling./At all.|...#...Okay. That's/cool. Fine.\n"
+        "Una~18~43~I'm Una. Number/one. Always.#Literally. Una/means one.~A Lumora! Number/one dragon. Ugh,/I'm number two.|That's not number/one. That's number/zero. Scary.|One rock dragon./Only one./Like me.\n"
+        "Vera~18~45~I'm Vera. I've won/every tournament/for 10 years.#Except one. We/don't talk about it.~A Lumora. In 10/years I've seen/only two.|10 years of/tournaments. Never/seen THAT.|Remember the one/I lost? Not to/that. Phew.\n"
+        "Zoe~17~39~I'm Zoe, and this/is my Abyssar./Pretty, right?#She's even prettier/when she wins.~A Lumora! Okay,/that's prettier/than my Abyssar.|Pretty? No./Scary. Super/scary.|Gold and stone!/Pretty AND tough./I'm jealous.\n"
+        "Milo~18~41~I'm Milo. My/Rootwyrm was a gift/from my grandpa.#He never lost./Neither will I.~Grandpa told me/about Lumoras./He'd love this.|Grandpa never/told me about/anything like that.|Grandpa liked/rocks. He'd have/LOVED that.\n"
+        "Skye~17~42~I'm Skye. My dragon/has never touched/the ground.#You won't either/after this hit.~A Lumora! Its/wings look like/the night sky.|That came from/somewhere darker/than the sky.|A rock that/flies? Now I've/seen everything.\n"
+        "Wren~18~44~I'm Wren, the last/one before the/Grandmaster.#Nobody has passed/me in two years.~A Lumora. Maybe/you WILL get past/me.|Two years nobody/passed me. That/thing might.|A stone wall,/like me. Who/blinks first?\n"
+        "Grandmaster Zora~19~46~So. You're the one/everyone whispers/about.#I am Grandmaster/Zora. Nobody has/ever beaten me.~Another Lumora.#Two stars in one/arena. Only one/will shine.|In all my years/I have never seen/such a creature.|Stone and gold./I thought I'd seen/it all. I was wrong.")
 
 
-def tamer(s, i):
-    # tamer i of section s: kept in a small file of its own (A) that loads for a moment before each match
-    return (TAMERS, SEC2, SEC3)[s][i]
+def tamer(s, i, k, g=0):
+    # Kept in a small file of its own (A) that loads for a moment, so the fight file stays small.
+    # With g: the prize for winning i of k matches in section s. Otherwise: tamer i of section s
+    # as (name, kind, level, intro, what they say to your partner of kind k, Timmy's shiny lines)
+    if g:
+        w, N = i, k
+        # coins for every win (more in later sections), a Glimmer Stone for getting far
+        c = (0, 15, 30, 50, 75, 100, 130, 165, 200, 250, 300)[w] if not s else (25, 30)[s - 1] * w
+        m = ["You won " + str(w) + " of " + str(N) + " matches.", "+" + str(c) + " coins!"]
+        if w > N * 2 // 3:
+            g.glim += s + 1
+            m.append("And " + str(s + 1) + " Glimmer Stone" + "s!"[s < 1:])
+        if w == N:
+            if s < 2:
+                m = ["SECTION " + str(s + 1) + " WON!", "+" + str(c) + " coins!", ("Section " + str(s + 2) + " is open!") if not g.book >> 37 + s & 1 else "Glimmer Stones too!"]
+                g.book |= 1 << 37 + s
+                # the first win of a section also gives an egg: a Rare one for Section 1, an Epic one
+                # for Section 2 (book bits 39, 40 once given; no room = it waits for your next win)
+                if not g.book >> 39 + s & 1:
+                    if len(g.bag) < 5:
+                        g.book |= 1 << 39 + s
+                        g.bag.append(random.choice([i for i in range(20) if DT[i][2] == s + 2]))
+                        m.append(("And a Rare egg!", "And an Epic egg!")[s])
+                    else:
+                        m.append("(No room for the egg!)")
+            elif not g.book >> 35 & 1 and len(g.bag) < 5 and kids(g) + 4 <= 40:
+                # the Champion egg: only for winning all three sections
+                g.book |= 1 << 35
+                g.bag.append(24)
+                m = ["GRAND CHAMPION!", "+" + str(c) + " coins and a", "Champion egg!"]
+            else:
+                m = ["GRAND CHAMPION!", "+" + str(c) + " coins and", "3 Glimmer Stones!" if g.book >> 35 & 1 else "(no room for the egg!)"]
+        g.coins += c
+        message(m, "Arena")
+        return
+    T = (TAMERS, SEC2, SEC3)[s].split("\n")[i].split("~")
+    return (T[0], int(T[1]), int(T[2]), T[3], T[4].split("|")[k - 19] if 18 < k < 22 else "", T[5] if len(T) > 5 else 0)
 
 
 def arena(g, *a):
@@ -1396,8 +1403,7 @@ def arena(g, *a):
     w = 0
     N = 10 * s + 10
     for i in range(N):
-        T = tamer(s, i)
-        n, k, lv, say = T[:4]
+        n, k, lv, say, e, sh = tamer(s, i, d[1])
         n = "???" if n[0] == "*" else n
         cls(NIGHT)
         ctext(24, "ROUND " + str(w + 1) + " OF " + str(N), GOLD)
@@ -1406,13 +1412,10 @@ def arena(g, *a):
         # a Legendary, Quantum or Petralith partner gets a reaction (never by name for the secret two);
         # only Timmy gushes over a shiny, and the crowd notices a shiny one of those three
         q = d[9] & 7
-        # (Sections 2 and 3 keep their Lumora|Quantum|Petralith lines with the tamer)
-        e = T[4].split("|")[d[1] - 19] if s and 18 < d[1] < 22 else SPECIAL.get(d[1], {}).get(n, "")
         for p in (e.split("#") if e else ()):
             message(p.split("/"), n)
-        p = SHINE.get(n) if q else 0
-        if p:
-            message(p.split("|")[q - 1].split("/"), n)
+        if sh and q:
+            message(sh.split("|")[q - 1].split("/"), n)
         if e and q and not w:
             # the crowd notices once, more loudly the rarer the shine
             message((["People in the crowd", "point at your dragon."], ["The crowd starts", "whispering..."], ["The whole crowd", "goes silent..."],
@@ -1433,34 +1436,7 @@ def arena(g, *a):
             break
         w += 1
     d[3] = d[4]
-    # coins for every win (more in later sections), a Glimmer Stone for getting far
-    c = (0, 15, 30, 50, 75, 100, 130, 165, 200, 250, 300)[w] if not s else (25, 30)[s - 1] * w
-    m = ["You won " + str(w) + " of " + str(N) + " matches.", "+" + str(c) + " coins!"]
-    if w > N * 2 // 3:
-        g.glim += s + 1
-        m.append("And " + str(s + 1) + " Glimmer Stone" + "s!"[s < 1:])
-    if w == N:
-        if s < 2:
-            m = ["SECTION " + str(s + 1) + " WON!", "+" + str(c) + " coins!", ("Section " + str(s + 2) + " is open!") if not op[s + 1] else "Glimmer Stones too!"]
-            g.book |= 1 << 37 + s
-            # the first win of a section also gives an egg: a Rare one for Section 1, an Epic one
-            # for Section 2 (book bits 39, 40 once given; no room = it waits for your next win)
-            if not g.book >> 39 + s & 1:
-                if len(g.bag) < 5:
-                    g.book |= 1 << 39 + s
-                    g.bag.append(random.choice([i for i in range(20) if DT[i][2] == s + 2]))
-                    m.append(("And a Rare egg!", "And an Epic egg!")[s])
-                else:
-                    m.append("(No room for the egg!)")
-        elif not g.book >> 35 & 1 and len(g.bag) < 5 and kids(g) + 4 <= 40:
-            # the Champion egg: only for winning all three sections
-            g.book |= 1 << 35
-            g.bag.append(24)
-            m = ["GRAND CHAMPION!", "+" + str(c) + " coins and a", "Champion egg!"]
-        else:
-            m = ["GRAND CHAMPION!", "+" + str(c) + " coins and", "3 Glimmer Stones!" if g.book >> 35 & 1 else "(no room for the egg!)"]
-    g.coins += c
-    message(m, "Arena")
+    tamer(s, w, N, g)
 
 
 def deliver(g):

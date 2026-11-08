@@ -1,7 +1,5 @@
 # GHDRAGOW: part of GHDRAGON, loaded only while it is needed.
 from GHDRAGOP import*
-G_SHINE={'Timmy':"WHOA! It's SILVER!/Is that normal?!/That's so cool!|It's GOLD! Like a/treasure! Can my/Pyrrak be gold too?|It GLOWS! Mom has/to see this! Wait,/do I still fight it?|PURPLE AND BLUE?!/Best. Day. EVER!/I'm telling everyone!"}
-G_SPECIAL={19:{'Timmy':'Is that a LUMORA?!/Those are, like,/super legendary!','Lulu':"A Lumora?! Okay,/that is NOT tiny./That's amazing.",'Mira':"A Lumora... I've/only seen one in/a painting.",'Captain Vex':"A Lumora! Stars on/its wings, like a/sailor's night sky!",'Duchess Ivy':"A Lumora! Even I/don't own one./How dare you.",'Aurora':"A Lumora! I've/always wanted one./Lucky you."},20:{'Timmy':'WHAT is THAT?!/It looks like space!/Is it even real?!','Lulu':"What... IS that?/I'm scared. And/also jealous.",'Rocco':"That thing isn't/rock. I don't trust/it. At all.",'Mira':"I've never seen a/dragon like that./What IS it?",'Captain Vex':"Blimey! What beast/is THAT? It's like/the night itself!",'Duchess Ivy':"That dragon... it's/darker than my/castle dungeon!",'Grim':'......!#...Finally. A dragon/as dark as me.','Sheen':"Ooh, nice dragon./Wanna sell it? I'll/give you 20 coins.",'Aurora':"I've never seen/that dragon. Not/even in books."},21:{'Timmy':'A ROCK DRAGON?!/With GOLD cracks?!/Best rock EVER!','Lulu':'Is it... a statue?/Wait, it MOVED!/Ahh!','Rocco':'A dragon made of/ROCK! I TOLD you/rocks are the best!','Mira':'Gold cracks and/crystals? Is that/even a dragon?','Captain Vex':"That's no dragon,/it's a walking/treasure chest! Arr!",'Duchess Ivy':'Gold AND crystals!/The fanciest dragon/in all the land!','Grim':'...A stone dragon.#...It looks older/than the mountains.','Sheen':'Those crystals look/valuable. Wanna/trade? Heh heh.','Aurora':"A dragon of stone?/I didn't know they/existed. Amazing."}}
 def G_arena(g,*a):
  import gc
  d=g.pick
@@ -26,20 +24,17 @@ def G_arena(g,*a):
  w=0
  N=10*s+10
  for i in range(N):
-  T=G_tamer(s,i)
-  n,k,lv,say=T[:4]
+  n,k,lv,say,e,sh=G_tamer(s,i,d[1])
   n='???'if n[0]=='*'else n
   cls(G_NIGHT)
   ctext(24,'ROUND '+str(w+1)+' OF '+str(N),GOLD)
   for p in say.split('#'):
    message(p.split('/'),n)
   q=d[9]&7
-  e=T[4].split('|')[d[1]-19]if s and 18<d[1]<22 else G_SPECIAL.get(d[1],{}).get(n,'')
   for p in e.split('#')if e else():
    message(p.split('/'),n)
-  p=G_SHINE.get(n)if q else 0
-  if p:
-   message(p.split('|')[q-1].split('/'),n)
+  if sh and q:
+   message(sh.split('|')[q-1].split('/'),n)
   if e and q and(not w):
    message((['People in the crowd','point at your dragon.'],['The crowd starts','whispering...'],['The whole crowd','goes silent...'],['The crowd ROARS!','Everyone jumps up','to see your dragon!'])[q-1],'Arena')
   d[3]=d[4]
@@ -56,30 +51,7 @@ def G_arena(g,*a):
    break
   w+=1
  d[3]=d[4]
- c=(0,15,30,50,75,100,130,165,200,250,300)[w]if not s else(25,30)[s-1]*w
- m=['You won '+str(w)+' of '+str(N)+' matches.','+'+str(c)+' coins!']
- if w>N*2//3:
-  g.glim+=s+1
-  m.append('And '+str(s+1)+' Glimmer Stone'+'s!'[s<1:])
- if w==N:
-  if s<2:
-   m=['SECTION '+str(s+1)+' WON!','+'+str(c)+' coins!','Section '+str(s+2)+' is open!'if not op[s+1]else 'Glimmer Stones too!']
-   g.book|=1<<37+s
-   if not g.book>>39+s&1:
-    if len(g.bag)<5:
-     g.book|=1<<39+s
-     g.bag.append(random.choice([i for i in range(20)if G_DT[i][2]==s+2]))
-     m.append(('And a Rare egg!','And an Epic egg!')[s])
-    else:
-     m.append('(No room for the egg!)')
-  elif not g.book>>35&1 and len(g.bag)<5 and(G_kids(g)+4<=40):
-   g.book|=1<<35
-   g.bag.append(24)
-   m=['GRAND CHAMPION!','+'+str(c)+' coins and a','Champion egg!']
-  else:
-   m=['GRAND CHAMPION!','+'+str(c)+' coins and','3 Glimmer Stones!'if g.book>>35&1 else '(no room for the egg!)']
- g.coins+=c
- message(m,'Arena')
+ G_tamer(s,w,N,g)
 def G_el(d):
  return G_DT[d[1]][1]
 def G_beats(a,b):
