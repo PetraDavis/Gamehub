@@ -30,6 +30,8 @@ def G_glim(g):
  if not q:
   g.glim-=1
   q=random.randint(1,4)
+ if g.pol and g.pol[0]is d:
+  g.pol=None
  d[9]=d[9]&8|q
  d[6]=G_DT[d[1]][3]
  cls(G_NIGHT)
@@ -55,7 +57,8 @@ def G_zl(title,opts):
   elif sel!=old:
    for i in(old,sel):
     y=50+(i-top)*h
-    rect(0,y-16,320,h,BLACK)
+    if i==old:
+     rect(14,y-10,8,6,BLACK)
     text(30,y,opts[i],GOLD if i==sel else WHITE)
   rect(14,50+(sel-top)*h-10,8,6,GOLD)
   k=wkey()
@@ -86,7 +89,7 @@ def G_shen(g):
  while wkey()not in(OK,CLR):
   pass
  while True:
-  S=(('Glimmer Stone',60),('Power Fruit',40),('Mystery Egg',50),('Healing Tonic',20),('Lucky Charm',35),('Mystery Box',30),('Egg Swap',25),('Golden Coin',45),('Accessory Crate',40),('Treasure Map',35),('Dragon Insurance',20))+((('Glimmer Pack x5',250),)if g.buys>=10 else())
+  S=(('Glimmer Stone',60),('Power Fruit',40),('Mystery Egg',50),('Healing Tonic',20),('Lucky Charm',35),('Mystery Box',30),('Egg Swap',25),('Golden Coin',45),('Accessory Crate',40),('Treasure Map',35),('Dragon Insurance',20),('Speed Saddle',50),('Shiny Polish',25))+((('Glimmer Pack x5',250),)if g.buys>=10 else())
   z=len(S)
   c=G_zl('Shady Shen   '+str(g.coins)+' coins',[n+' '+str(p)+'c'for n,p in S]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
   if c==z and g.glim:
@@ -114,9 +117,13 @@ def G_shen(g):
    e=G_zl('Swap which egg?',['Egg '+str(i+1)for i in range(len(g.bag))]+['Back'])
    if not 0<=e<len(g.bag):
     continue
-  if c==7 and g.curse:
+  if c==7 and g.curse or(c==11 and g.sad):
    message(['You already have one.','One is plenty. Heh.'],'Shady Shen')
    continue
+  if c==12:
+   d=G_who(g,'Polish which dragon?')
+   if d is None:
+    continue
   g.coins-=p
   if g.book>>28&1 and random.random()<0.1:
    message([random.choice(('It was just a painted rock!','The box was empty...','It crumbled into dust.','It melted in your hand.'))],'Huh?')
@@ -125,7 +132,7 @@ def G_shen(g):
   g.buys+=1
   if g.buys==10:
    message(["Psst... you're my best","customer. Next time I'll",'have something special.'],'Shady Shen')
-  if c==11:
+  if n=='Glimmer Pack x5':
    c=0
    g.glim+=4
   box=c==5
@@ -174,6 +181,15 @@ def G_shen(g):
     m=['The map is all smudged.',"Can't read it. Oh well."]
   elif c==10:
    m=['Your dragons are now','fully insured. Trust me.',"I'll take care of it."]
+  elif c==11:
+   g.sad=1
+   m=['A Speed Saddle! Your','dragon flies faster now.','Zoom zoom. Heh.']
+  elif c==12:
+   if g.pol:
+    g.pol[0][9]=g.pol[0][9]&8|g.pol[1]
+   g.pol=[d,d[9]&7,random.randint(80,140)]
+   d[9]=d[9]&8|random.randint(1,4)
+   m=[d[0]+' sparkles!','So shiny. Totally','real. Heh heh.']
   elif c==20:
    m=['The box was empty.','Just air. Heh.']
   else:

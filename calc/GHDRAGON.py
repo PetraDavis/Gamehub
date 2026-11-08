@@ -733,16 +733,22 @@ def unpack(n):
 
 
 def save(g):
+    q = g.pol
+    if q:
+        x = q[0][9]
+        q[0][9] = x & 8 | q[1]
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
     big = [d for d in g.pen if not d[9] & 8]
     pk = ([i for i in range(len(big)) if big[i] is g.pick] + [0])[0]
-    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk + 6000000 * min(15, g.cd)]
+    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk + 6000000 * min(15, g.cd) + 96000000 * g.sad]
     for d in g.pen:
         if d[9] & 8:
             b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
             continue
         p = PAINT.index(d[6]) + 1 if d[6] in PAINT and d[6] != DT[d[1]][3] else 0
         s += [pack(d[0]), d[1], d[2], d[5], (d[9] & 7) * 4000 + p * 200 + d[7] * 20 + d[8]]
+    if q:
+        q[0][9] = x
     try:
         from ti_system import store_list
         store_list("DRG", s)
@@ -784,7 +790,8 @@ def load(g):
         b = [int(v) for v in recall_list("DRB")]
         if b[0] > 1:
             pk = b[1] // 500000 % 12
-            g.cd = b[1] // 6000000
+            g.cd = b[1] // 6000000 % 16
+            g.sad = b[1] // 96000000
             b[1] %= 500000
             g.glim, g.luck, g.curse, g.buys, g.done = b[1] % 100, b[1] // 100 % 2, b[1] // 200 % 2, b[1] // 400 % 11, b[1] // 4400
             b = b[1:]
@@ -1014,6 +1021,8 @@ def glim(g):
     if not q:
         g.glim -= 1
         q = random.randint(1, 4)
+    if g.pol and g.pol[0] is d:
+        g.pol = None
     d[9] = d[9] & 8 | q
     d[6] = DT[d[1]][3]
     cls(NIGHT)
@@ -1042,8 +1051,10 @@ def zl(title, opts):
                 text(6, 206, "More: keep going (" + str(top // 10 + 1) + "/" + str((n + 9) // 10) + ")", GREY)
         elif sel != old:
             for i in (old, sel):
+                # same words in a new colour, so no clearing (it would clip the rows next to it)
                 y = 50 + (i - top) * h
-                rect(0, y - 16, 320, h, BLACK)
+                if i == old:
+                    rect(14, y - 10, 8, 6, BLACK)
                 text(30, y, opts[i], GOLD if i == sel else WHITE)
         rect(14, 50 + (sel - top) * h - 10, 8, 6, GOLD)
         k = wkey()
@@ -1084,7 +1095,7 @@ def shen(g):
         # his best customers (10 things bought) see one more item
         S = (("Glimmer Stone", 60), ("Power Fruit", 40), ("Mystery Egg", 50), ("Healing Tonic", 20), ("Lucky Charm", 35),
              ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45), ("Accessory Crate", 40), ("Treasure Map", 35),
-             ("Dragon Insurance", 20)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
+             ("Dragon Insurance", 20), ("Speed Saddle", 50), ("Shiny Polish", 25)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
         z = len(S)
         c = zl("Shady Shen   " + str(g.coins) + " coins", [n + " " + str(p) + "c" for n, p in S] +
                 (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
@@ -1113,9 +1124,13 @@ def shen(g):
             e = zl("Swap which egg?", ["Egg " + str(i + 1) for i in range(len(g.bag))] + ["Back"])
             if not 0 <= e < len(g.bag):
                 continue
-        if c == 7 and g.curse:
+        if c == 7 and g.curse or c == 11 and g.sad:
             message(["You already have one.", "One is plenty. Heh."], "Shady Shen")
             continue
+        if c == 12:
+            d = who(g, "Polish which dragon?")
+            if d is None:
+                continue
         g.coins -= p
         if g.book >> 28 & 1 and random.random() < 0.1:
             message([random.choice(("It was just a painted rock!", "The box was empty...", "It crumbled into dust.",
@@ -1125,7 +1140,7 @@ def shen(g):
         g.buys += 1
         if g.buys == 10:
             message(["Psst... you're my best", "customer. Next time I'll", "have something special."], "Shady Shen")
-        if c == 11:
+        if n == "Glimmer Pack x5":
             c = 0
             g.glim += 4
         box = c == 5
@@ -1178,6 +1193,17 @@ def shen(g):
         elif c == 10:
             # Dragon Insurance does absolutely nothing
             m = ["Your dragons are now", "fully insured. Trust me.", "I'll take care of it."]
+        elif c == 11:
+            # the Speed Saddle: no faster at all, but monsters find a riding tamer more often
+            g.sad = 1
+            m = ["A Speed Saddle! Your", "dragon flies faster now.", "Zoom zoom. Heh."]
+        elif c == 12:
+            # Shiny Polish: looks shiny for a while, then it wears off (it never saves)
+            if g.pol:
+                g.pol[0][9] = g.pol[0][9] & 8 | g.pol[1]
+            g.pol = [d, d[9] & 7, random.randint(80, 140)]
+            d[9] = d[9] & 8 | random.randint(1, 4)
+            m = [d[0] + " sparkles!", "So shiny. Totally", "real. Heh heh."]
         elif c == 20:
             m = ["The box was empty.", "Just air. Heh."]
         else:
@@ -1531,7 +1557,8 @@ def play():
     g.face = 0
     g.spawn = 100
     g.dread = 0
-    g.glim = g.luck = g.curse = g.buys = g.done = g.cd = 0
+    g.glim = g.luck = g.curse = g.buys = g.done = g.cd = g.sad = 0
+    g.pol = None
     g.shen = None
     g.shn = random.randint(120, 180)
     load(g)
@@ -1680,6 +1707,15 @@ def play():
             g.shn = 60
         if g.curse and random.random() < 0.01:
             g.coins -= min(g.coins, random.randint(1, 3))
+        if g.pol:
+            g.pol[2] -= 1
+            if g.pol[2] <= 0:
+                d = g.pol[0]
+                d[9] = d[9] & 8 | g.pol[1]
+                g.pol = None
+                if d in g.pen:
+                    message([d[0] + "'s shine", "wore off..."], "Hm")
+                    draw_map(g, True)
         hud(g)
         steps += 1
         # the evil dragon only hunts tamers who own an Epic (or rarer) dragon
@@ -1692,7 +1728,8 @@ def play():
                 return
             continue
         # monsters hide in the tall grass, and further lands have more of them
-        if ch == '"' and steps > 3 and random.random() < 0.2 + 0.08 * min(g.m, 2):
+        sd = g.sad and g.ride is not None and g.m < 3
+        if (ch == '"' or sd and random.random() < 0.3) and steps > 3 and random.random() < 0.2 + 0.08 * min(g.m, 2) + 0.1 * sd:
             steps = 0
             # a level in this land's range; higher levels are rarer
             lo, hi = LVL[g.m]
