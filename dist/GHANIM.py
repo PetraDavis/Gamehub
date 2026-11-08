@@ -1,5 +1,8 @@
 # GHANIM from GAMEHUB, on its own. Run it.
 from GHANIMB import*
+def circ(x,y,r,c):
+ col(c)
+ fill_circle(x,y,r)
 def vacate(ox,oy,nx,ny,w,h,c):
  if abs(nx-ox)>=w or abs(ny-oy)>=h:
   rect(ox,oy,w,h,c)
@@ -14,51 +17,6 @@ def vacate(ox,oy,nx,ny,w,h,c):
   rect(ox,y0,nx-ox,y1-y0,c)
  elif nx<ox:
   rect(nx+w,y0,ox-nx,y1-y0,c)
-def message(lines,title=None):
- n=len(lines)+(1 if title else 0)
- h=n*18+30
- y=(H-h)//2
- rbox(20,y,280,h,8,WHITE)
- MSG[0],MSG[1]=(y,h)
- COVER[0]+=1
- yy=y+24
- if title:
-  ctext(yy,title,GOLD)
-  yy+=18
- for s in lines:
-  ctext(yy,s)
-  yy+=18
- while True:
-  k=wkey()
-  if k in(OK,CLR):
-   return k
-def choose(title,opts,sel=0):
- cls()
- ctext(24,title,GOLD)
- n=len(opts)
- for i in range(n):
-  y=40+i*30
-  c=GOLD if i==sel else WHITE
-  rbox(60,y,200,24,8,c,2,BLACK,False)
-  ctext(y+18,opts[i],c)
- while True:
-  k=wkey()
-  old=sel
-  if k==UP:
-   sel=(sel-1)%n
-  elif k==DOWN:
-   sel=(sel+1)%n
-  elif k==OK:
-   return sel
-  elif k==CLR:
-   return-1
-  if sel==old:
-   continue
-  for i in(old,sel):
-   y=40+i*30
-   c=GOLD if i==sel else WHITE
-   edge(60,y,200,24,8,c)
-   ctext(y+18,opts[i],c)
 def _wrap(s,n=30):
  out=[]
  line=''
@@ -88,7 +46,7 @@ def how_to(title,rules,buttons):
  text(8,206,'ENTER: back',GREY)
  while wkey()not in(OK,CLR,UP,DOWN):
   pass
-def home(mod,title,rules,buttons,opts=('Play','Back'),sel=0):
+def home(mod,title,rules,buttons,opts=('Play','Back'),sel=0,wipe=None):
  n=len(opts)
  while True:
   cls()
@@ -129,6 +87,9 @@ def home(mod,title,rules,buttons,opts=('Play','Back'),sel=0):
    elif k==OK:
     if opts[sel]=='Back':
      return-1
+    if opts[sel]=='Delete':
+     wipe()
+     break
     return sel
 def S_info(s):
  try:
@@ -184,6 +145,53 @@ def S_load(s,show=None):
      data[p]=chunk[j]
      p+=1
  return(data,frames,fps)
+def G_enc_key(fr):
+ out=bytearray([1])
+ i=0
+ while i<G_N:
+  c=fr[i]
+  n=1
+  while i+n<G_N and fr[i+n]==c and(n<255):
+   n+=1
+  out.append(n)
+  out.append(c)
+  i+=n
+ return bytes(out)
+def G_enc_delta(prev,fr):
+ out=bytearray([0])
+ pos=0
+ i=0
+ while i<G_N:
+  if fr[i]==prev[i]:
+   i+=1
+   continue
+  j=i
+  last=i
+  while j<G_N and j-i<254:
+   if fr[j]!=prev[j]:
+    j+=1
+    last=j
+   elif j+1<G_N and fr[j+1]!=prev[j+1]:
+    j+=1
+   else:
+    break
+  j=last
+  skip=i-pos
+  while skip>255:
+   out.append(255)
+   out.append(0)
+   skip-=255
+  out.append(skip)
+  out.append(j-i)
+  t=i
+  while t<j:
+   hi=fr[t]
+   lo=fr[t+1]if t+1<j else 0
+   out.append(hi*16+lo)
+   t+=2
+  pos=j
+  i=j
+ return bytes(out)
 def G_apply(fr,d):
  if d[0]==1:
   p=1
@@ -208,8 +216,6 @@ def G_apply(fr,d):
    fr[pos+t]=b>>4 if t%2==0 else b&15
   p+=(n+1)//2
   pos+=n
-class G_Studio:
- pass
 def G_dec(s,i):
  k=i
  while k>0 and s.F[k][0]!=1:
@@ -218,6 +224,13 @@ def G_dec(s,i):
  for j in range(k,i+1):
   G_apply(fr,s.F[j])
  return fr
+def G_encode_at(s,i,fr,prev):
+ if prev is None:
+  return G_enc_key(fr)
+ d=G_enc_delta(prev,fr)
+ if i>0 and G_chain(s,i-1)+1>=G_KEYGAP:
+  return G_enc_key(fr)
+ return d
 def G_commit(s):
  if not s.dirty:
   return
@@ -229,12 +242,6 @@ def G_commit(s):
  if nx is not None:
   s.F[i+1]=G_enc_delta(s.cur,nx)
  s.dirty=False
-def G_side(s):
- rect(G_MX,22,320-G_MX,154,WHITE)
- s.lab.pop('on',None)
- s.lab.pop('sv',None)
- G_palette(s)
- G_sidetext(s)
 def G_full(s):
  cls(WHITE)
  rect(G_CX-2,G_CY-2,G_CWD*G_P+4,2,DARK)
@@ -655,7 +662,7 @@ def G_studio():
     G_update(s)
 def G_main():
  while True:
-  c=home('GHANIM','ANIMATION STUDIO',G_RULES,G_KEYS,('Play','Back'))
+  c=home('GHANIM','ANIMATION STUDIO',G_RULES,G_KEYS,('Play','Delete','Back'),0,G_forget)
   if c<0:
    return
   G_studio()

@@ -126,7 +126,7 @@ def how_to(title,rules,buttons):
  text(8,206,'ENTER: back',GREY)
  while wkey()not in(OK,CLR,UP,DOWN):
   pass
-def home(mod,title,rules,buttons,opts=('Play','Back'),sel=0):
+def home(mod,title,rules,buttons,opts=('Play','Back'),sel=0,wipe=None):
  n=len(opts)
  while True:
   cls()
@@ -167,6 +167,9 @@ def home(mod,title,rules,buttons,opts=('Play','Back'),sel=0):
    elif k==OK:
     if opts[sel]=='Back':
      return-1
+    if opts[sel]=='Delete':
+     wipe()
+     break
     return sel
 I_BLACK=(0,0,0)
 I_BG={'GHSTAR':(8,10,32)}

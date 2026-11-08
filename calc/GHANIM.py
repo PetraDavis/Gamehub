@@ -831,9 +831,16 @@ RULES = 'Draw a picture, add frames, and play them back. Saves stay on the calcu
 KEYS = ['Arrows: move  ENTER: pen', 'DEL: eraser  2nd: menu', 'Menu: colors, frames, play,', 'speed, save and load']
 
 
+def forget():
+    # "Delete" on the home screen: wipe every saved animation, after asking
+    if choose("Delete all saves?", ["No, keep them", "Yes, delete them"]) == 1:
+        GHSAVE.wipe(1)
+        message(["All your saved", "animations are gone."], "Saves deleted")
+
+
 def main():
     while True:
-        c = home("GHANIM", 'ANIMATION STUDIO', RULES, KEYS, ("Play", "Back"))
+        c = home("GHANIM", 'ANIMATION STUDIO', RULES, KEYS, ("Play", "Delete", "Back"), 0, forget)
         if c < 0:
             return
         studio()
