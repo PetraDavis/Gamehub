@@ -110,7 +110,7 @@ def G_cop(g):
   message(['Hmm. Well, tell me','if you see him.'],'Officer Brick')
  G_shen_off(g)
  if g.book>>31&1:
-  g.shn=10000
+  g.shn=5000
 def G_shen(g):
  m,x,y=g.shen
  if g.maps[m][y][x]=='O':
