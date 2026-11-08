@@ -1,7 +1,6 @@
 # GHDRAGOB: part of GHDRAGOP. Keep it next to GHDRAGOP.
 from GHDRAGOC import*
-G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^C....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
-G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient')
+G_ROCK=(110,105,115)
 def G_drag(x,y,s,t,c,head=0,body=0,out=None,f=0,sp=0):
  P=G_PAL+[lt(c,0.45),dk(c,0.6),c]+G_PAL2+[lt(c,0.2),dk(c,0.4)]+G_PAL3
  if sp:
@@ -54,6 +53,10 @@ def G_shapes(m,x,y,ch,out):
   out.append((1,(150,105,55),1,(px+16,py+15,3)))
   out.append((2,YELLOW,0,(px+8,py+7,1,1)))
   out.append((2,YELLOW,0,(px+11,py+7,1,1)))
+ elif ch=='X':
+  out.append((0,G_BARK,0,(px+3,py+8,14,10)))
+  out.append((1,YELLOW,0,(px+3,py+11,14,2)))
+  out.append((1,YELLOW,0,(px+9,py+10,2,4)))
  elif ch=='W':
   out.append((0,G_ROCK,1,(px+10,py+11,8)))
   out.append((1,G_WATER,1,(px+10,py+11,5)))
@@ -116,20 +119,24 @@ def G_paint(ops):
    fill_poly(a[0],a[1])
  if last:
   rect(last[1],last[2],last[3],last[4],last[0][1])
-def G_hud(g):
- d=g.ride
- if d is not None:
-  who=d[0]+' '+str(d[3])+'/'+str(d[4])
- else:
-  who='You '+str(g.hp)+'/'+str(g.mhp)
- t=(G_LANDS[g.m],who,'Egg '+str(g.warm)if g.bag else str(g.coins)+'c')
- if t==G_HUD[0]:
-  return
- old=G_HUD[0]or('','','')
- if G_HUD[0]is None:
-  rect(0,0,320,20,BLACK)
- for i,x,c in((0,4,GOLD),(1,140,WHITE),(2,262,YELLOW)):
-  if t[i]!=old[i]:
-   text(x,15,old[i],BLACK)
-   text(x,15,t[i],c)
- G_HUD[0]=t
+def G_cells(g,todo,with_hero):
+ mp=g.maps[g.m]
+ ops=[]
+ rows={}
+ for x,y in todo:
+  rows.setdefault(y,[]).append(x)
+ for y in rows:
+  xs=sorted(rows[y])
+  i=0
+  while i<len(xs):
+   c=G_base(g.m,mp[y][xs[i]])
+   j=i+1
+   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
+    j+=1
+   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
+   i=j
+ for x,y in todo:
+  G_shapes(g.m,x,y,mp[y][x],ops)
+ if with_hero:
+  G_hero(g,ops)
+ G_paint(ops)

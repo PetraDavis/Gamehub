@@ -1,10 +1,6 @@
 # GHDRAGOP: the game part of GHDRAGON. Run GHDRAGON, not this.
 from GHDRAGOB import*
 GREY=(110,110,110)
-def cls(c=BLACK):
- COVER[0]+=1
- col(c)
- fill_rect(-1,-1,321,211)
 def pause(s):
  time.sleep(s)
 def choose(title,opts,sel=0):
@@ -36,39 +32,16 @@ def choose(title,opts,sel=0):
    ctext(y+18,opts[i],c)
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
+G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
-def G_egg_type(m,up=0):
- r=random.randint(0,999)
- c=((4,30,110,330),(10,50,180,450),(15,80,260,570))[min(m,2)]
- rar=4 if r<c[0]else 3 if r<c[1]else 2 if r<c[2]else 1 if r<c[3]else 0
- rar=min(4,rar+up)
- return random.choice([i for i in range(20)if G_DT[i][2]==rar])
+G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
+def G_kids(g):
+ return sum((1 if d[9]&8 else 4 for d in g.pen))+sum((1 if e%32==G_SMALL else 4 for e in g.bag))
 def G_grown(g):
  for d in g.pen:
   if not d[9]&8:
    return d
  return None
-def G_cells(g,todo,with_hero):
- mp=g.maps[g.m]
- ops=[]
- rows={}
- for x,y in todo:
-  rows.setdefault(y,[]).append(x)
- for y in rows:
-  xs=sorted(rows[y])
-  i=0
-  while i<len(xs):
-   c=G_base(g.m,mp[y][xs[i]])
-   j=i+1
-   while j<len(xs)and xs[j]==xs[j-1]+1 and(G_base(g.m,mp[y][xs[j]])==c):
-    j+=1
-   ops.append((-1,c,0,(xs[i]*G_T,20+y*G_T,(j-i)*G_T,G_T)))
-   i=j
- for x,y in todo:
-  G_shapes(g.m,x,y,mp[y][x],ops)
- if with_hero:
-  G_hero(g,ops)
- G_paint(ops)
 def G_draw_map(g,after_msg=False):
  r0,r1=(0,9)
  if after_msg:
@@ -81,16 +54,22 @@ def G_draw_map(g,after_msg=False):
  G_cells(g,[(x,y)for y in range(r0,r1)for x in range(16)],r0<=g.y<r1)
  G_hud(g)
 def G_save(g):
+ q=g.pol
+ if q:
+  x=q[0][9]
+  q[0][9]=x&8|q[1]
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
  big=[d for d in g.pen if not d[9]&8]
  pk=([i for i in range(len(big))if big[i]is g.pick]+[0])[0]
- b=[2,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)+4400*min(99,g.done)+500000*pk+6000000*min(15,g.cd)]
+ b=[2,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)+4400*min(99,g.done)+500000*pk+6000000*min(15,g.cd)+96000000*g.sad]
  for d in g.pen:
   if d[9]&8:
    b+=[G_pack(d[0]),d[1]+32*(d[9]&7)]
    continue
   p=G_PAINT.index(d[6])+1 if d[6]in G_PAINT and d[6]!=G_DT[d[1]][3]else 0
   s+=[G_pack(d[0]),d[1],d[2],d[5],(d[9]&7)*4000+p*200+d[7]*20+d[8]]
+ if q:
+  q[0][9]=x
  try:
   from ti_system import store_list
   store_list('DRG',s)
@@ -120,7 +99,7 @@ def G_put_egg(g,t,near,ch='E'):
    mp[y][x]=ch
    if ch=='E':
     G_EGGS[g.m,x,y]=t
-   else:
+   elif ch=='M':
     g.shen=(g.m,x,y)
    G_cells(g,[(x,y)],False)
    return True
@@ -137,20 +116,11 @@ def G_play():
  g.m,g.x,g.y=(0,3,2)
  g.hp=g.mhp=30
  g.pen=[]
- g.pick=None
- g.ride=None
  g.bag=[]
  g.warm=12
- g.coins=0
- g.own=0
- g.book=0
- g.quest=None
- g.seen=0
- g.face=0
  g.spawn=100
- g.dread=0
- g.glim=g.luck=g.curse=g.buys=g.done=g.cd=0
- g.shen=None
+ g.pick=g.ride=g.quest=g.pol=g.shen=None
+ g.coins=g.own=g.book=g.seen=g.face=g.dread=g.glim=g.luck=g.curse=g.buys=g.done=g.cd=g.sad=0
  g.shn=random.randint(120,180)
  G_load(g)
  steps=0
@@ -238,6 +208,18 @@ def G_play():
    message(['You found a'+(' shiny'if e>31 else '')+' small egg!',"It's in your backpack."]if e%32==G_SMALL else['You found a'+(' shiny'if e>31 else 'n')+' egg with',G_RARE[G_DT[e%32][2]]+" spots! It's in",'your backpack.'],'An egg!')
    G_draw_map(g,True)
    continue
+  if ch=='X':
+   mp[ny][nx]='.'
+   G_cells(g,[(ox,oy),(nx,ny)],True)
+   if random.random()<0.33:
+    message(['You dig it open...',"It's empty! Just dirt."],'Treasure')
+   else:
+    n=random.randint(30,80)+20*g.m
+    g.coins+=n
+    G_hud(g)
+    message(['You dig it open...',str(n)+' coins inside!'],'Treasure')
+   G_draw_map(g,True)
+   continue
   if ch=='Q':
    G_board(g)
    G_draw_map(g)
@@ -280,6 +262,10 @@ def G_play():
    g.shn=60
   if g.curse and random.random()<0.01:
    g.coins-=min(g.coins,random.randint(1,3))
+  if g.pol:
+   g.pol[2]-=1
+   if g.pol[2]<=0:
+    G_pol_off(g)
   G_hud(g)
   steps+=1
   if g.dread>0:
@@ -289,7 +275,8 @@ def G_play():
    if not G_evil(g):
     return
    continue
-  if ch=='"'and steps>3 and(random.random()<0.2+0.08*min(g.m,2)):
+  sd=g.sad and g.ride is not None and(g.m<3)
+  if(ch=='"'or(sd and random.random()<0.3))and steps>3 and(random.random()<0.2+0.08*min(g.m,2)+0.1*sd):
    steps=0
    lo,hi=G_LVL[g.m]
    if not G_battle(g,random.choice(G_FOES[g.m]),lo+min(hi-lo,int(random.random()**1.6*(hi-lo+1)))):

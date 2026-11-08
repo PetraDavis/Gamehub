@@ -30,6 +30,10 @@ def rect(x,y,w,h,c):
  col(c)
  fill_rect(x-1,y-1,w+1,h+1)
 COVER=[0]
+def cls(c=BLACK):
+ COVER[0]+=1
+ col(c)
+ fill_rect(-1,-1,321,211)
 TY=6
 def text(x,y,s,c=WHITE):
  col(c)
@@ -77,12 +81,12 @@ def message(lines,title=None):
 G_TEST=False
 G_EVIL=0.12 if G_TEST else 0.004
 G_T=20
+G_MAPS=(['TTTTTTTTTTTTT~~~','T.....""".....~~','T.H...""""...~~~','T.....""".T...~~','...........E.~~~','T....TT.......~~','T.""".TT......~~','T.""".........~~','TTTTTTTTTTTTTT~~'],['~^^^^^^^^^^^^^^^','~...""""..LLL..^','~..^"""..LLELL.^','~.....^...LLL...','~...............','~...^^...."""...','~..LL....."""..^','~.....^^.......^','~^^^^^^^^^^^^^^^'],['^^^^^^^^^^^^^^^^','...""".....^E^^^','...........^^^^^','......~~~~......','....~~~~B~~~....','.....~~~~~......','.."""...........','..""".....^C....','^^^^^^^^^^^^^^^^'],['TTTTTTTTTTTTTTTT','T..............T','T..Q.......S...T','T..=.......=...T','T..=============','T.......W......T','T..............T','T..............T','TTTTTTTTTTTTTTTT'])
 G_LANDS=('Green Valley','Fire Mountain','Frost Peaks','Village')
 G_GROUND=((50,130,60),(85,65,55),(215,225,240),(75,150,70))
 G_TALL=((35,100,45),(120,90,60),(170,190,220),(75,150,70))
 G_WATER=(40,90,190)
 G_LAVA=(230,90,20)
-G_ROCK=(110,105,115)
 G_LEAF=(25,85,35)
 G_BARK=(90,60,30)
 G_CYAN=(60,230,230)
@@ -108,6 +112,12 @@ G_FOES=((('Goblin',14,4,6,(110,160,60),3),('Bog Toad',16,4,7,(60,120,160),1)),((
 G_LVL=((1,3),(3,6),(6,10),(1,1))
 G_BOSS=('Shadow Wyrm',110,12,0,(90,50,140),3)
 G_CAVE=[0]
+def G_egg_type(m,up=0):
+ r=random.randint(0,999)
+ c=((4,30,110,330),(10,50,180,450),(15,80,260,570))[min(m,2)]
+ rar=4 if r<c[0]else 3 if r<c[1]else 2 if r<c[2]else 1 if r<c[3]else 0
+ rar=min(4,rar+up)
+ return random.choice([i for i in range(20)if G_DT[i][2]==rar])
 def G_art(b,x,y,s,P,out=None,f=0):
  for i in range(0,len(b),8):
   c=P[b[i+1]]
@@ -158,9 +168,24 @@ def G_egg_roll(g,t):
   r=random.random()
   return t+32*(1 if r<0.4 else 2 if r<0.7 else 3 if r<0.9 else 4)
  return t
-def G_kids(g):
- return sum((1 if d[9]&8 else 4 for d in g.pen))+sum((1 if e%32==G_SMALL else 4 for e in g.bag))
 G_HUD=[None]
+def G_hud(g):
+ d=g.ride
+ if d is not None:
+  who=d[0]+' '+str(d[3])+'/'+str(d[4])
+ else:
+  who='You '+str(g.hp)+'/'+str(g.mhp)
+ t=(G_LANDS[g.m],who,'Egg '+str(g.warm)if g.bag else str(g.coins)+'c')
+ if t==G_HUD[0]:
+  return
+ old=G_HUD[0]or('','','')
+ if G_HUD[0]is None:
+  rect(0,0,320,20,BLACK)
+ for i,x,c in((0,4,GOLD),(1,140,WHITE),(2,262,YELLOW)):
+  if t[i]!=old[i]:
+   text(x,15,old[i],BLACK)
+   text(x,15,t[i],c)
+ G_HUD[0]=t
 class G_Game:
  pass
 def G_pack(nm):
@@ -249,6 +274,12 @@ def G_menu(*a):
 def G_glim(*a):
  import GHDRAGOZ
  r=GHDRAGOZ.G_glim(*a)
+ GHDRAGOZ=None
+ G__drop('GHDRAGOZ')
+ return r
+def G_pol_off(*a):
+ import GHDRAGOZ
+ r=GHDRAGOZ.G_pol_off(*a)
  GHDRAGOZ=None
  G__drop('GHDRAGOZ')
  return r

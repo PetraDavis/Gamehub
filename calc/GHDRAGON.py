@@ -18,7 +18,7 @@ SWAP = {"W": ("bar", "foe_art", "foe_screen", "battle", "evil", "titan"),
               "win"),
         # the merchant has a file of his own, with its own copy of the list, so the
         # pen and fights don't have to carry his code
-        "Z": ("shen", "who", "glim", "zl", "shen_off"),
+        "Z": ("shen", "who", "glim", "zl", "shen_off", "pol_off"),
         "Y": ("backpack", "book", "hatch", "oval", "egg", "frame", "kbox", "typed", "menu")}
 MAPS = (
     ["TTTTTTTTTTTTT~~~",
@@ -380,6 +380,11 @@ def shapes(m, x, y, ch, out):
         out.append((1, (150, 105, 55), 1, (px + 16, py + 15, 3)))
         out.append((2, YELLOW, 0, (px + 8, py + 7, 1, 1)))
         out.append((2, YELLOW, 0, (px + 11, py + 7, 1, 1)))
+    elif ch == "X":
+        # a treasure chest from Shen's map
+        out.append((0, BARK, 0, (px + 3, py + 8, 14, 10)))
+        out.append((1, YELLOW, 0, (px + 3, py + 11, 14, 2)))
+        out.append((1, YELLOW, 0, (px + 9, py + 10, 2, 4)))
     elif ch == "W":
         out.append((0, ROCK, 1, (px + 10, py + 11, 8)))
         out.append((1, WATER, 1, (px + 10, py + 11, 5)))
@@ -728,16 +733,22 @@ def unpack(n):
 
 
 def save(g):
+    q = g.pol
+    if q:
+        x = q[0][9]
+        q[0][9] = x & 8 | q[1]
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
     big = [d for d in g.pen if not d[9] & 8]
     pk = ([i for i in range(len(big)) if big[i] is g.pick] + [0])[0]
-    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk + 6000000 * min(15, g.cd)]
+    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk + 6000000 * min(15, g.cd) + 96000000 * g.sad]
     for d in g.pen:
         if d[9] & 8:
             b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
             continue
         p = PAINT.index(d[6]) + 1 if d[6] in PAINT and d[6] != DT[d[1]][3] else 0
         s += [pack(d[0]), d[1], d[2], d[5], (d[9] & 7) * 4000 + p * 200 + d[7] * 20 + d[8]]
+    if q:
+        q[0][9] = x
     try:
         from ti_system import store_list
         store_list("DRG", s)
@@ -779,7 +790,8 @@ def load(g):
         b = [int(v) for v in recall_list("DRB")]
         if b[0] > 1:
             pk = b[1] // 500000 % 12
-            g.cd = b[1] // 6000000
+            g.cd = b[1] // 6000000 % 16
+            g.sad = b[1] // 96000000
             b[1] %= 500000
             g.glim, g.luck, g.curse, g.buys, g.done = b[1] % 100, b[1] // 100 % 2, b[1] // 200 % 2, b[1] // 400 % 11, b[1] // 4400
             b = b[1:]
@@ -1009,6 +1021,8 @@ def glim(g):
     if not q:
         g.glim -= 1
         q = random.randint(1, 4)
+    if g.pol and g.pol[0] is d:
+        g.pol = None
     d[9] = d[9] & 8 | q
     d[6] = DT[d[1]][3]
     cls(NIGHT)
@@ -1018,20 +1032,31 @@ def glim(g):
 
 
 def zl(title, opts):
-    # the same list as lst(), kept in the merchant's own file
+    # a list like lst(), kept in the merchant's own file. Long lists show
+    # 10 rows a page and turn the page when you move past the end.
     cls()
     ctext(24, title, GOLD)
     n = len(opts)
     h = 15 if n > 9 else 17
     sel = old = 0
-    for i in range(n):
-        text(30, 50 + i * h, opts[i], GOLD if i == 0 else WHITE)
+    top = -1
     while True:
-        if sel != old:
+        t = sel // 10 * 10
+        if t != top:
+            top = t
+            rect(0, 32, 320, 178, BLACK)
+            for i in range(top, min(n, top + 10)):
+                text(30, 50 + (i - top) * h, opts[i], GOLD if i == sel else WHITE)
+            if n > 10:
+                text(6, 206, "More: keep going (" + str(top // 10 + 1) + "/" + str((n + 9) // 10) + ")", GREY)
+        elif sel != old:
             for i in (old, sel):
-                rect(0, 50 + i * h - 16, 320, h, BLACK)
-                text(30, 50 + i * h, opts[i], GOLD if i == sel else WHITE)
-        rect(14, 50 + sel * h - 10, 8, 6, GOLD)
+                # same words in a new colour, so no clearing (it would clip the rows next to it)
+                y = 50 + (i - top) * h
+                if i == old:
+                    rect(14, y - 10, 8, 6, BLACK)
+                text(30, y, opts[i], GOLD if i == sel else WHITE)
+        rect(14, 50 + (sel - top) * h - 10, 8, 6, GOLD)
         k = wkey()
         old = sel
         if k == UP:
@@ -1042,6 +1067,16 @@ def zl(title, opts):
             return sel
         elif k == CLR:
             return -1
+
+
+def pol_off(g):
+    # the Shiny Polish wears off
+    d = g.pol[0]
+    d[9] = d[9] & 8 | g.pol[1]
+    g.pol = None
+    if d in g.pen:
+        message([d[0] + "'s shine", "wore off..."], "Hm")
+        draw_map(g, True)
 
 
 def shen(g):
@@ -1069,9 +1104,10 @@ def shen(g):
     while True:
         # his best customers (10 things bought) see one more item
         S = (("Glimmer Stone", 60), ("Power Fruit", 40), ("Mystery Egg", 50), ("Healing Tonic", 20), ("Lucky Charm", 35),
-             ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
+             ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45), ("Accessory Crate", 40), ("Treasure Map", 35),
+             ("Dragon Insurance", 20), ("Speed Saddle", 50), ("Shiny Polish", 25), ("Moldy Egg", 15)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
         z = len(S)
-        c = zl("Shady Shen   " + str(g.coins) + " coins", [n + " " + str(p) + "c" for n, p in S] +
+        c = zl("Shady Shen   " + str(g.coins) + " coins", [n + (" - sold out" if n == "Moldy Egg" and g.book >> 29 & 1 else " " + str(p) + "c") for n, p in S] +
                 (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
         if c == z and g.glim:
             glim(g)
@@ -1088,7 +1124,10 @@ def shen(g):
             d = who(g, "Feed the Power Fruit to", False)
             if d is None:
                 continue
-        if c == 2 and (len(g.bag) >= 5 or kids(g) + 4 > 40):
+        if c == 13 and g.book >> 29 & 1:
+            message(["All gone. Heh.", "Should've bought more", "when you had the chance."], "Shady Shen")
+            continue
+        if c in (2, 13) and (len(g.bag) >= 5 or kids(g) + 4 > 40):
             message(["No room for an egg."], "Shady Shen")
             continue
         if c == 6:
@@ -1098,11 +1137,16 @@ def shen(g):
             e = zl("Swap which egg?", ["Egg " + str(i + 1) for i in range(len(g.bag))] + ["Back"])
             if not 0 <= e < len(g.bag):
                 continue
-        if c == 7 and g.curse:
+        if c == 7 and g.curse or c == 11 and g.sad:
             message(["You already have one.", "One is plenty. Heh."], "Shady Shen")
             continue
+        if c == 12:
+            d = who(g, "Polish which dragon?")
+            if d is None:
+                continue
         g.coins -= p
-        if g.book >> 28 & 1 and random.random() < 0.1:
+        # (the Moldy Egg, his secret good deal, is never a fake)
+        if c != 13 and g.book >> 28 & 1 and random.random() < 0.1:
             message([random.choice(("It was just a painted rock!", "The box was empty...", "It crumbled into dust.",
                                     "It melted in your hand."))], "Huh?")
             continue
@@ -1110,15 +1154,16 @@ def shen(g):
         g.buys += 1
         if g.buys == 10:
             message(["Psst... you're my best", "customer. Next time I'll", "have something special."], "Shady Shen")
-        if c == 8:
+        if n == "Glimmer Pack x5":
             c = 0
             g.glim += 4
-        if c == 5:
+        box = c == 5
+        if box:
             # the Mystery Box: something from his bag, or nothing at all
-            c = random.choice((0, 1, 3, 4, 9, 9, 10))
+            c = random.choice((0, 1, 3, 4, 8, 20, 20, 21))
             d = grown(g) if c == 1 else None
             if c == 1 and d is None:
-                c = 9
+                c = 20
         if c == 0:
             g.glim += 1
             m = ["Glimmer Stones: " + str(g.glim), "Use 1 for a random shiny,", "or 5 to pick the colour."]
@@ -1145,13 +1190,46 @@ def shen(g):
         elif c == 7:
             g.curse = 1
             m = ["A Golden Coin! Double", "coins from fights.", "Lucky you. Heh heh."]
+        elif c == 8:
+            # the Accessory Crate: any of the 16, even one you already have
+            i = random.randint(1, 16)
+            if g.own >> i & 1:
+                m = ["A " + GEAR[i][0] + "... but you", "already have one.", "No refunds. Heh."]
+            else:
+                g.own |= 1 << i
+                m = ["A " + GEAR[i][0] + "!", "Put it on at the", "village shop."]
         elif c == 9:
+            # the Treasure Map: a chest turns up in this land; 1 in 3 is empty
+            if put_egg(g, 0, False, "X"):
+                m = ["X marks the spot!", "Look for a chest", "somewhere in this land."]
+            else:
+                m = ["The map is all smudged.", "Can't read it. Oh well."]
+        elif c == 10:
+            # Dragon Insurance does absolutely nothing
+            m = ["Your dragons are now", "fully insured. Trust me.", "I'll take care of it."]
+        elif c == 11:
+            # the Speed Saddle: no faster at all, but monsters find a riding tamer more often
+            g.sad = 1
+            m = ["A Speed Saddle! Your", "dragon flies faster now.", "Zoom zoom. Heh."]
+        elif c == 12:
+            # Shiny Polish: looks shiny for a while, then it wears off (it never saves)
+            if g.pol:
+                g.pol[0][9] = g.pol[0][9] & 8 | g.pol[1]
+            g.pol = [d, d[9] & 7, random.randint(80, 140)]
+            d[9] = d[9] & 8 | random.randint(1, 4)
+            m = [d[0] + " sparkles!", "So shiny. Totally", "real. Heh heh."]
+        elif c == 13:
+            # looks rotten, but it's always an Epic or Legendary egg. Only one, ever.
+            g.book |= 1 << 29
+            g.bag.append(random.choice([i for i in range(20) if DT[i][2] >= 3]))
+            m = ["A Moldy Egg. Ew.", "It's probably rotten.", "No refunds. Heh."]
+        elif c == 20:
             m = ["The box was empty.", "Just air. Heh."]
         else:
             n = random.randint(10, 60)
             g.coins += n
             m = [str(n) + " coins inside!"]
-        message(m, n if c < 9 else "Mystery Box")
+        message(m, "Mystery Box" if box else n)
 
 
 def nest(g):
@@ -1407,7 +1485,7 @@ def put_egg(g, t, near, ch="E"):
             mp[y][x] = ch
             if ch == "E":
                 EGGS[(g.m, x, y)] = t
-            else:
+            elif ch == "M":
                 g.shen = (g.m, x, y)
             cells(g, [(x, y)], False)
             return True
@@ -1486,20 +1564,11 @@ def play():
     g.m, g.x, g.y = 0, 3, 2
     g.hp = g.mhp = 30
     g.pen = []
-    g.pick = None
-    g.ride = None
     g.bag = []
     g.warm = 12
-    g.coins = 0
-    g.own = 0
-    g.book = 0
-    g.quest = None
-    g.seen = 0
-    g.face = 0
     g.spawn = 100
-    g.dread = 0
-    g.glim = g.luck = g.curse = g.buys = g.done = g.cd = 0
-    g.shen = None
+    g.pick = g.ride = g.quest = g.pol = g.shen = None
+    g.coins = g.own = g.book = g.seen = g.face = g.dread = g.glim = g.luck = g.curse = g.buys = g.done = g.cd = g.sad = 0
     g.shn = random.randint(120, 180)
     load(g)
     steps = 0
@@ -1591,6 +1660,18 @@ def play():
                     ["You found a" + (" shiny" if e > 31 else "n") + " egg with", RARE[DT[e % 32][2]] + " spots! It's in", "your backpack."], "An egg!")
             draw_map(g, True)
             continue
+        if ch == "X":
+            mp[ny][nx] = "."
+            cells(g, [(ox, oy), (nx, ny)], True)
+            if random.random() < 0.33:
+                message(["You dig it open...", "It's empty! Just dirt."], "Treasure")
+            else:
+                n = random.randint(30, 80) + 20 * g.m
+                g.coins += n
+                hud(g)
+                message(["You dig it open...", str(n) + " coins inside!"], "Treasure")
+            draw_map(g, True)
+            continue
         if ch == "Q":
             board(g)
             draw_map(g)
@@ -1635,6 +1716,10 @@ def play():
             g.shn = 60
         if g.curse and random.random() < 0.01:
             g.coins -= min(g.coins, random.randint(1, 3))
+        if g.pol:
+            g.pol[2] -= 1
+            if g.pol[2] <= 0:
+                pol_off(g)
         hud(g)
         steps += 1
         # the evil dragon only hunts tamers who own an Epic (or rarer) dragon
@@ -1647,7 +1732,8 @@ def play():
                 return
             continue
         # monsters hide in the tall grass, and further lands have more of them
-        if ch == '"' and steps > 3 and random.random() < 0.2 + 0.08 * min(g.m, 2):
+        sd = g.sad and g.ride is not None and g.m < 3
+        if (ch == '"' or sd and random.random() < 0.3) and steps > 3 and random.random() < 0.2 + 0.08 * min(g.m, 2) + 0.1 * sd:
             steps = 0
             # a level in this land's range; higher levels are rarer
             lo, hi = LVL[g.m]

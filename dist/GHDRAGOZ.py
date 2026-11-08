@@ -30,6 +30,8 @@ def G_glim(g):
  if not q:
   g.glim-=1
   q=random.randint(1,4)
+ if g.pol and g.pol[0]is d:
+  g.pol=None
  d[9]=d[9]&8|q
  d[6]=G_DT[d[1]][3]
  cls(G_NIGHT)
@@ -42,14 +44,23 @@ def G_zl(title,opts):
  n=len(opts)
  h=15 if n>9 else 17
  sel=old=0
- for i in range(n):
-  text(30,50+i*h,opts[i],GOLD if i==0 else WHITE)
+ top=-1
  while True:
-  if sel!=old:
+  t=sel//10*10
+  if t!=top:
+   top=t
+   rect(0,32,320,178,BLACK)
+   for i in range(top,min(n,top+10)):
+    text(30,50+(i-top)*h,opts[i],GOLD if i==sel else WHITE)
+   if n>10:
+    text(6,206,'More: keep going ('+str(top//10+1)+'/'+str((n+9)//10)+')',GREY)
+  elif sel!=old:
    for i in(old,sel):
-    rect(0,50+i*h-16,320,h,BLACK)
-    text(30,50+i*h,opts[i],GOLD if i==sel else WHITE)
-  rect(14,50+sel*h-10,8,6,GOLD)
+    y=50+(i-top)*h
+    if i==old:
+     rect(14,y-10,8,6,BLACK)
+    text(30,y,opts[i],GOLD if i==sel else WHITE)
+  rect(14,50+(sel-top)*h-10,8,6,GOLD)
   k=wkey()
   old=sel
   if k==UP:
@@ -60,6 +71,13 @@ def G_zl(title,opts):
    return sel
   elif k==CLR:
    return-1
+def G_pol_off(g):
+ d=g.pol[0]
+ d[9]=d[9]&8|g.pol[1]
+ g.pol=None
+ if d in g.pen:
+  message([d[0]+"'s shine",'wore off...'],'Hm')
+  G_draw_map(g,True)
 def G_shen(g):
  met=g.book>>27&1
  g.book|=1<<27
@@ -78,9 +96,9 @@ def G_shen(g):
  while wkey()not in(OK,CLR):
   pass
  while True:
-  S=(('Glimmer Stone',60),('Power Fruit',40),('Mystery Egg',50),('Healing Tonic',20),('Lucky Charm',35),('Mystery Box',30),('Egg Swap',25),('Golden Coin',45))+((('Glimmer Pack x5',250),)if g.buys>=10 else())
+  S=(('Glimmer Stone',60),('Power Fruit',40),('Mystery Egg',50),('Healing Tonic',20),('Lucky Charm',35),('Mystery Box',30),('Egg Swap',25),('Golden Coin',45),('Accessory Crate',40),('Treasure Map',35),('Dragon Insurance',20),('Speed Saddle',50),('Shiny Polish',25),('Moldy Egg',15))+((('Glimmer Pack x5',250),)if g.buys>=10 else())
   z=len(S)
-  c=G_zl('Shady Shen   '+str(g.coins)+' coins',[n+' '+str(p)+'c'for n,p in S]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
+  c=G_zl('Shady Shen   '+str(g.coins)+' coins',[n+(' - sold out'if n=='Moldy Egg'and g.book>>29&1 else ' '+str(p)+'c')for n,p in S]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
   if c==z and g.glim:
    G_glim(g)
    continue
@@ -96,7 +114,10 @@ def G_shen(g):
    d=G_who(g,'Feed the Power Fruit to',False)
    if d is None:
     continue
-  if c==2 and(len(g.bag)>=5 or G_kids(g)+4>40):
+  if c==13 and g.book>>29&1:
+   message(['All gone. Heh.',"Should've bought more",'when you had the chance.'],'Shady Shen')
+   continue
+  if c in(2,13)and(len(g.bag)>=5 or G_kids(g)+4>40):
    message(['No room for an egg.'],'Shady Shen')
    continue
   if c==6:
@@ -106,25 +127,30 @@ def G_shen(g):
    e=G_zl('Swap which egg?',['Egg '+str(i+1)for i in range(len(g.bag))]+['Back'])
    if not 0<=e<len(g.bag):
     continue
-  if c==7 and g.curse:
+  if c==7 and g.curse or(c==11 and g.sad):
    message(['You already have one.','One is plenty. Heh.'],'Shady Shen')
    continue
+  if c==12:
+   d=G_who(g,'Polish which dragon?')
+   if d is None:
+    continue
   g.coins-=p
-  if g.book>>28&1 and random.random()<0.1:
+  if c!=13 and g.book>>28&1 and(random.random()<0.1):
    message([random.choice(('It was just a painted rock!','The box was empty...','It crumbled into dust.','It melted in your hand.'))],'Huh?')
    continue
   g.book|=1<<28
   g.buys+=1
   if g.buys==10:
    message(["Psst... you're my best","customer. Next time I'll",'have something special.'],'Shady Shen')
-  if c==8:
+  if n=='Glimmer Pack x5':
    c=0
    g.glim+=4
-  if c==5:
-   c=random.choice((0,1,3,4,9,9,10))
+  box=c==5
+  if box:
+   c=random.choice((0,1,3,4,8,20,20,21))
    d=G_grown(g)if c==1 else None
    if c==1 and d is None:
-    c=9
+    c=20
   if c==0:
    g.glim+=1
    m=['Glimmer Stones: '+str(g.glim),'Use 1 for a random shiny,','or 5 to pick the colour.']
@@ -151,13 +177,40 @@ def G_shen(g):
   elif c==7:
    g.curse=1
    m=['A Golden Coin! Double','coins from fights.','Lucky you. Heh heh.']
+  elif c==8:
+   i=random.randint(1,16)
+   if g.own>>i&1:
+    m=['A '+G_GEAR[i][0]+'... but you','already have one.','No refunds. Heh.']
+   else:
+    g.own|=1<<i
+    m=['A '+G_GEAR[i][0]+'!','Put it on at the','village shop.']
   elif c==9:
+   if G_put_egg(g,0,False,'X'):
+    m=['X marks the spot!','Look for a chest','somewhere in this land.']
+   else:
+    m=['The map is all smudged.',"Can't read it. Oh well."]
+  elif c==10:
+   m=['Your dragons are now','fully insured. Trust me.',"I'll take care of it."]
+  elif c==11:
+   g.sad=1
+   m=['A Speed Saddle! Your','dragon flies faster now.','Zoom zoom. Heh.']
+  elif c==12:
+   if g.pol:
+    g.pol[0][9]=g.pol[0][9]&8|g.pol[1]
+   g.pol=[d,d[9]&7,random.randint(80,140)]
+   d[9]=d[9]&8|random.randint(1,4)
+   m=[d[0]+' sparkles!','So shiny. Totally','real. Heh heh.']
+  elif c==13:
+   g.book|=1<<29
+   g.bag.append(random.choice([i for i in range(20)if G_DT[i][2]>=3]))
+   m=['A Moldy Egg. Ew.',"It's probably rotten.",'No refunds. Heh.']
+  elif c==20:
    m=['The box was empty.','Just air. Heh.']
   else:
    n=random.randint(10,60)
    g.coins+=n
    m=[str(n)+' coins inside!']
-  message(m,n if c<9 else 'Mystery Box')
+  message(m,'Mystery Box'if box else n)
 def G_shen_off(g):
  if g.shen:
   m,x,y=g.shen
