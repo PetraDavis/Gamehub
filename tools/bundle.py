@@ -363,7 +363,7 @@ while True:
   st[3]=str(e)[:26]
   st[4]=mod
  m=None
- drop([mod]+[mod[:7]+c for c in "BCDEFHPWXY"])
+ drop([mod]+[mod[:7]+c for c in "BCDEFHPVWXYZ"])
 """
 
 
@@ -489,7 +489,7 @@ while True:
  free("game loaded")
  {p}.G_back()
  {p}=None
- drop(["{p}"]+["{g7}"+c for c in "BCDEFWXY"])
+ drop(["{p}"]+["{g7}"+c for c in "BCDEFVWXYZ"])
 RAN=True
 """
 
