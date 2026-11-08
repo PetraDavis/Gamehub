@@ -88,6 +88,7 @@ G_LEAF=(25,85,35)
 G_BARK=(90,60,30)
 G_CYAN=(60,230,230)
 G_MAG=(230,60,220)
+G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient')
 def G_cl(b):
  return[tuple(b[i:i+3])for i in range(0,len(b),3)]
 G_RCOL=G_cl(b'\xff\xff\xffx\xdcxZ\xa0\xff\xc8n\xf0\xe6\xb4(<\xe6\xe6\xf5\xa0<')

@@ -103,11 +103,14 @@ def G_cop(g):
   else:
    G_put_egg(g,t,True)
    m="I'll leave it by you."
-  message(["Got him! Here's 300",'coins and an Epic egg.',m],'Officer Brick')
+  message(["Got him! He'll be locked","up for a long time. Here's",'300 coins and an Epic egg.'],'Officer Brick')
+  message([m],'Officer Brick')
  else:
   g.book|=1<<22
   message(['Hmm. Well, tell me','if you see him.'],'Officer Brick')
  G_shen_off(g)
+ if g.book>>31&1:
+  g.shn=10000
 def G_shen(g):
  m,x,y=g.shen
  if g.maps[m][y][x]=='O':
@@ -125,7 +128,8 @@ def G_shen(g):
  circ(222,170,20,(150,105,55))
  rect(214,150,16,4,(110,75,40))
  ctext(24,'SHADY SHEN',GOLD)
- ctext(196,random.choice(('Psst... over here.','Rare goods. Very real.',"Don't ask where I got these.",'Best prices in all the lands.','You look like a smart tamer.','Nice dragon. Shame if it got sparkly.')))
+ mad=g.book>>31&1
+ ctext(196,random.choice(('You! You told on me!','Prices went up. Wonder why.','I remember you, snitch.'))if mad else random.choice(('Psst... over here.','Rare goods. Very real.',"Don't ask where I got these.",'Best prices in all the lands.','You look like a smart tamer.','Nice dragon. Shame if it got sparkly.')))
  while wkey()not in(OK,CLR):
   pass
  free=g.book>>22&1
@@ -133,6 +137,7 @@ def G_shen(g):
   message(["Psst... you didn't tell",'the officer about me.','Pick one thing. Free.'],'Shady Shen')
  while True:
   S=(('Glimmer Stone',60),('Power Fruit',40),('Mystery Egg',50),('Healing Tonic',20),('Lucky Charm',35),('Mystery Box',30),('Egg Swap',25),('Golden Coin',45),('Accessory Crate',40),('Treasure Map',35),('Dragon Insurance',20),('Speed Saddle',50),('Shiny Polish',25),('Moldy Egg',15))+((('Glimmer Pack x5',250),)if g.buys>=10 else())
+  S=[(n,p*(1+mad))for n,p in S]
   z=len(S)
   c=G_zl('Pick 1 thing for FREE!'if free else 'Shady Shen   '+str(g.coins)+' coins',[n+(' - sold out'if n=='Moldy Egg'and g.book>>29&1 else ' '+str(p)+'c')for n,p in S]+(['Use Glimmer Stones ('+str(g.glim)+')']if g.glim else[])+['Leave'])
   if c==z and g.glim:

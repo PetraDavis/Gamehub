@@ -746,7 +746,7 @@ def save(g):
     s = [4, g.coins, g.own, g.book, g.dread] + (g.bag + [-1] * 5)[:5]
     big = [d for d in g.pen if not d[9] & 8]
     pk = ([i for i in range(len(big)) if big[i] is g.pick] + [0])[0]
-    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk + 6000000 * min(15, g.cd) + 96000000 * g.sad]
+    b = [2, g.glim + 100 * g.luck + 200 * g.curse + 400 * min(10, g.buys) + 4400 * min(99, g.done) + 500000 * pk + 6000000 * min(15, g.cd) + 96000000 * g.sad + 192000000 * (g.book >> 31 & 1) * min(100, max(0, g.shn) // 100)]
     for d in g.pen:
         if d[9] & 8:
             b += [pack(d[0]), d[1] + 32 * (d[9] & 7)]
@@ -814,7 +814,8 @@ def load(g):
         if b[0] > 1:
             pk = b[1] // 500000 % 12
             g.cd = b[1] // 6000000 % 16
-            g.sad = b[1] // 96000000
+            g.sad = b[1] // 96000000 % 2
+            g.shn = max(g.shn, b[1] // 192000000 * 100)
             b[1] %= 500000
             g.glim, g.luck, g.curse, g.buys, g.done = b[1] % 100, b[1] // 100 % 2, b[1] // 200 % 2, b[1] // 400 % 11, b[1] // 4400
             b = b[1:]
@@ -1129,11 +1130,15 @@ def cop(g):
         else:
             put_egg(g, t, True)
             m = "I'll leave it by you."
-        message(["Got him! Here's 300", "coins and an Epic egg.", m], "Officer Brick")
+        message(["Got him! He'll be locked", "up for a long time. Here's", "300 coins and an Epic egg."], "Officer Brick")
+        message([m], "Officer Brick")
     else:
         g.book |= 1 << 22
         message(["Hmm. Well, tell me", "if you see him."], "Officer Brick")
     shen_off(g)
+    # if you told, Shen sits in jail for about 10000 steps, then comes back with double prices forever
+    if g.book >> 31 & 1:
+        g.shn = 10000
 
 
 def shen(g):
@@ -1156,7 +1161,8 @@ def shen(g):
     circ(222, 170, 20, (150, 105, 55))
     rect(214, 150, 16, 4, (110, 75, 40))
     ctext(24, "SHADY SHEN", GOLD)
-    ctext(196, random.choice(("Psst... over here.", "Rare goods. Very real.", "Don't ask where I got these.",
+    mad = g.book >> 31 & 1
+    ctext(196, random.choice(("You! You told on me!", "Prices went up. Wonder why.", "I remember you, snitch.")) if mad else random.choice(("Psst... over here.", "Rare goods. Very real.", "Don't ask where I got these.",
                               "Best prices in all the lands.", "You look like a smart tamer.",
                               "Nice dragon. Shame if it got sparkly.")))
     while wkey() not in (OK, CLR):
@@ -1170,6 +1176,8 @@ def shen(g):
         S = (("Glimmer Stone", 60), ("Power Fruit", 40), ("Mystery Egg", 50), ("Healing Tonic", 20), ("Lucky Charm", 35),
              ("Mystery Box", 30), ("Egg Swap", 25), ("Golden Coin", 45), ("Accessory Crate", 40), ("Treasure Map", 35),
              ("Dragon Insurance", 20), ("Speed Saddle", 50), ("Shiny Polish", 25), ("Moldy Egg", 15)) + ((("Glimmer Pack x5", 250),) if g.buys >= 10 else ())
+        # since you told on him, everything costs double
+        S = [(n, p * (1 + mad)) for n, p in S]
         z = len(S)
         c = zl("Pick 1 thing for FREE!" if free else "Shady Shen   " + str(g.coins) + " coins", [n + (" - sold out" if n == "Moldy Egg" and g.book >> 29 & 1 else " " + str(p) + "c") for n, p in S] +
                 (["Use Glimmer Stones (" + str(g.glim) + ")"] if g.glim else []) + ["Leave"])
@@ -1762,9 +1770,8 @@ def play():
         if g.shen:
             if g.shn < 0:
                 shen_off(g)
-        # once you've met Shen, Officer Brick comes looking for him (book bit 30 = asked, 31 = Shen jailed)
-        elif g.shn <= 0 and g.m < 3 and not g.book >> 31 & 1 and \
-                put_egg(g, 0, False, "O" if g.book >> 27 & 1 and not g.book >> 30 & 1 and random.random() < 0.3 else "M"):
+        # once you've met Shen, Officer Brick comes looking for him (book bit 30 = asked, 31 = told on Shen)
+        elif g.shn <= 0 and g.m < 3 and put_egg(g, 0, False, "O" if g.book >> 27 & 1 and not g.book >> 30 & 1 and random.random() < 0.3 else "M"):
             g.shn = 60
         if g.curse and random.random() < 0.01:
             g.coins -= min(g.coins, random.randint(1, 3))

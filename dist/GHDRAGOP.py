@@ -33,7 +33,6 @@ def choose(title,opts,sel=0):
 G_EVIL=0.12 if G_TEST else 0.004
 G_NIGHT=(45,50,80)
 G_ENAME=('fire','water','plant','star')
-G_RARE=('Common','Uncommon','Rare','Epic','Legendary','Quantum','Ancient')
 G_NAMES=('Blaze','Splash','Fern','Spark','Misty','Clover','Ziggy','Nova','Pebble','Rocket','Biscuit','Luna','Comet','Pip','Maple','Echo','Sunny','Bolt','Willow','Ash','Ripple','Twig','Ember','Taro')
 G_GEAR=(('',0),('Bow',15),('Goggles',25),('Wizard hat',40),('Crown',80),('Party hat',20),('Top hat',35),('Flower',15),('Viking helmet',60),('Scarf',15),('Saddle',25),('Cape',40),('Armor',60),('Bell collar',20),('Backpack',30),('Flag',45),('Necklace',50))
 def G_grown(g):
@@ -81,7 +80,7 @@ def G_save(g):
  s=[4,g.coins,g.own,g.book,g.dread]+(g.bag+[-1]*5)[:5]
  big=[d for d in g.pen if not d[9]&8]
  pk=([i for i in range(len(big))if big[i]is g.pick]+[0])[0]
- b=[2,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)+4400*min(99,g.done)+500000*pk+6000000*min(15,g.cd)+96000000*g.sad]
+ b=[2,g.glim+100*g.luck+200*g.curse+400*min(10,g.buys)+4400*min(99,g.done)+500000*pk+6000000*min(15,g.cd)+96000000*g.sad+192000000*(g.book>>31&1)*min(100,max(0,g.shn)//100)]
  for d in g.pen:
   if d[9]&8:
    b+=[G_pack(d[0]),d[1]+32*(d[9]&7)]
@@ -262,7 +261,7 @@ def G_play():
   if g.shen:
    if g.shn<0:
     G_shen_off(g)
-  elif g.shn<=0 and g.m<3 and(not g.book>>31&1)and G_put_egg(g,0,False,'O'if g.book>>27&1 and(not g.book>>30&1)and(random.random()<0.3)else 'M'):
+  elif g.shn<=0 and g.m<3 and G_put_egg(g,0,False,'O'if g.book>>27&1 and(not g.book>>30&1)and(random.random()<0.3)else 'M'):
    g.shn=60
   if g.curse and random.random()<0.01:
    g.coins-=min(g.coins,random.randint(1,3))
