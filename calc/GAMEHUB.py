@@ -7,7 +7,7 @@ CATS = [
     ("Arcade", [("Wing It", "GHFLAP"), ("Pong", "GHPONG"), ("Breakout", "GHBREAK"), ("Star Patrol", "GHSTAR")]),
     ("Puzzle", [("Stack Drop", "GHBLOCKS"), ("2048", "GHMERGE"), ("Sudoku", "GHSUDOKU"), ("Simon", "GHSIMON"), ("Super Tic-Tac-Toe", "GHSUPER")]),
     ("Classics", [("Solitaire", "GHSOLI"), ("Tic-Tac-Toe", "GHTTT"), ("Hangman", "GHHANG"), ("Memory Match", "GHMATCH")]),
-    ("Adventure", [("Tiny Quest", "GHRPG"), ("Dragon Tamer", "GHDRAGON"), ("Detective Case", "GHDETECT"), ("Lost Orbit", "GHSPACE")]),
+    ("Adventure", [("Tiny Quest", "GHRPG"), ("Detective Case", "GHDETECT"), ("Lost Orbit", "GHSPACE")]),
     ("Create", [("Animation Studio", "GHANIM"), ("Fortune Cards", "GHFORTUN"), ("Name Generator", "GHNAMES")]),
     ("Settings", [("Key Test", "*keys"), ("Delete Saves", "*wipe"), ("About", "*about")]),
 ]
@@ -152,18 +152,11 @@ def key_test():
 
 
 def wipe():
-    # pick what to delete, then make sure
-    c = choose("DELETE SAVES", ["Animations only", "Dragon Tamer only", "Both", "Keep everything"], 3)
-    if c < 0 or c > 2:
-        return
-    what = ("all your animations", "your dragons, coins,", "all your animations")[c]
-    more = ("", "eggs and Dragon Book", "and Dragon Tamer progress")[c]
+    # only the Animation Studio saves now (Dragon Tamer was retired, so its old lists go too)
     cls()
     ctext(40, "DELETE SAVES", GOLD)
     ctext(80, "This erases")
-    ctext(100, what)
-    if more:
-        ctext(120, more)
+    ctext(100, "all your animations")
     ctext(160, "ENTER: delete", RED)
     ctext(185, "CLEAR: keep them")
     if wkey() != OK:
@@ -171,7 +164,7 @@ def wipe():
     n = 0
     try:
         import GHSAVE
-        n = GHSAVE.wipe(c + 1)
+        n = GHSAVE.wipe(3)
     except Exception:
         pass
     cls()

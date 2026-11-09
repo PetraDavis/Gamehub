@@ -25,6 +25,8 @@ def col(c):
  if c!=_C[0]:
   _C[0]=c
   set_color(c[0],c[1],c[2])
+def fr(x,y,w,h):
+ fill_rect(x-1,y-1,w+1,h+1)
 COVER=[0]
 def cls(c=BLACK):
  COVER[0]+=1
@@ -41,7 +43,6 @@ def lt(c,k=0.35):
  return(int(c[0]+(255-c[0])*k),int(c[1]+(255-c[1])*k),int(c[2]+(255-c[2])*k))
 def dk(c,k=0.65):
  return(int(c[0]*k),int(c[1]*k),int(c[2]*k))
-MSG=[0,0]
 I_BLACK=(0,0,0)
 I_WHITE=(255,255,255)
 I_INK=(20,20,20)
@@ -76,21 +77,6 @@ def I_rr(x,y,w,h,r,c):
   for cy in(y+r,y+h-r-1):
    fill_circle(cx,cy,r)
 I_FONT7={'1':'00100011000010000100001000010001110','3':'11110000010000101110000010000111110','5':'11111100001111000001000011000101110','7':'11111000010001000100010000100001000','9':'01110100011000101111000010001001100'}
-def I_digit7(x,y,ch,c):
- I_c_(c)
- bits=I_FONT7[ch]
- for r in range(7):
-  row=bits[r*5:r*5+5]
-  k=0
-  while k<5:
-   if row[k]=='1':
-    e=k
-    while e+1<5 and row[e+1]=='1':
-     e+=1
-    draw_line(x+k,y+r,x+e,y+r)
-    k=e+1
-   else:
-    k+=1
 def I_digits(x,y,s,c,p=2):
  I_c_(c)
  for i,ch in enumerate(s):
@@ -136,17 +122,6 @@ def I_solitaire(x,y,c):
   f,col=suits[i]
   f(l+4,t+5,2,col)
  I_heart(x+10,y+3,3,I_RED)
-def I_anim(x,y,c):
- I_box(x-20,y-13,41,27,(35,35,40))
- for i in range(5):
-  I_box(x-18+i*8,y-11,4,3,I_WHITE)
-  I_box(x-18+i*8,y+9,4,3,I_WHITE)
- for i,by in enumerate((4,-2,2)):
-  fx=x-17+i*12
-  I_box(fx,y-6,11,13,(120,200,240))
-  I_box(fx,y+4,11,3,(70,170,80))
-  I_circ(fx+5,y+by,2,(240,120,40))
- I_circ(x+17,y-9,1,I_RED)
 def I_ttt(x,y,c):
  s=12
  for i in(-1,1):
