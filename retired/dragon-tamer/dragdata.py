@@ -284,8 +284,7 @@ def lit(b):
 
 
 def main():
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    p = os.path.join(root, 'calc', 'GHDRAGON.py')
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'GHDRAGON.py')
     s = open(p).read()
     block = ["# ART: made by tools/dragdata.py (edit the shapes there, then run it)",
              "ARTB = " + lit(pack(BASE)),
